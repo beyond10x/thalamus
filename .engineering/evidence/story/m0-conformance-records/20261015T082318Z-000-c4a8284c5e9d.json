@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T08:23:18Z",
+  "actor": "human:timo",
+  "artifact": "story:m0-conformance-records",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main 4f84647"
+  }
+}

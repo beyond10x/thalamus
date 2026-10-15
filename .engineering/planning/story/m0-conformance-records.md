@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m0-conformance-records
 kind: story
-status: active
+status: implemented
 title: Every synthesised conformance scenario passes under task check
 relations:
 - decomposes: epic:specification
@@ -18,10 +18,11 @@ scope:
   path: crates/thalamus-core/src/conformance.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/conformance.rs
-revision: 7
+revision: 8
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T05:39:24Z", actor: "human:timo", revision: 6}
 - {from: "proposed", to: "active", at: "2026-10-15T05:39:24Z", actor: "human:timo", revision: 7}
+- {from: "active", to: "implemented", at: "2026-10-15T08:23:19Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"review_outcome":3}}}
 ---
 ## Context
 
