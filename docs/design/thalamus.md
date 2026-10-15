@@ -232,6 +232,7 @@ multi-window burn-rate pairs. Thalamus sets no targets; an instance does.
 | samples and evaluations | append-only stream per instance, retained for a configured window (default 35 days: enough for `offset_7d` and a 4-week same-slot median) | volume; the source can replay most of it |
 | daily rollups | one row per series per UTC day: `n`, `unknown`, `partial`, `min/p50/max/last`, worst verdict, verdict counts, min/max score | what a `history: store` source cannot replay |
 | transitions | emitted as events (§ 6) and, for an instance connected to cortex, as facts with the evaluation as evidence | what someone has to act on |
+| deploy instants | `thalamus.deploy.DeployInstant` records in the instance store, kept without a retention limit (D39) | a few per day; the before/after view works when the source is unreachable and after the source has dropped the object (a replaced pod) |
 
 Raw samples never go into a fold log or a knowledge store. They have no lifecycle, and a fleet pass
 writes hundreds of them. Only the **change** someone has to act on is forwarded.
@@ -249,15 +250,23 @@ measured one.
 |---|---|---|
 | `thalamus-model` | library, generated | the types and behaviours ESS synthesises from `spec/` into `generated/thalamus-model`; never edited by hand. ESS names the package `thalamus`; the workspace depends on it renamed `thalamus-model` |
 | `thalamus-spec-types` | library, generated | the serde types of every model type and event (`generated/spec-types`); never edited by hand |
-| `thalamus-core` | library | definition registry and validation, baselines, the verdict ladder, hysteresis, score, rollups. No I/O, no clock: time and samples are passed in |
-| `thalamus-store` | library | the append-only sample stream and rollups behind one trait. First provider: Eventlog (SQLite, PostgreSQL) |
-| `thalamus-sources` | library | adapters that turn a Connectors operation into samples: Prometheus/PromQL, Loki/LogQL, SQL, Kubernetes, Git, HTTP probe, test-run events |
-| `thalamus-pipeline` | library | the read → sample → grade → evaluate pass the CLI and the service share |
-| `thalamus-service` | binary | the scheduler that samples each definition on its cadence, the HTTP API (current verdicts, series, assertions), a server-sent-events stream of evaluations, and the CloudEvents emitter |
-| `thalamus-cli` | binary `thalamus` (clap derive) | `define validate`, `sample`, `eval`, `show`, `compare --vs 7d`, `assert`, `rollup`, `view` |
+| `thalamus-core` | library | definition registry and validation, baselines, the verdict ladder, hysteresis, score, rollups, and the dashboard and rule export (`export/`: definitions in, text out). No I/O, no clock: time and samples are passed in |
+| `thalamus-store` | library | the append-only sample stream, rollups and deploy instants (`deploys.rs`, D39) behind one trait. First provider: Eventlog (SQLite, PostgreSQL) |
+| `thalamus-sources` | library | adapters that turn a Connectors operation into samples: Prometheus/PromQL, Loki/LogQL, SQL, Kubernetes, Git, HTTP probe, test-run events; and the deploy readers (`deploys/`) that turn a Connectors read into deploy instants, origins `pod_created` and `merged` (D39) |
+| `thalamus-pipeline` | library | the read → sample → grade → evaluate pass the CLI and the service share, and the one CloudEvents envelope builder (`cloudevents.rs`, D33): the service calls it from M4, and the CLI can call it from M5 (`story:m5-conductor-contract`) without linking the service |
+| `thalamus-service` | binary | the scheduler that samples each definition on its cadence, the HTTP API (current verdicts, series, assertions), the views (`src/views/`), a server-sent-events stream of evaluations, and the CloudEvents emitter. `thalamus-service run --instance <dir> [--listen <addr>] [--allow-remote]`: without `--listen` no HTTP is served; `--listen` binds a loopback address only unless `--allow-remote` is given |
+| `thalamus-cli` | binary `thalamus` (clap derive) | `define validate`, `sample`, `eval`, `show`, `compare --vs 7d`, `assert`, `rollup`, `flaps`, `view`, `export rules`, `export dashboard`, `deploys record`, `deploys list` |
 
 `thalamus-core` stays pure so the same code grades a live sample, re-grades history after a
 threshold change, and runs in a test without a source.
+
+The M4 routes of `thalamus-service`, every one `GET` (D31): `/` (an index linking every view),
+`/api/verdicts`, `/api/series`, `/api/evaluations/stream` (the server-sent-events stream, D34),
+`/views/live`, `/views/heatmap`, `/views/sparklines`, `/views/week`, `/views/deploys` and
+`/views/deploys/{id}`. Any other method on any route answers 405: the service never accepts a write
+over HTTP. There is no authentication in M4: the service runs per operator machine (§ 10 question
+2) and binds loopback only unless `--allow-remote` is given (D43). HTML and SVG are rendered by Rust,
+with no `<script>` element (D32).
 
 ### 5.2 Boundaries
 
@@ -318,17 +327,65 @@ samples.
 |---|---|---|
 | heatmap | rows = series grouped by layer, columns = hours or days, cell = `score` on a diverging scale; unknown hatched, N/A grey | evaluations |
 | sparklines | value line, baseline band, WARN and CRIT lines; gaps drawn as gaps | samples, evaluations |
-| before/after a deploy | every signal's window before vs after one deploy instant, sorted by score delta | samples, deploy instants |
-| week vs week | this week against the same slot last week | evaluations, `offset_7d` |
+| before/after a deploy | every signal's window before vs after one deploy instant, sorted by score delta | evaluations, samples, deploy instants |
+| week vs week | this week against the same slot last week | evaluations at the slot 7 days earlier |
 | live | current verdict per series, updated from the event stream | evaluations |
 
+Every view except `/views/live` answers `format=html` or `format=json`; the JSON is what the view
+is drawn from (D35). The live page's machine-readable form is the evaluation stream (D34).
+
+- **Heatmap** (D35). Columns are UTC days (default 28) or UTC hours, ending with the current one.
+  Rows are the series with an evaluation in the range, grouped by layer (the second segment of
+  `<family>.<layer>.<name>`), inside a layer by worst cell, then series key. A cell reads the
+  evaluations whose `ts` falls in its column, one per sample at the highest `definition_rev`
+  present (the rule D14 sets for rollups). Its verdict is their worst by ladder rank; a scored
+  worst verdict colours it with the highest score among them; a worst `UNKNOWN` is hatched; a cell
+  whose every evaluation is `N/A` is grey; a cell with no evaluation is a gap, drawn empty and
+  distinct from all three. The scale is fixed and diverging: 0 at its neutral midpoint, 1 at the
+  WARN colour, 2 at the CRIT colour, clamped beyond 3 and below -2. The heatmap reads raw
+  evaluations only; the 35-day retention (§ 4) covers 4 weeks.
+- **Sparklines** (D36). The value line runs through `ok` readings and breaks at every `unknown`
+  sample (a missed slot included) and every slot with no sample; a `partial` reading is a bound
+  marker on its `bound` side, not a point of the line. The baseline band spans from the recorded
+  baseline of each evaluation up to its WARN line, and is absent where the baseline is unknown.
+  The WARN and CRIT lines are computed from the definition by the code that grades, never typed
+  again (L2), and are drawn only at points graded at the current revision of the definition.
+- **Week vs week** (D37). This week is the rolling 7 days ending at the start of the hour of `at`
+  (default now): 168 UTC hour slots against the same slots 7 days earlier. A slot's score delta
+  exists only when both cells are scored, never 0. A slot of last week before the first stored
+  sample of the series is `UNKNOWN` with reason `baseline predates series`; a slot with no
+  evaluation is a gap.
+- **Before/after a deploy** (D38). Before is `[ts - window, ts)`, after is `[ts, ts + window)`;
+  `window` defaults to 2h and is at most 7d. Per side: the highest score among its scored
+  evaluations (one per sample at the highest revision present), and beside it the median of its
+  `ok` readings. Delta = after score - before score;
+  a side with no scored evaluation is `UNKNOWN` with a reason and has no delta, never 0. Every
+  series with an evaluation in either window is listed, sorted by delta descending, rows without a
+  delta last.
+- **Live** (D40). Seeded on start from the newest evaluation of each series in the store, then
+  updated from the evaluation stream only. One row per series, worst first; `UNKNOWN` hatched,
+  `N/A` grey, never drawn as `OK`. The page refreshes itself every 10 s with
+  `<meta http-equiv="refresh">` and carries no `<script>`.
+
 A **deploy instant** is the time a workload actually changed (pod creation, merge time), never an
-announcement.
+announcement. It is a stored `thalamus.deploy.DeployInstant` record (D39), read through Connectors
+by `thalamus deploys record` and never from the source when a view is drawn. Its origin is one of
+two: `pod_created`, the earliest pod creation of one rollout (the pods of one ReplicaSet), and
+`merged`, the merge time of a merged merge request. Another origin is a specification change.
 
 Views are served by `thalamus-service`. Dashboard JSON and Prometheus recording and alert rules are
 generated from definitions as an **export**, only for definitions whose source is Prometheus or
 Loki; a dashboard tool cannot see SQL, orchestrator or version-control signals, so it is never the
 only view.
+
+- **Rules** (`thalamus export rules --target prometheus` or `--target loki`, D41). Each exported
+  definition's query parts are recorded as `thalamus:<signal id, dots as underscores>:<part>`;
+  baselines are expressions over those recorded series with `offset`. An alert's `for:` is `k`
+  times the cadence, `k_crit` for `CRIT`. Definitions that cannot be exported are skipped, each
+  with a reason.
+- **Dashboard** (`thalamus export dashboard`, D42). One Grafana dashboard JSON model per instance:
+  one row per layer, one panel per exported definition, reading the recorded series of the rules
+  export, so the dashboard and the alerts show one expression.
 
 ## 7. Standards
 
@@ -392,7 +449,7 @@ turns L4, L5 and L6 into tests.
 | # | question | default if unanswered |
 |---|---|---|
 | 1 | Is Eventlog the first store provider, or a plain append-only file per day? | Eventlog, SQLite provider |
-| 2 | Does the service run per operator machine, or in-cluster next to the systems it watches? | per machine for M1–M2; an in-cluster deployment is a later milestone |
+| 2 | Does the service run per operator machine, or in-cluster next to the systems it watches? | per operator machine through M5; an in-cluster deployment is a later milestone (D43) |
 | 3 | Where do transitions go besides the event stream: cortex, conductor, a chat post? | event stream and cortex only |
 | 4 | Is the dimension registry read through Connectors, from files in the instance, or both? | both, as § 2.4 shows |
 | 5 | Is the live view part of `thalamus-service`, or a uilab surface that reads its API? | in the service for M4; moved if uilab adopts it |
@@ -456,3 +513,25 @@ immediate view, which costs 15 conformance scenarios
 | D27 | `story:m2-spec-history-records`: the rollup invariant `unknown + partial <= n` | an ESS predicate compares a fact with a fact or a literal, not with a sum, so the specification holds `unknown <= n` and `partial <= n` and the sum is an `UNMAPPED:` marker held by a Rust test. A gap to report to the ESS repository beside those listed above. The synthesized conformance fixtures may therefore hold rows that break the sum (`n` 1, `unknown` 1, `partial` 1); The same fixtures may also pair a `worst_verdict` with `verdict_counts` that contradict it (`OK` beside a `crit` count of 1) and hold verdict counts whose sum exceeds `n`, which D14 rules out. `story:m2-rollup`'s builder test holds the sum, the worst verdict and the counts for every row thalamus writes. `verdict_counts` is one count per ladder verdict (`ok`, `na`, `warn`, `crit`, `unknown`) |
 | D28 | `story:m2-spec-history-records`: D9 and D19 name the service as the actor of an expired mute's `UnmuteDefinition` | the actor is `thalamus.definition.Service`, granted `UnmuteDefinition` and nothing else. The grant is unconditional in ESS, which has no guard on a grant and no outcome that tells the service from an `InstanceOperator`; that the service unmutes only past the mute's expiry is an `UNMAPPED:` marker on the actor, held by the test of `story:m2-auto-unmute` |
 | D29 | adversary pass 1 on `story:m2-spec-history-records` (coordinator, 2026-10-15) | the definition file (D19) carries `evaluation.fixed`, `evaluation.rolling_n` and `persistence`, and the loader (`thalamus_core::registry`) refuses what `ProposeDefinition` and `ReviseDefinition` refuse (D25), by the same rule (`thalamus_core::behaviour::definition::input_refusals`); a repeated key and a number that is not a decimal are refused as everywhere else in the file. `persistence` with `k`, `k_crit` or `m` below 1 is refused (`persistence-below-one`). A transition is a change: `Transition` holds `first_ts <= settled_ts` and `from_verdict` absent or different from `to_verdict` |
+
+### Views and exports, M4 (2026-10-15)
+
+Decisions the M4 stories take, as each states it: decomposer calls, reversible, unless the row names
+a coordinator decision. § 5.1 and § 6.5 follow them.
+
+| # | story | decision |
+|---|---|---|
+| D30 | `story:m4-skeleton`; the forms from `story:m4-export-rules`, `story:m4-export-dashboard`, `story:m4-deploy-instants` | `thalamus` gains `export` and `deploys`: `thalamus export rules --target prometheus\|loki [--out <file>]` (stdout by default, the skipped list with reasons on stderr, exit 0, refusals with the codes of `story:m1-cli-sample`) and `thalamus export dashboard [--out <file>]` (stdout by default, exit codes as `export rules`); `thalamus deploys record --reader kubernetes\|gitlab --source <adapter> --connection <id> [--namespace <ns>]... [--project <p>] [--since <duration>]`, which prints each recorded or already-recorded id, and `thalamus deploys list [--since <duration>] [--format text\|json]`; exit 0 when every read instant was recorded or already recorded, refusals 65 and 74 |
+| D31 | `story:m4-skeleton` | `thalamus-service run --instance <dir> [--listen <addr>] [--allow-remote]`. Without `--listen` no HTTP is served, exactly as in M2; with it the HTTP server runs on its own thread with its own tokio runtime beside the scheduler. `--listen` binds a loopback address only unless `--allow-remote` is given; there is no authentication in M4 (§ 10 question 2: the service runs per operator machine; D43). The route table is § 5.1's; any other method on any route answers 405, and the service never accepts a write over HTTP. HTTP tests run in process through `tower::ServiceExt::oneshot`, with no port and no client crate (coordinator decision C5) |
+| D32 | `story:m4-skeleton` | views live in `thalamus-service` (`src/views/`), the dashboard and rule export in `thalamus-core` (`src/export/`, pure: definitions in, text out). No new crate, so § 5.1 keeps its crate table. HTML and SVG are rendered by Rust; no Node build and no `<script>` element (running code is Rust) |
+| D33 | `story:m4-live` (coordinator decision C6) | one CloudEvents envelope builder, `thalamus-pipeline` `cloudevents.rs`: the CloudEvents 1.0 structured-mode envelope of § 6.2, `kind` one of `dev.beyond10x.thalamus.transition` and `dev.beyond10x.thalamus.evaluation`. The transition emitter and the evaluation stream both call it, and `thalamus-cli` can call it without linking the service; not in `thalamus-core`, which holds no wire format, and not in the service. The emitted transition events stay byte-identical |
+| D34 | `story:m4-live` | `GET /api/evaluations/stream` is `text/event-stream`: one message per recorded evaluation, `event: dev.beyond10x.thalamus.evaluation`, `id:` the evaluation id, `data:` the D33 envelope (`subject` the series key of D10, `time` = `ts`, `data` the evaluation record). Publishing never blocks the scheduler, and a send with no subscriber is not an error. A subscriber that lags past the channel capacity gets one SSE comment naming the lag and is closed; it rereads `/api/verdicts`. No replay on reconnect (`Last-Event-ID` is ignored): the current state is `/api/verdicts`, the history is the store |
+| D35 | `story:m4-heatmap` | the heatmap cell rule of § 6.5: one evaluation per sample at the highest revision present (D14's rule for rollups), the cell verdict their worst-of by the ladder so the colour and the verdict cannot disagree (§ 3.3), coloured by the highest score among them; worst `UNKNOWN` hatched, all `N/A` grey, no evaluation a gap. The heatmap reads raw evaluations only; drawing older columns from daily rollups is left for later. `format=json` on every view except `/views/live`, so the views are testable and the live acceptance can count columns without parsing SVG; the live page's machine-readable form is the evaluation stream (D34; coordinator, wave 20261015e, adversary pass 1 on `story:m4-design-record`) |
+| D36 | `story:m4-sparklines` | the baseline band spans from the baseline to the WARN line, the inside-bounds zone. WARN and CRIT lines come from one public line computation in the threshold rule that grades (`thalamus-core` `lines`): the threshold rules give both from `evaluation.warn` and `evaluation.crit`; `fixed_warn_only` gives a WARN line at the first count above its fixed baseline and no CRIT line (D12); `producer_mapped` gives none; an `unknown` baseline gives none. Lines are drawn only where the evaluation was graded at the current revision (the definition file holds only the current one, D19), instead of drawing current thresholds over history graded at older ones |
+| D37 | `story:m4-week-vs-week` | "this week" is the rolling 7 days ending at `at`, not the calendar week, so the view is full on any day; `at` makes it reproducible. The comparison reads stored evaluations at the slot 7 days earlier (the M2 `compare` stance), not the `offset_7d` baseline recorded on each evaluation, which a `history: source` signal re-reads from its source and records only as a value. Rows ordered by the largest score delta of the week, then series key |
+| D38 | `story:m4-before-after` | the sorted score delta is computed from the stored evaluations of each window (the highest score per side, among scored evaluations, one per sample at the highest revision present), and the sample values are shown beside it: grading a window of samples against another would re-run grading with a second baseline, which M4 does not need. Every series, not only series sharing a dimension value with the deploy (§ 6.5 says "every signal"); the deploy dims are shown so a reader can match them. Default window 2h, the horizon of the § 6.1 assertion example; cap 7d, one week either side, so a request cannot ask for more than the raw retention covers on both sides (§ 4, 35 days). A window over 7d, a zero or negative window, or an unparseable duration answers 400 naming the parameter and the 7d cap, and nothing is read from the store. An unknown deploy id answers 404 |
+| D39 | `story:m4-spec-deploy-instants`, `story:m4-deploy-instants` | a deploy instant is a stored record, not a value read from the source each time the view is drawn: the view then works when the source is unreachable and after the source has dropped the object (a replaced pod), and a deploy can be cited by id. Domain `thalamus.deploy`, entity `DeployInstant` (`ts`, `origin`, `workload`, `ref`, `dims`, `provenance`; lifecycle `Recorded` only), command `RecordDeployInstant` with outcomes `recorded` and `already-recorded`; `deploy_id` (prefix `dep_`) is derived from origin, connection and `ref`, so a second read of the same change is `already-recorded`. Two origins only, the two the design names: `pod_created` and `merged`; another origin is a spec change. Kept without a retention limit. `pod_created` is read from the pods still listed, the earliest pod `metadata.creationTimestamp` of one ReplicaSet; a ReplicaSet creation time is not used as a stand-in, and an object without a creation timestamp is never given a guessed one. `merged` is `merged_at` of a merged merge request, GitLab-hosted repositories only, the one repository surface Connectors offers. The § 2.4 dimension rule applies to deploy instants as to samples: a value that does not resolve refuses that instant. Instants are recorded by running `thalamus deploys record` after a deploy; recording them on the scheduler is left for later |
+| D40 | `story:m4-live` | the live page is fed by the event stream on the server and refreshes itself every 10 s with `<meta http-equiv="refresh">`, instead of running a browser `EventSource` script, because no script is committed (D32). A browser script is the obvious later change if the operator rules that browser code is outside that rule |
+| D41 | `story:m4-export-rules` | recorded series `thalamus:<signal id, dots as underscores>:<part>` per query part (`value`, or `numerator` and `denominator`), the value name with its OpenMetrics unit suffix. Baselines are expressed over recorded series with `offset` (`offset_1d`, `offset_7d`; `pooled` the sum of numerators over the sum of denominators; `higher_of` `max`, `lower_of` `min`; `fixed` the number in the definition), because `offset` attaches to a selector and cannot be applied to an arbitrary query text. An offset baseline therefore has no value until the recording rules have run for that offset, so an exported alert stays silent, never firing on a missing baseline (§ 3.1). Alerts `ThalamusWarn` and `ThalamusCrit`, one rule group per family, guarded by `min_n` and `min_events` where declared. `for:` = `k` times the cadence (`k_crit` for `CRIT`) approximates `k` consecutive evaluations (§ 3.2); Prometheus evaluates on its own interval. Loki definitions record in the Loki ruler; their alerts run in Prometheus over the recorded series, so one alert file holds every exported threshold. Only `Active` definitions; skipped with a reason: a source neither Prometheus nor Loki, a store baseline (`same_slot_median_4w`, `rolling_median`), a rule other than a threshold rule (`producer_mapped`, `fixed_warn_only`) |
+| D42 | `story:m4-export-dashboard` | the dashboard JSON format is the Grafana model, the dashboard tool that reads both Prometheus and Loki; the design names no tool. Panels read the recorded series of the rules export (D41), so the dashboard and the alerts show one expression; the dashboard is empty for a signal until those recording rules run. One target per offset baseline; `fixed` WARN and CRIT lines as threshold steps read from the definition; the panel unit mapped from the UCUM unit; one template variable per declared dimension; the data source a template variable of type `prometheus` with no URL and no host. Definitions that are not exported get no panel |
+| D43 | coordinator, wave 20261015e, adversary passes 1 and 2 on `story:m4-design-record`; `story:m5-skeleton` | the service runs per operator machine through M5 (§ 10 question 2); an in-cluster deployment comes later. D31's no-authentication rule depends on it: the service binds loopback only unless `--allow-remote` is given, and authentication comes with the in-cluster deployment. The M5 assertion routes `story:m5-skeleton` adds (`GET /api/assertions`, `GET /api/assertions/{id}`) are served on the same loopback-only listener |
