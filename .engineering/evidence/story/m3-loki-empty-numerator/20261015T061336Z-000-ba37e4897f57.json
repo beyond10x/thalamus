@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T06:13:36Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-loki-empty-numerator",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "main 369a6a1: task check exit 0, 39 ok lanes"
+  }
+}

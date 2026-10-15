@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T06:37:57Z",
+  "actor": "human:timo",
+  "artifact": "story:m0-probes",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main a2959fc"
+  }
+}

@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-loki-empty-numerator
 kind: story
-status: active
+status: implemented
 title: An empty Loki numerator answer infers no zero
 relations:
 - decomposes: epic:source-adapters
@@ -12,10 +12,11 @@ scope:
   path: crates/thalamus-sources/src/loki.rs
 - confidence: inferred
   path: crates/thalamus-sources/tests/loki.rs
-revision: 5
+revision: 6
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T05:42:58Z", actor: "human:timo", revision: 4}
 - {from: "proposed", to: "active", at: "2026-10-15T05:42:58Z", actor: "human:timo", revision: 5}
+- {from: "active", to: "implemented", at: "2026-10-15T06:13:36Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"test_result":1}}}
 ---
 ## Outcome
 

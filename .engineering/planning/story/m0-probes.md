@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m0-probes
 kind: story
-status: active
+status: implemented
 title: 'Answer the design § 8 probes: an unknown reading carries no value, a unit is UCUM'
 relations:
 - decomposes: epic:specification
@@ -19,10 +19,11 @@ scope:
   path: docs/design/thalamus.md
 - confidence: inferred
   path: spec/domains/definition.yaml
-revision: 5
+revision: 7
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T05:39:23Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":2}}}
 - {from: "proposed", to: "active", at: "2026-10-15T05:39:23Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-15T06:37:57Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"test_result":1,"review_outcome":5}}}
 ---
 ## Context
 
@@ -64,3 +65,7 @@ Planned (inferred) unless marked:
 ## Acceptance
 
 `cargo test -p thalamus-core --test probes` passes the tests `unknown_reading_carries_no_value`, `ok_reading_requires_value`, `ucum_admits_design_units` and `ucum_refuses_non_units`.
+
+## Correction (2026-10-15, from the implementation)
+
+The generated wire format carries the tag beside the variant's own record: an unknown reading is `{"quality":"unknown","value":{"reason":"…"}}`, and `value` is required on every variant (design § 11 D11). `unknown_reading_carries_no_value` therefore checks that the unknown record holds only `reason`, and refuses a number inside it, the flat form, a number in place of the record and a bare `{"quality":"unknown"}`.
