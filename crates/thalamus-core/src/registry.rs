@@ -30,6 +30,7 @@ use thalamus_model::dimension::{
     DimensionRegistryState, DimensionRule, DimensionSnapshot, DimensionState, Locator, RegistryId,
     ValueSource,
 };
+use thalamus_model::evaluation::Verdict;
 use thalamus_model::json::Value as Json;
 use thalamus_model::observation::{
     CompleteReading, Provenance, QueryDigest, Reading, RunId, SampleId, SeriesKey,
@@ -264,6 +265,9 @@ impl Rule {
                 InputRefusal::FixedNumberMissing => "thalamus.definition.FixedNumberMissing",
                 InputRefusal::FixedNumberUnused => "thalamus.definition.FixedNumberUnused",
                 InputRefusal::PersistenceBelowOne => "thalamus.definition.PersistenceTooSmall",
+                InputRefusal::MappingMissing => "thalamus.definition.MappingMissing",
+                InputRefusal::MappingUnused => "thalamus.definition.MappingUnused",
+                InputRefusal::ThresholdsUnused => "thalamus.definition.ThresholdsUnused",
             },
             Rule::Baseline { .. } => "baseline plan",
             Rule::UnregisteredDimension { .. } => "registered dimension",
@@ -350,6 +354,21 @@ impl fmt::Display for Rule {
                 InputRefusal::PersistenceBelowOne => write!(
                     f,
                     "`{signal_id}` declares a persistence k, k_crit or m below 1"
+                ),
+                InputRefusal::MappingMissing => write!(
+                    f,
+                    "`{signal_id}` names the rule producer_mapped without an evaluation.mapping \
+                     onto OK, WARN, CRIT or UNKNOWN"
+                ),
+                InputRefusal::MappingUnused => write!(
+                    f,
+                    "`{signal_id}` declares evaluation.mapping, and its rule is not producer_mapped, \
+                     so nothing reads it"
+                ),
+                InputRefusal::ThresholdsUnused => write!(
+                    f,
+                    "`{signal_id}` names the rule producer_mapped, which grades by evaluation.mapping \
+                     alone, and declares a warn or crit line nothing reads"
                 ),
             },
             Rule::Baseline { refusal } => write!(f, "the baseline is refused: {refusal}"),
@@ -755,6 +774,26 @@ where
     deserializer.deserialize_map(Distinct(std::marker::PhantomData))
 }
 
+/// [`distinct_keys`] for a mapping that may be absent. A key with no value, or YAML null, is
+/// absent, as it is for every other optional field; only a mapping, `{}` included, is present.
+fn optional_distinct_keys<'de, D, V>(
+    deserializer: D,
+) -> Result<Option<BTreeMap<String, V>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    V: Deserialize<'de>,
+{
+    struct Distinct<V>(BTreeMap<String, V>);
+
+    impl<'de, V: Deserialize<'de>> Deserialize<'de> for Distinct<V> {
+        fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+            distinct_keys(deserializer).map(Distinct)
+        }
+    }
+
+    Option::<Distinct<V>>::deserialize(deserializer).map(|held| held.map(|Distinct(map)| map))
+}
+
 // The document shapes of the instance files.
 
 #[derive(Deserialize)]
@@ -895,6 +934,23 @@ struct EvaluationDoc {
     fixed: Option<String>,
     #[serde(default)]
     rolling_n: Option<i64>,
+    #[serde(default, deserialize_with = "optional_distinct_keys")]
+    mapping: Option<BTreeMap<String, VerdictDoc>>,
+}
+
+/// A verdict of the ladder, by the name `thalamus.evaluation.Verdict` gives it on the wire.
+#[derive(Deserialize, Clone, Copy)]
+enum VerdictDoc {
+    #[serde(rename = "OK")]
+    Ok,
+    #[serde(rename = "N/A")]
+    NotApplicable,
+    #[serde(rename = "WARN")]
+    Warn,
+    #[serde(rename = "CRIT")]
+    Crit,
+    #[serde(rename = "UNKNOWN")]
+    Unknown,
 }
 
 #[derive(Deserialize)]
@@ -1283,6 +1339,21 @@ impl Definition {
             .map(|window| errors.duration("evaluation.min_trend_window", &window));
         let fixed = errors.decimal("evaluation.fixed", doc.evaluation.fixed);
         let rolling_n = doc.evaluation.rolling_n;
+        let mapping = doc.evaluation.mapping.map(|mapping| {
+            mapping
+                .into_iter()
+                .map(|(value, verdict)| {
+                    let verdict = match verdict {
+                        VerdictDoc::Ok => Verdict::OK,
+                        VerdictDoc::NotApplicable => Verdict::NA,
+                        VerdictDoc::Warn => Verdict::WARN,
+                        VerdictDoc::Crit => Verdict::CRIT,
+                        VerdictDoc::Unknown => Verdict::UNKNOWN,
+                    };
+                    (value, verdict)
+                })
+                .collect()
+        });
         let persistence = doc.persistence.map(|held| Persistence {
             k: held.k,
             k_crit: held.k_crit,
@@ -1336,6 +1407,7 @@ impl Definition {
                 min_trend_window,
                 fixed,
                 rolling_n,
+                mapping,
             },
             persistence,
             objective,
@@ -1424,6 +1496,7 @@ fn probe_sample(definition: &SignalDefinitionData) -> SignalSampleData {
         }),
         unit: Unit("1".to_owned()),
         denominator: None,
+        text: None,
         provenance: Provenance {
             producer: String::new(),
             version: String::new(),

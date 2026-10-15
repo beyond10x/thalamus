@@ -9,10 +9,11 @@
 use thalamus_model::behaviour::{SignalDefinitionStorage, TryContext};
 use thalamus_model::definition::{
     AnySignalDefinition, BaselineKind, DefinitionExists, DefinitionProposed, DefinitionRevised,
-    EvaluationSpec, FixedNumberMissing, FixedNumberUnused, InstantNeedsFixedBaseline, Persistence,
-    PersistenceTooSmall, ProposeDefinition, ProposeDefinitionOutcome, RetiredDefinition,
-    ReviseDefinition, ReviseDefinitionOutcome, RollingWindowMissing, RollingWindowUnused,
-    SignalDefinition, SignalDefinitionData, SignalDefinitionState, SignalKind, UnknownDefinition,
+    EvaluationSpec, FixedNumberMissing, FixedNumberUnused, InstantNeedsFixedBaseline,
+    MappingMissing, MappingUnused, Persistence, PersistenceTooSmall, ProposeDefinition,
+    ProposeDefinitionOutcome, RetiredDefinition, ReviseDefinition, ReviseDefinitionOutcome,
+    RollingWindowMissing, RollingWindowUnused, SignalDefinition, SignalDefinitionData,
+    SignalDefinitionState, SignalKind, ThresholdsUnused, UnknownDefinition,
 };
 use thalamus_model::obligation::UnmetObligation;
 use thalamus_model::primitives::Timestamp;
@@ -58,6 +59,15 @@ where
             },
             InputRefusal::PersistenceBelowOne => ProposeDefinitionOutcome::PersistenceBelowOne {
                 error: PersistenceTooSmall { signal_id },
+            },
+            InputRefusal::MappingMissing => ProposeDefinitionOutcome::MappingMissing {
+                error: MappingMissing { signal_id },
+            },
+            InputRefusal::MappingUnused => ProposeDefinitionOutcome::MappingUnused {
+                error: MappingUnused { signal_id },
+            },
+            InputRefusal::ThresholdsUnused => ProposeDefinitionOutcome::ThresholdsUnused {
+                error: ThresholdsUnused { signal_id },
             },
         });
     }
@@ -151,6 +161,15 @@ where
             InputRefusal::PersistenceBelowOne => ReviseDefinitionOutcome::PersistenceBelowOne {
                 error: PersistenceTooSmall { signal_id },
             },
+            InputRefusal::MappingMissing => ReviseDefinitionOutcome::MappingMissing {
+                error: MappingMissing { signal_id },
+            },
+            InputRefusal::MappingUnused => ReviseDefinitionOutcome::MappingUnused {
+                error: MappingUnused { signal_id },
+            },
+            InputRefusal::ThresholdsUnused => ReviseDefinitionOutcome::ThresholdsUnused {
+                error: ThresholdsUnused { signal_id },
+            },
         });
     }
     let Some(held) = SignalDefinitionStorage::get(ports, &input.signal_id) else {
@@ -234,6 +253,13 @@ pub enum InputRefusal {
     FixedNumberUnused,
     /// `persistence-below-one`.
     PersistenceBelowOne,
+    /// `mapping-missing`: also an empty mapping and one naming `N/A` (`UNMAPPED:` in
+    /// `spec/domains/definition.yaml`).
+    MappingMissing,
+    /// `mapping-unused`.
+    MappingUnused,
+    /// `thresholds-unused`.
+    ThresholdsUnused,
 }
 
 /// The first input-guarded refusal of `ProposeDefinition` and `ReviseDefinition` whose guard
@@ -258,7 +284,13 @@ pub fn input_refusal(
 /// - `rolling-n-unused`: `defined(evaluation.rolling_n) and forall b: b != rolling_median`;
 /// - `fixed-number-missing`: `exists b: b == fixed and not defined(evaluation.fixed)`;
 /// - `fixed-number-unused`: `defined(evaluation.fixed) and forall b: b != fixed`;
-/// - `persistence-below-one`: `persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1`.
+/// - `persistence-below-one`: `persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1`;
+/// - `mapping-missing`: `evaluation.rule == "producer_mapped" and not defined(evaluation.mapping)`,
+///   and, beyond what ESS 0.60.0 can state, an empty mapping and one naming `N/A`
+///   ([`crate::rules::mapped::mapping_missing`]);
+/// - `mapping-unused`: `defined(evaluation.mapping) and evaluation.rule != "producer_mapped"`;
+/// - `thresholds-unused`: `evaluation.rule == "producer_mapped" and (defined(evaluation.warn) or
+///   defined(evaluation.crit))`.
 #[must_use]
 pub fn input_refusals(
     kind: SignalKind,
@@ -296,6 +328,18 @@ pub fn input_refusals(
         (
             persistence.is_some_and(|held| held.k < 1 || held.k_crit < 1 || held.m < 1),
             InputRefusal::PersistenceBelowOne,
+        ),
+        (
+            crate::rules::mapped::mapping_missing(evaluation),
+            InputRefusal::MappingMissing,
+        ),
+        (
+            crate::rules::mapped::mapping_unused(evaluation),
+            InputRefusal::MappingUnused,
+        ),
+        (
+            crate::rules::mapped::thresholds_unused(evaluation),
+            InputRefusal::ThresholdsUnused,
         ),
     ]
     .into_iter()

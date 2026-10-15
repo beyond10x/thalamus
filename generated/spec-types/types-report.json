@@ -1,12 +1,12 @@
 {
   "format": "ess-types-report/3",
-  "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
+  "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
   "input": {
     "kind": "model",
     "system": "thalamus",
     "specification_version": "v1",
-    "contract_digest": "slice-sha256/2:84d3d1094d63e08d05e6556b5f633589c98643752b8ff1c198bb1b21b3d6a6c7",
-    "projection_digest": "871a9db27afac3dff222c507069f62394884f507c8cf20d4c41f864952e95092"
+    "contract_digest": "slice-sha256/2:bb08f1b4edacd382d391935fa4a5900d7af272862b7dfb6c0358d0217354bbe6",
+    "projection_digest": "92168e0fa7b7fdc4ff54a080ef0b21bef9891bb8ce0db2d9bdb610dc4774ad2b"
   },
   "generator_version": "0.60.0",
   "target": "rust",
@@ -535,6 +535,16 @@
       "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/fixed/format",
       "rule": "format",
       "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/mapping/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/mapping/x-ess-map-key",
+      "rule": "x-ess-map-key",
+      "detail": "model identity and wire mapping retained in source.schema.json"
     },
     {
       "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/min_trend_window/description",
@@ -1727,6 +1737,11 @@
       "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/fixed/pattern",
       "rule": "pattern",
       "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/mapping",
+      "rule": "open_object_storage",
+      "detail": "preserve ess_extra when constructing or transforming the record; serialization rejects declared-key collisions"
     },
     {
       "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/rolling_n",

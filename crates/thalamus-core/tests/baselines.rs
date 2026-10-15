@@ -59,6 +59,7 @@ fn definition(kind: SignalKind, baselines: &[BaselineKind]) -> SignalDefinitionD
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,
@@ -87,6 +88,7 @@ fn with_fixed(mut definition: SignalDefinitionData, number: &str) -> SignalDefin
 
 fn sample_at(start: &str, end: &str) -> SignalSampleData {
     SignalSampleData {
+        text: None,
         sample_id: SampleId("smp_1".into()),
         signal: SignalId("platform.namespace.request_failure_ratio".into()),
         series: SeriesKey("platform.namespace.request_failure_ratio".into()),

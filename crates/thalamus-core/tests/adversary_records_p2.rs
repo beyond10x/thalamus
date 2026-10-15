@@ -423,6 +423,7 @@ fn propose(signal: &str) -> ProposeDefinition {
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,
@@ -458,6 +459,7 @@ fn active(system: &mut System, signal: &str) {
 fn sample(ts: &str) -> RecordSample {
     let at = |instant: &str| wrap(Timestamp, instant);
     RecordSample {
+        text: None,
         signal: wrap(SignalId, "platform.ratio"),
         series: wrap(SeriesKey, "s"),
         dims: BTreeMap::from([("cluster".to_owned(), wrap(DimensionValue, "a"))]),

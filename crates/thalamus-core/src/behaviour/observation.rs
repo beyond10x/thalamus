@@ -67,6 +67,7 @@ where
         ts: input.ts,
         window: input.window,
         reading: input.reading,
+        text: input.text,
         unit: input.unit,
         denominator: input.denominator,
         provenance: input.provenance,
@@ -100,6 +101,7 @@ where
             ts: sample.data.ts,
             window: sample.data.window,
             reading: sample.data.reading,
+            text: sample.data.text,
             unit: sample.data.unit,
             denominator: sample.data.denominator,
         })

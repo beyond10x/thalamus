@@ -81,10 +81,10 @@
     },
     {
       "area": "Grading",
-      "detail": "Colour ladders, detector exits and blocking gate exits. Planned in story:m3-vocabulary-mapping.",
+      "detail": "Colour ladders, detector exits and blocking gate exits, by the table in evaluation.mapping; na is UNKNOWN, never green.",
       "href": "/docs/concepts/verdicts#other-vocabularies",
       "label": "Other producers' vocabularies map onto the ladder",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Grading",

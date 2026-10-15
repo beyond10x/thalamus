@@ -71,6 +71,7 @@ fn queue_with_fixed(number: &str) -> String {
 /// A sample of the `service.queue.depth` fixture, for folding its baseline.
 fn queue_sample() -> SignalSampleData {
     SignalSampleData {
+        text: None,
         sample_id: SampleId("smp_000000000001".into()),
         signal: SignalId("service.queue.depth".into()),
         series: SeriesKey("service.queue.depth".into()),
@@ -216,6 +217,7 @@ fn define(service: &mut Service) {
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,

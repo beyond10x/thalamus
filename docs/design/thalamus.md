@@ -111,6 +111,7 @@ date and an author, so an evaluation names the `rev` it was graded against.
 | unknown is not 0 | `quality: unknown` carries no value. In Rust this is an enum, so the illegal pair cannot be built (L5) |
 | `denominator.since`, `age_s` | the earliest moment the population could contain anything: the dimension's creation time, the source's retention start, the first sample of the series. A baseline whose shifted window starts before the series began (offset plus window span greater than `age_s`) is `UNKNOWN` (§ 3.1) |
 | `provenance` | enough to re-run the read: producer and version, definition revision, adapter and connection, the SHA-256 of the query map's canonical JSON, and the run id grouping one sampling pass |
+| `text` | optional: the producer's value exactly as the source printed it (a text cell, an exit code, an HTTP status). Recorded only under a `producer_mapped` definition and only when the adapter read the value (an `ok` reading, or an `unknown` text cell the adapter types as text). The sample keeps its own `reading` all the same; grading maps `text` through the definition's `evaluation.mapping` at the revision being graded, so a mapping revision re-grades history (§ 2.3, D44) |
 | ids | `dims` keys come from the dimension registry and every value must resolve in it (§ 2.4) |
 
 ### 2.3 `SignalEvaluation`

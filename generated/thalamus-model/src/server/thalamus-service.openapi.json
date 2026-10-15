@@ -8,8 +8,8 @@
     "x-ess-provenance": {
       "system": "thalamus",
       "specification_version": "v1",
-      "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
-      "contract_digest": "slice-sha256/2:743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb"
+      "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
+      "contract_digest": "slice-sha256/2:093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061"
     },
     "x-ess-reached-by": "network"
   },
@@ -650,7 +650,7 @@
             }
           },
           "422": {
-            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused` and `persistence-below-one`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
@@ -659,9 +659,12 @@
                       "fixed-number-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-missing.Response",
                       "fixed-number-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-unused.Response",
                       "instant-not-fixed": "#/components/schemas/thalamus.definition.ProposeDefinition.instant-not-fixed.Response",
+                      "mapping-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.mapping-missing.Response",
+                      "mapping-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.mapping-unused.Response",
                       "persistence-below-one": "#/components/schemas/thalamus.definition.ProposeDefinition.persistence-below-one.Response",
                       "rolling-n-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.rolling-n-missing.Response",
-                      "rolling-n-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.rolling-n-unused.Response"
+                      "rolling-n-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.rolling-n-unused.Response",
+                      "thresholds-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.thresholds-unused.Response"
                     },
                     "propertyName": "outcome"
                   },
@@ -683,6 +686,15 @@
                     },
                     {
                       "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.persistence-below-one.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.mapping-missing.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.mapping-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.thresholds-unused.Response"
                     }
                   ]
                 }
@@ -914,7 +926,7 @@
             }
           },
           "422": {
-            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused` and `persistence-below-one`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
@@ -923,9 +935,12 @@
                       "fixed-number-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-missing.Response",
                       "fixed-number-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-unused.Response",
                       "instant-not-fixed": "#/components/schemas/thalamus.definition.ReviseDefinition.instant-not-fixed.Response",
+                      "mapping-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.mapping-missing.Response",
+                      "mapping-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.mapping-unused.Response",
                       "persistence-below-one": "#/components/schemas/thalamus.definition.ReviseDefinition.persistence-below-one.Response",
                       "rolling-n-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.rolling-n-missing.Response",
-                      "rolling-n-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.rolling-n-unused.Response"
+                      "rolling-n-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.rolling-n-unused.Response",
+                      "thresholds-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.thresholds-unused.Response"
                     },
                     "propertyName": "outcome"
                   },
@@ -947,6 +962,15 @@
                     },
                     {
                       "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.persistence-below-one.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.mapping-missing.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.mapping-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.thresholds-unused.Response"
                     }
                   ]
                 }
@@ -3349,6 +3373,14 @@
           "rolling_n": {
             "description": "The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.",
             "type": "integer"
+          },
+          "mapping": {
+            "description": "A producer's own vocabulary mapped onto the ladder (a colour, a detector or gate exit code to OK, WARN, CRIT or UNKNOWN). Required, and not empty, when the rule is producer_mapped, and refused under any other rule; a producer value it does not list is UNKNOWN.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+            },
+            "x-ess-map-key": "String"
           }
         },
         "required": [
@@ -3470,6 +3502,38 @@
         "required": [
           "components",
           "issues"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.definition.MappingMissing.Error": {
+        "title": "MappingMissing payload",
+        "description": "The rule producer_mapped grades a producer's own value through evaluation.mapping, and the definition declares no mapping onto OK, WARN, CRIT or UNKNOWN; nothing changed.",
+        "x-ess-name": "thalamus.definition.MappingMissing",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.definition.MappingUnused.Error": {
+        "title": "MappingUnused payload",
+        "description": "evaluation.mapping is declared, and the rule is not producer_mapped, so nothing reads it; a table nothing reads is not kept, so nothing changed.",
+        "x-ess-name": "thalamus.definition.MappingUnused",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
         ],
         "additionalProperties": false
       },
@@ -3905,6 +3969,66 @@
         ],
         "type": "object"
       },
+      "thalamus.definition.ProposeDefinition.mapping-missing.Response": {
+        "additionalProperties": false,
+        "description": "The rule producer_mapped was named without evaluation.mapping; nothing was proposed. Taken when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.MappingMissing",
+            "description": "The rule producer_mapped grades a producer's own value through evaluation.mapping, and the definition declares no mapping onto OK, WARN, CRIT or UNKNOWN; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "mapping-missing",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.MappingMissing.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.mapping-unused.Response": {
+        "additionalProperties": false,
+        "description": "evaluation.mapping was declared under a rule other than producer_mapped; nothing was proposed. Taken when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.MappingUnused",
+            "description": "evaluation.mapping is declared, and the rule is not producer_mapped, so nothing reads it; a table nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "mapping-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.MappingUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
       "thalamus.definition.ProposeDefinition.persistence-below-one.Response": {
         "additionalProperties": false,
         "description": "persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing was proposed. Taken when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)` holds of the input.",
@@ -4021,6 +4145,36 @@
           },
           "payload": {
             "$ref": "#/components/schemas/thalamus.definition.RollingWindowUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.thresholds-unused.Response": {
+        "additionalProperties": false,
+        "description": "A warn or crit line was declared under producer_mapped; nothing was proposed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.ThresholdsUnused",
+            "description": "The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "thresholds-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.ThresholdsUnused.Error"
           },
           "published": {
             "description": "Every event this branch published, in publication order: its qualified name and its payload.",
@@ -4359,6 +4513,66 @@
         ],
         "type": "object"
       },
+      "thalamus.definition.ReviseDefinition.mapping-missing.Response": {
+        "additionalProperties": false,
+        "description": "The rule producer_mapped was named without evaluation.mapping; nothing changed. Taken when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.MappingMissing",
+            "description": "The rule producer_mapped grades a producer's own value through evaluation.mapping, and the definition declares no mapping onto OK, WARN, CRIT or UNKNOWN; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "mapping-missing",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.MappingMissing.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.mapping-unused.Response": {
+        "additionalProperties": false,
+        "description": "evaluation.mapping was declared under a rule other than producer_mapped; nothing changed. Taken when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.MappingUnused",
+            "description": "evaluation.mapping is declared, and the rule is not producer_mapped, so nothing reads it; a table nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "mapping-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.MappingUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
       "thalamus.definition.ReviseDefinition.no-such-definition.Response": {
         "additionalProperties": false,
         "description": "No definition has this id; nothing changed. Taken when the request names an identity no record carries.",
@@ -4550,6 +4764,36 @@
         ],
         "type": "object"
       },
+      "thalamus.definition.ReviseDefinition.thresholds-unused.Response": {
+        "additionalProperties": false,
+        "description": "A warn or crit line was declared under producer_mapped; nothing changed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.ThresholdsUnused",
+            "description": "The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "thresholds-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.ThresholdsUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
       "thalamus.definition.RollingWindowMissing.Error": {
         "title": "RollingWindowMissing payload",
         "description": "A rolling_median baseline is the median of the last N samples, and evaluation.rolling_n declares no N of at least 1; nothing changed.",
@@ -4667,6 +4911,22 @@
             "type": "integer"
           }
         },
+        "additionalProperties": false
+      },
+      "thalamus.definition.ThresholdsUnused.Error": {
+        "title": "ThresholdsUnused payload",
+        "description": "The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
+        "x-ess-name": "thalamus.definition.ThresholdsUnused",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
         "additionalProperties": false
       },
       "thalamus.definition.Unit": {
@@ -6199,6 +6459,9 @@
           "reading": {
             "$ref": "#/components/schemas/thalamus.observation.Reading"
           },
+          "text": {
+            "type": "string"
+          },
           "unit": {
             "$ref": "#/components/schemas/thalamus.definition.Unit"
           },
@@ -6435,6 +6698,9 @@
           "reading": {
             "$ref": "#/components/schemas/thalamus.observation.Reading"
           },
+          "text": {
+            "type": "string"
+          },
           "unit": {
             "$ref": "#/components/schemas/thalamus.definition.Unit"
           },
@@ -6505,6 +6771,9 @@
           },
           "reading": {
             "$ref": "#/components/schemas/thalamus.observation.Reading"
+          },
+          "text": {
+            "type": "string"
           },
           "unit": {
             "$ref": "#/components/schemas/thalamus.definition.Unit"
@@ -7648,6 +7917,14 @@
         "rolling_n": {
           "description": "The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.",
           "type": "integer"
+        },
+        "mapping": {
+          "description": "A producer's own vocabulary mapped onto the ladder (a colour, a detector or gate exit code to OK, WARN, CRIT or UNKNOWN). Required, and not empty, when the rule is producer_mapped, and refused under any other rule; a producer value it does not list is UNKNOWN.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/x-ess-entities/thalamus.evaluation.Verdict"
+          },
+          "x-ess-map-key": "String"
         }
       },
       "required": [
@@ -8632,6 +8909,10 @@
         },
         "reading": {
           "$ref": "#/x-ess-entities/thalamus.observation.Reading"
+        },
+        "text": {
+          "description": "The producer's value exactly as the source printed it (a text cell, an exit code, an HTTP status), recorded only under a producer_mapped definition and only when the adapter read the value. Grading maps it through the definition's evaluation.mapping at the revision being graded, so a mapping revision re-grades history.",
+          "type": "string"
         },
         "unit": {
           "$ref": "#/x-ess-entities/thalamus.definition.Unit"

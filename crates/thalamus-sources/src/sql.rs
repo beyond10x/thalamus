@@ -44,7 +44,7 @@ use thalamus_model::observation::{
 };
 use thalamus_model::primitives::{Decimal, Timestamp};
 
-use crate::adapter::{Adapter, Population, Read, query_digest, unknown, window_ending};
+use crate::adapter::{Adapter, Population, Read, Unread, query_digest, unknown, window_ending};
 use crate::connectors::{ConnectorsError, ReadClient};
 
 /// The Connectors operation every SQL read runs.
@@ -138,6 +138,7 @@ impl Reads<'_> {
             query_sha256: query_digest(&self.definition.query),
             raw,
             retention_start: None,
+            unread: None,
         }
     }
 
@@ -306,7 +307,7 @@ fn dims_of(row: &[Option<String>], columns: &[(&str, usize)]) -> BTreeMap<String
 /// The decimal in a cell, or why there is none.
 fn number(cell: Option<&str>, column: &str) -> Result<Dec, String> {
     let text = cell.ok_or_else(|| format!("NULL in column `{column}`; unknown, not 0"))?;
-    Dec::parse(text).ok_or_else(|| format!("{text:?} in column `{column}` is not a number"))
+    Dec::parse(text).ok_or_else(|| format!("value `{text}` in column `{column}` is not a number"))
 }
 
 /// One `unknown` read of the whole definition, saying `why`.
@@ -367,6 +368,10 @@ fn value(client: &ReadClient<'_>, reads: &Reads<'_>) -> Result<Vec<Read>, Connec
                 Err(why) => {
                     let mut read = reads.unknown(dims, why);
                     read.raw = raw;
+                    // A cell that is there and is not a number is text: the value was read.
+                    if read.raw.is_some() {
+                        read.unread = Some(Unread::Text);
+                    }
                     read
                 }
             })

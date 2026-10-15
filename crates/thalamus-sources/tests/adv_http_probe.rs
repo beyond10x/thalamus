@@ -96,6 +96,7 @@ fn definition_on(adapter: &str, connection: &str, query: &[(&str, &str)]) -> Sig
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,

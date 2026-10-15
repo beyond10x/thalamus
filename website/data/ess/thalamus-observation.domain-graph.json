@@ -34,6 +34,10 @@
           "type": "Reading"
         },
         {
+          "name": "text",
+          "type": "Optional<string>"
+        },
+        {
           "name": "unit",
           "type": "Unit"
         },
