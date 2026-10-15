@@ -1,0 +1,1109 @@
+{
+  "$defs": {
+    "thalamus.assertion.Asker": {
+      "additionalProperties": false,
+      "description": "Who asked; carried into the answer.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/thalamus.assertion.AskerKind"
+        },
+        "ref": {
+          "description": "The caller's own reference (a release tag, a merge request, a run id, a controller name).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref"
+      ],
+      "title": "Asker",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.assertion.Asker"
+    },
+    "thalamus.assertion.AskerKind": {
+      "description": "What kind of caller asked.",
+      "enum": [
+        "release",
+        "merge_request",
+        "test_run",
+        "controller"
+      ],
+      "title": "AskerKind",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.assertion.AskerKind"
+    },
+    "thalamus.assertion.Assertion.State": {
+      "enum": [
+        "Answered",
+        "Asked"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.assertion.Assertion.State"
+    },
+    "thalamus.assertion.AssertionAnswered": {
+      "additionalProperties": false,
+      "properties": {
+        "asker": {
+          "$ref": "#/$defs/thalamus.assertion.Asker"
+        },
+        "assertion_id": {
+          "$ref": "#/$defs/thalamus.assertion.AssertionId"
+        },
+        "result": {
+          "$ref": "#/$defs/thalamus.assertion.AssertionResult"
+        },
+        "worst": {
+          "$ref": "#/$defs/thalamus.evaluation.Verdict"
+        }
+      },
+      "required": [
+        "assertion_id",
+        "asker",
+        "result",
+        "worst"
+      ],
+      "title": "AssertionAnswered",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.assertion.AssertionAnswered"
+    },
+    "thalamus.assertion.AssertionAsked": {
+      "additionalProperties": false,
+      "properties": {
+        "asker": {
+          "$ref": "#/$defs/thalamus.assertion.Asker"
+        },
+        "assertion_id": {
+          "$ref": "#/$defs/thalamus.assertion.AssertionId"
+        }
+      },
+      "required": [
+        "assertion_id",
+        "asker"
+      ],
+      "title": "AssertionAsked",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.assertion.AssertionAsked"
+    },
+    "thalamus.assertion.AssertionId": {
+      "description": "An assertion id, minted by the service.",
+      "pattern": "^asr_",
+      "title": "AssertionId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.assertion.AssertionId"
+    },
+    "thalamus.assertion.AssertionResult": {
+      "description": "The answer to an assertion. Only within passes.",
+      "enum": [
+        "within",
+        "breach",
+        "unknown"
+      ],
+      "title": "AssertionResult",
+      "type": "string",
+      "x-ess-attributes": [
+        {
+          "kind": "boolean",
+          "name": "passes",
+          "type": "Boolean",
+          "values": {
+            "breach": false,
+            "unknown": false,
+            "within": true
+          }
+        }
+      ],
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.assertion.AssertionResult"
+    },
+    "thalamus.assertion.Within": {
+      "description": "What the signals must stay within.",
+      "enum": [
+        "baseline"
+      ],
+      "title": "Within",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.assertion.Within"
+    },
+    "thalamus.definition.AdapterId": {
+      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).",
+      "title": "AdapterId",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.AdapterId"
+    },
+    "thalamus.definition.Author": {
+      "description": "Who made a revision.",
+      "title": "Author",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.Author"
+    },
+    "thalamus.definition.BaselineKind": {
+      "description": "A baseline a sample is graded against.",
+      "enum": [
+        "offset_1d",
+        "offset_7d",
+        "pooled",
+        "higher_of",
+        "lower_of",
+        "same_slot_median_4w",
+        "rolling_median",
+        "fixed"
+      ],
+      "title": "BaselineKind",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.definition.BaselineKind"
+    },
+    "thalamus.definition.ConnectionId": {
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential.",
+      "title": "ConnectionId",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.:/",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.ConnectionId"
+    },
+    "thalamus.definition.DefinitionActivated": {
+      "additionalProperties": false,
+      "properties": {
+        "signal_id": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        }
+      },
+      "required": [
+        "signal_id"
+      ],
+      "title": "DefinitionActivated",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.definition.DefinitionActivated"
+    },
+    "thalamus.definition.DefinitionMuted": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "signal_id": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        },
+        "until": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "signal_id",
+        "reason",
+        "until"
+      ],
+      "title": "DefinitionMuted",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.definition.DefinitionMuted"
+    },
+    "thalamus.definition.DefinitionProposed": {
+      "additionalProperties": false,
+      "properties": {
+        "revised_by": {
+          "$ref": "#/$defs/thalamus.definition.Author"
+        },
+        "signal_id": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        }
+      },
+      "required": [
+        "signal_id",
+        "revised_by"
+      ],
+      "title": "DefinitionProposed",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.definition.DefinitionProposed"
+    },
+    "thalamus.definition.DefinitionRetired": {
+      "additionalProperties": false,
+      "properties": {
+        "signal_id": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        }
+      },
+      "required": [
+        "signal_id"
+      ],
+      "title": "DefinitionRetired",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.definition.DefinitionRetired"
+    },
+    "thalamus.definition.DefinitionRevised": {
+      "additionalProperties": false,
+      "properties": {
+        "previous_rev": {
+          "type": "integer"
+        },
+        "revised_by": {
+          "$ref": "#/$defs/thalamus.definition.Author"
+        },
+        "signal_id": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        }
+      },
+      "required": [
+        "signal_id",
+        "previous_rev",
+        "revised_by"
+      ],
+      "title": "DefinitionRevised",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.definition.DefinitionRevised"
+    },
+    "thalamus.definition.DefinitionUnmuted": {
+      "additionalProperties": false,
+      "properties": {
+        "signal_id": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        }
+      },
+      "required": [
+        "signal_id"
+      ],
+      "title": "DefinitionUnmuted",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.definition.DefinitionUnmuted"
+    },
+    "thalamus.definition.DenominatorSpec": {
+      "additionalProperties": false,
+      "description": "The population a ratio or count is taken over.",
+      "properties": {
+        "min_n": {
+          "description": "Below this population the verdict is N/A.",
+          "type": "integer"
+        },
+        "since": {
+          "description": "The earliest moment the population could contain anything, as a reference (dimension.created, source retention start, first sample).",
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/$defs/thalamus.definition.Unit"
+        }
+      },
+      "required": [
+        "unit",
+        "min_n",
+        "since"
+      ],
+      "title": "DenominatorSpec",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.definition.DenominatorSpec"
+    },
+    "thalamus.definition.EvaluationSpec": {
+      "additionalProperties": false,
+      "description": "How a sample is graded. The only copy of the signal's thresholds.",
+      "properties": {
+        "baselines": {
+          "items": {
+            "$ref": "#/$defs/thalamus.definition.BaselineKind"
+          },
+          "type": "array"
+        },
+        "crit": {
+          "$ref": "#/$defs/thalamus.definition.Threshold"
+        },
+        "min_trend_window": {
+          "description": "For an instant signal, no delta and no trend below this window.",
+          "format": "duration",
+          "type": "string"
+        },
+        "rule": {
+          "$ref": "#/$defs/thalamus.definition.RuleId"
+        },
+        "warn": {
+          "$ref": "#/$defs/thalamus.definition.Threshold"
+        }
+      },
+      "required": [
+        "rule",
+        "baselines"
+      ],
+      "title": "EvaluationSpec",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.definition.EvaluationSpec"
+    },
+    "thalamus.definition.ExtractorId": {
+      "description": "A built-in extractor (sql.ratio) or a plugin id.",
+      "title": "ExtractorId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.ExtractorId"
+    },
+    "thalamus.definition.Family": {
+      "description": "An instance-defined grouping of signals.",
+      "title": "Family",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.Family"
+    },
+    "thalamus.definition.History": {
+      "description": "source means the source can be re-queried at an offset; store means only thalamus remembers the series.",
+      "enum": [
+        "source",
+        "store"
+      ],
+      "title": "History",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.definition.History"
+    },
+    "thalamus.definition.Links": {
+      "additionalProperties": false,
+      "description": "What the signal is evidence about.",
+      "properties": {
+        "components": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "components",
+        "issues"
+      ],
+      "title": "Links",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.definition.Links"
+    },
+    "thalamus.definition.Owner": {
+      "description": "Who answers for the signal (team:<name>).",
+      "title": "Owner",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.Owner"
+    },
+    "thalamus.definition.QueryText": {
+      "description": "Query text, stored once and hashed into every sample.",
+      "title": "QueryText",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.QueryText"
+    },
+    "thalamus.definition.RuleId": {
+      "description": "The grading rule (ratio_vs_pooled_baseline).",
+      "title": "RuleId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.RuleId"
+    },
+    "thalamus.definition.SignalDefinition.State": {
+      "enum": [
+        "Active",
+        "Muted",
+        "Proposed",
+        "Retired"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.definition.SignalDefinition.State"
+    },
+    "thalamus.definition.SignalId": {
+      "description": "Stable signal id, spelled <family>.<layer>.<name> in lower case.",
+      "title": "SignalId",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_.",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.SignalId"
+    },
+    "thalamus.definition.SignalKind": {
+      "description": "How a reading of the signal is formed. An instant signal gets no trend below its minimum trend window.",
+      "enum": [
+        "gauge",
+        "counter_increase",
+        "ratio",
+        "instant",
+        "count_of_cases"
+      ],
+      "title": "SignalKind",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.definition.SignalKind"
+    },
+    "thalamus.definition.Source": {
+      "additionalProperties": false,
+      "description": "Where a signal is read; a Connectors connection, never a credential.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/thalamus.definition.AdapterId"
+        },
+        "connection": {
+          "$ref": "#/$defs/thalamus.definition.ConnectionId"
+        }
+      },
+      "required": [
+        "adapter",
+        "connection"
+      ],
+      "title": "Source",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.definition.Source"
+    },
+    "thalamus.definition.Threshold": {
+      "additionalProperties": false,
+      "description": "One line (WARN or CRIT) of a grading rule.",
+      "properties": {
+        "abs": {
+          "description": "Absolute floor the value must also reach.",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        },
+        "min_events": {
+          "description": "Fewest events before the line applies.",
+          "type": "integer"
+        },
+        "x": {
+          "description": "Multiplier over the baseline.",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        }
+      },
+      "title": "Threshold",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.definition.Threshold"
+    },
+    "thalamus.definition.Unit": {
+      "description": "A UCUM unit, case-sensitive form (1, s, By, {request}, {pod}). A ratio has unit 1.",
+      "title": "Unit",
+      "type": "string",
+      "x-ess-alphabet": "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.definition.Unit"
+    },
+    "thalamus.dimension.Dimension.State": {
+      "enum": [
+        "Registered"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.dimension.Dimension.State"
+    },
+    "thalamus.dimension.DimensionKey": {
+      "description": "A dimension key (cluster, namespace, tenant, component, suite).",
+      "title": "DimensionKey",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.dimension.DimensionKey"
+    },
+    "thalamus.dimension.DimensionRegistered": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/thalamus.dimension.DimensionKey"
+        },
+        "registry_id": {
+          "$ref": "#/$defs/thalamus.dimension.RegistryId"
+        },
+        "rule": {
+          "$ref": "#/$defs/thalamus.dimension.DimensionRule"
+        }
+      },
+      "required": [
+        "key",
+        "registry_id",
+        "rule"
+      ],
+      "title": "DimensionRegistered",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.dimension.DimensionRegistered"
+    },
+    "thalamus.dimension.DimensionRegistry.State": {
+      "enum": [
+        "Declared"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.dimension.DimensionRegistry.State"
+    },
+    "thalamus.dimension.DimensionRule": {
+      "description": "source_only means the key is set only when the source row carries it, never derived from a parent.",
+      "enum": [
+        "source_only",
+        "derived"
+      ],
+      "title": "DimensionRule",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.dimension.DimensionRule"
+    },
+    "thalamus.dimension.DimensionValue": {
+      "description": "A value of one dimension key in one series.",
+      "title": "DimensionValue",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.dimension.DimensionValue"
+    },
+    "thalamus.dimension.Locator": {
+      "description": "The inventory or registry file a key's values are listed in (inventory/clusters, registries/components.json).",
+      "title": "Locator",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.dimension.Locator"
+    },
+    "thalamus.dimension.RegistryDeclared": {
+      "additionalProperties": false,
+      "properties": {
+        "registry_id": {
+          "$ref": "#/$defs/thalamus.dimension.RegistryId"
+        }
+      },
+      "required": [
+        "registry_id"
+      ],
+      "title": "RegistryDeclared",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.dimension.RegistryDeclared"
+    },
+    "thalamus.dimension.RegistryId": {
+      "description": "The instance whose dimension registry this is.",
+      "title": "RegistryId",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_-",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.dimension.RegistryId"
+    },
+    "thalamus.dimension.ValueSource": {
+      "description": "The registry kind of a key. connectors is a Connectors inventory, file a registry file in the instance, open admits any value (test-run dimensions) and carries no locator.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "registry": {
+              "const": "connectors",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.dimension.Locator"
+            }
+          },
+          "required": [
+            "registry",
+            "value"
+          ],
+          "title": "connectors",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "registry": {
+              "const": "file",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.dimension.Locator"
+            }
+          },
+          "required": [
+            "registry",
+            "value"
+          ],
+          "title": "file",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "registry": {
+              "const": "open",
+              "type": "string"
+            }
+          },
+          "required": [
+            "registry"
+          ],
+          "title": "open",
+          "type": "object"
+        }
+      ],
+      "title": "ValueSource",
+      "x-ess-kind": "union",
+      "x-ess-name": "thalamus.dimension.ValueSource",
+      "x-ess-union-tag": "registry"
+    },
+    "thalamus.evaluation.Baseline": {
+      "additionalProperties": false,
+      "description": "The baseline a sample was graded against.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/thalamus.evaluation.BaselineLabel"
+        },
+        "offsets": {
+          "description": "The offsets pooled (1d, 7d); empty when none.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reading": {
+          "$ref": "#/$defs/thalamus.observation.Reading",
+          "description": "The baseline's own value and quality. A baseline that could not be read, or predates its series, is unknown, never 0."
+        }
+      },
+      "required": [
+        "kind",
+        "offsets",
+        "reading"
+      ],
+      "title": "Baseline",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.evaluation.Baseline"
+    },
+    "thalamus.evaluation.BaselineLabel": {
+      "description": "Which baseline the sample was graded against (offset_pooled, fixed, rolling_median).",
+      "title": "BaselineLabel",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.evaluation.BaselineLabel"
+    },
+    "thalamus.evaluation.EvaluationId": {
+      "description": "An evaluation id, minted by the grader.",
+      "pattern": "^evl_",
+      "title": "EvaluationId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.evaluation.EvaluationId"
+    },
+    "thalamus.evaluation.EvaluationRecorded": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluation_id": {
+          "$ref": "#/$defs/thalamus.evaluation.EvaluationId"
+        },
+        "prev": {
+          "$ref": "#/$defs/thalamus.evaluation.Verdict"
+        },
+        "sample_id": {
+          "$ref": "#/$defs/thalamus.observation.SampleId"
+        },
+        "series": {
+          "$ref": "#/$defs/thalamus.observation.SeriesKey"
+        },
+        "signal": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        },
+        "ts": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/thalamus.evaluation.Verdict"
+        }
+      },
+      "required": [
+        "evaluation_id",
+        "sample_id",
+        "signal",
+        "series",
+        "ts",
+        "verdict"
+      ],
+      "title": "EvaluationRecorded",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.evaluation.EvaluationRecorded"
+    },
+    "thalamus.evaluation.SignalEvaluation.State": {
+      "enum": [
+        "Recorded"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.evaluation.SignalEvaluation.State"
+    },
+    "thalamus.evaluation.Verdict": {
+      "description": "The one verdict ladder. exit is the process exit code; rank orders an aggregate worst-first (CRIT > WARN > UNKNOWN > OK = N/A); scored says whether the verdict carries a score.",
+      "enum": [
+        "OK",
+        "N/A",
+        "WARN",
+        "CRIT",
+        "UNKNOWN"
+      ],
+      "title": "Verdict",
+      "type": "string",
+      "x-ess-attributes": [
+        {
+          "kind": "integer",
+          "name": "exit",
+          "type": "Integer",
+          "values": {
+            "CRIT": 2,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 3,
+            "WARN": 1
+          }
+        },
+        {
+          "kind": "integer",
+          "name": "rank",
+          "type": "Integer",
+          "values": {
+            "CRIT": 3,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 1,
+            "WARN": 2
+          }
+        },
+        {
+          "kind": "boolean",
+          "name": "scored",
+          "type": "Boolean",
+          "values": {
+            "CRIT": true,
+            "N/A": false,
+            "OK": true,
+            "UNKNOWN": false,
+            "WARN": true
+          }
+        }
+      ],
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.evaluation.Verdict"
+    },
+    "thalamus.observation.Bound": {
+      "description": "Which side a partial reading's value bounds.",
+      "enum": [
+        "lower",
+        "upper"
+      ],
+      "title": "Bound",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.observation.Bound"
+    },
+    "thalamus.observation.CompleteReading": {
+      "additionalProperties": false,
+      "description": "Read completely.",
+      "properties": {
+        "value": {
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "CompleteReading",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.observation.CompleteReading"
+    },
+    "thalamus.observation.Denominator": {
+      "additionalProperties": false,
+      "description": "The population behind a ratio or count.",
+      "properties": {
+        "age_s": {
+          "description": "Seconds from since to the sample. A baseline whose offset exceeds it is UNKNOWN.",
+          "type": "integer"
+        },
+        "n": {
+          "description": "The population the reading was taken over.",
+          "type": "integer"
+        },
+        "since": {
+          "description": "The earliest moment the population could contain anything.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/$defs/thalamus.definition.Unit"
+        }
+      },
+      "required": [
+        "n",
+        "unit",
+        "since",
+        "age_s"
+      ],
+      "title": "Denominator",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.observation.Denominator"
+    },
+    "thalamus.observation.PartialReading": {
+      "additionalProperties": false,
+      "description": "Read but cut (a full page, a paged read that could not finish).",
+      "properties": {
+        "bound": {
+          "$ref": "#/$defs/thalamus.observation.Bound"
+        },
+        "value": {
+          "description": "A bound on the true value, never the value itself.",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "bound"
+      ],
+      "title": "PartialReading",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.observation.PartialReading"
+    },
+    "thalamus.observation.Provenance": {
+      "additionalProperties": false,
+      "description": "Enough to re-run the read. Names a connection, never a credential.",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/thalamus.definition.AdapterId"
+        },
+        "connection": {
+          "$ref": "#/$defs/thalamus.definition.ConnectionId"
+        },
+        "definition_rev": {
+          "type": "integer"
+        },
+        "producer": {
+          "type": "string"
+        },
+        "query_sha256": {
+          "$ref": "#/$defs/thalamus.observation.QueryDigest"
+        },
+        "run_id": {
+          "$ref": "#/$defs/thalamus.observation.RunId"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "producer",
+        "version",
+        "definition_rev",
+        "adapter",
+        "connection",
+        "query_sha256",
+        "run_id"
+      ],
+      "title": "Provenance",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.observation.Provenance"
+    },
+    "thalamus.observation.QueryDigest": {
+      "description": "SHA-256 of the exact query text, lower-case hex.",
+      "title": "QueryDigest",
+      "type": "string",
+      "x-ess-alphabet": "0123456789abcdef",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.observation.QueryDigest"
+    },
+    "thalamus.observation.Reading": {
+      "description": "The value and its quality as one type. quality unknown has no value and a reason; partial has a value and its bound; ok has a value. The illegal pairs cannot be built.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "quality": {
+              "const": "ok",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.observation.CompleteReading"
+            }
+          },
+          "required": [
+            "quality",
+            "value"
+          ],
+          "title": "ok",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "quality": {
+              "const": "partial",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.observation.PartialReading"
+            }
+          },
+          "required": [
+            "quality",
+            "value"
+          ],
+          "title": "partial",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "quality": {
+              "const": "unknown",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.observation.UnreadReading"
+            }
+          },
+          "required": [
+            "quality",
+            "value"
+          ],
+          "title": "unknown",
+          "type": "object"
+        }
+      ],
+      "title": "Reading",
+      "x-ess-kind": "union",
+      "x-ess-name": "thalamus.observation.Reading",
+      "x-ess-union-tag": "quality"
+    },
+    "thalamus.observation.RunId": {
+      "description": "Groups the samples of one sampling pass.",
+      "pattern": "^run_",
+      "title": "RunId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.observation.RunId"
+    },
+    "thalamus.observation.SampleId": {
+      "description": "A sample id, minted by the producer.",
+      "pattern": "^smp_",
+      "title": "SampleId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.observation.SampleId"
+    },
+    "thalamus.observation.SampleRecorded": {
+      "additionalProperties": false,
+      "properties": {
+        "sample_id": {
+          "$ref": "#/$defs/thalamus.observation.SampleId"
+        },
+        "series": {
+          "$ref": "#/$defs/thalamus.observation.SeriesKey"
+        },
+        "signal": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        },
+        "ts": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sample_id",
+        "signal",
+        "series",
+        "ts"
+      ],
+      "title": "SampleRecorded",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.observation.SampleRecorded"
+    },
+    "thalamus.observation.SeriesKey": {
+      "description": "One series, a signal id together with its dims values.",
+      "title": "SeriesKey",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.observation.SeriesKey"
+    },
+    "thalamus.observation.SignalSample.State": {
+      "enum": [
+        "Recorded"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.observation.SignalSample.State"
+    },
+    "thalamus.observation.TimeWindow": {
+      "additionalProperties": false,
+      "description": "The span a reading covers.",
+      "properties": {
+        "end": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "start": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TimeWindow",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.observation.TimeWindow"
+    },
+    "thalamus.observation.UnreadReading": {
+      "additionalProperties": false,
+      "description": "Not read. Carries no value at all, so unknown can never become 0.",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "UnreadReading",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.observation.UnreadReading"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-ess-provenance": {
+    "contract_digest": "slice-sha256/2:2b3f65e8381091d91197d0d39a7c73f45a7e00a3fa6e0f23ffdb2366d3929d82",
+    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "specification_version": "v1",
+    "system": "thalamus"
+  }
+}

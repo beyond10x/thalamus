@@ -1,0 +1,1656 @@
+{
+  "format": "ess-types-report/3",
+  "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+  "input": {
+    "kind": "model",
+    "system": "thalamus",
+    "specification_version": "v1",
+    "contract_digest": "slice-sha256/2:2b3f65e8381091d91197d0d39a7c73f45a7e00a3fa6e0f23ffdb2366d3929d82",
+    "projection_digest": "33d798be08cf35aa95c35180378b80c19708721ea387361fb19dfe9c1608f10c"
+  },
+  "generator_version": "0.59.0",
+  "target": "rust",
+  "configuration": {
+    "language": "rust",
+    "package": "thalamus-spec-types"
+  },
+  "roots": [
+    "thalamus.assertion.Asker",
+    "thalamus.assertion.AskerKind",
+    "thalamus.assertion.Assertion.State",
+    "thalamus.assertion.AssertionAnswered",
+    "thalamus.assertion.AssertionAsked",
+    "thalamus.assertion.AssertionId",
+    "thalamus.assertion.AssertionResult",
+    "thalamus.assertion.Within",
+    "thalamus.definition.AdapterId",
+    "thalamus.definition.Author",
+    "thalamus.definition.BaselineKind",
+    "thalamus.definition.ConnectionId",
+    "thalamus.definition.DefinitionActivated",
+    "thalamus.definition.DefinitionMuted",
+    "thalamus.definition.DefinitionProposed",
+    "thalamus.definition.DefinitionRetired",
+    "thalamus.definition.DefinitionRevised",
+    "thalamus.definition.DefinitionUnmuted",
+    "thalamus.definition.DenominatorSpec",
+    "thalamus.definition.EvaluationSpec",
+    "thalamus.definition.ExtractorId",
+    "thalamus.definition.Family",
+    "thalamus.definition.History",
+    "thalamus.definition.Links",
+    "thalamus.definition.Owner",
+    "thalamus.definition.QueryText",
+    "thalamus.definition.RuleId",
+    "thalamus.definition.SignalDefinition.State",
+    "thalamus.definition.SignalId",
+    "thalamus.definition.SignalKind",
+    "thalamus.definition.Source",
+    "thalamus.definition.Threshold",
+    "thalamus.definition.Unit",
+    "thalamus.dimension.Dimension.State",
+    "thalamus.dimension.DimensionKey",
+    "thalamus.dimension.DimensionRegistered",
+    "thalamus.dimension.DimensionRegistry.State",
+    "thalamus.dimension.DimensionRule",
+    "thalamus.dimension.DimensionValue",
+    "thalamus.dimension.Locator",
+    "thalamus.dimension.RegistryDeclared",
+    "thalamus.dimension.RegistryId",
+    "thalamus.dimension.ValueSource",
+    "thalamus.evaluation.Baseline",
+    "thalamus.evaluation.BaselineLabel",
+    "thalamus.evaluation.EvaluationId",
+    "thalamus.evaluation.EvaluationRecorded",
+    "thalamus.evaluation.SignalEvaluation.State",
+    "thalamus.evaluation.Verdict",
+    "thalamus.observation.Bound",
+    "thalamus.observation.CompleteReading",
+    "thalamus.observation.Denominator",
+    "thalamus.observation.PartialReading",
+    "thalamus.observation.Provenance",
+    "thalamus.observation.QueryDigest",
+    "thalamus.observation.Reading",
+    "thalamus.observation.RunId",
+    "thalamus.observation.SampleId",
+    "thalamus.observation.SampleRecorded",
+    "thalamus.observation.SeriesKey",
+    "thalamus.observation.SignalSample.State",
+    "thalamus.observation.TimeWindow",
+    "thalamus.observation.UnreadReading"
+  ],
+  "declarations": {
+    "thalamus.assertion.Asker": "ThalamusAssertionAsker",
+    "thalamus.assertion.AskerKind": "ThalamusAssertionAskerKind",
+    "thalamus.assertion.Assertion.State": "ThalamusAssertionAssertionState",
+    "thalamus.assertion.AssertionAnswered": "ThalamusAssertionAssertionAnswered",
+    "thalamus.assertion.AssertionAsked": "ThalamusAssertionAssertionAsked",
+    "thalamus.assertion.AssertionId": "ThalamusAssertionAssertionId",
+    "thalamus.assertion.AssertionResult": "ThalamusAssertionAssertionResult",
+    "thalamus.assertion.Within": "ThalamusAssertionWithin",
+    "thalamus.definition.AdapterId": "ThalamusDefinitionAdapterId",
+    "thalamus.definition.Author": "ThalamusDefinitionAuthor",
+    "thalamus.definition.BaselineKind": "ThalamusDefinitionBaselineKind",
+    "thalamus.definition.ConnectionId": "ThalamusDefinitionConnectionId",
+    "thalamus.definition.DefinitionActivated": "ThalamusDefinitionDefinitionActivated",
+    "thalamus.definition.DefinitionMuted": "ThalamusDefinitionDefinitionMuted",
+    "thalamus.definition.DefinitionProposed": "ThalamusDefinitionDefinitionProposed",
+    "thalamus.definition.DefinitionRetired": "ThalamusDefinitionDefinitionRetired",
+    "thalamus.definition.DefinitionRevised": "ThalamusDefinitionDefinitionRevised",
+    "thalamus.definition.DefinitionUnmuted": "ThalamusDefinitionDefinitionUnmuted",
+    "thalamus.definition.DenominatorSpec": "ThalamusDefinitionDenominatorSpec",
+    "thalamus.definition.EvaluationSpec": "ThalamusDefinitionEvaluationSpec",
+    "thalamus.definition.ExtractorId": "ThalamusDefinitionExtractorId",
+    "thalamus.definition.Family": "ThalamusDefinitionFamily",
+    "thalamus.definition.History": "ThalamusDefinitionHistory",
+    "thalamus.definition.Links": "ThalamusDefinitionLinks",
+    "thalamus.definition.Owner": "ThalamusDefinitionOwner",
+    "thalamus.definition.QueryText": "ThalamusDefinitionQueryText",
+    "thalamus.definition.RuleId": "ThalamusDefinitionRuleId",
+    "thalamus.definition.SignalDefinition.State": "ThalamusDefinitionSignalDefinitionState",
+    "thalamus.definition.SignalId": "ThalamusDefinitionSignalId",
+    "thalamus.definition.SignalKind": "ThalamusDefinitionSignalKind",
+    "thalamus.definition.Source": "ThalamusDefinitionSource",
+    "thalamus.definition.Threshold": "ThalamusDefinitionThreshold",
+    "thalamus.definition.Unit": "ThalamusDefinitionUnit",
+    "thalamus.dimension.Dimension.State": "ThalamusDimensionDimensionState",
+    "thalamus.dimension.DimensionKey": "ThalamusDimensionDimensionKey",
+    "thalamus.dimension.DimensionRegistered": "ThalamusDimensionDimensionRegistered",
+    "thalamus.dimension.DimensionRegistry.State": "ThalamusDimensionDimensionRegistryState",
+    "thalamus.dimension.DimensionRule": "ThalamusDimensionDimensionRule",
+    "thalamus.dimension.DimensionValue": "ThalamusDimensionDimensionValue",
+    "thalamus.dimension.Locator": "ThalamusDimensionLocator",
+    "thalamus.dimension.RegistryDeclared": "ThalamusDimensionRegistryDeclared",
+    "thalamus.dimension.RegistryId": "ThalamusDimensionRegistryId",
+    "thalamus.dimension.ValueSource": "ThalamusDimensionValueSource",
+    "thalamus.evaluation.Baseline": "ThalamusEvaluationBaseline",
+    "thalamus.evaluation.BaselineLabel": "ThalamusEvaluationBaselineLabel",
+    "thalamus.evaluation.EvaluationId": "ThalamusEvaluationEvaluationId",
+    "thalamus.evaluation.EvaluationRecorded": "ThalamusEvaluationEvaluationRecorded",
+    "thalamus.evaluation.SignalEvaluation.State": "ThalamusEvaluationSignalEvaluationState",
+    "thalamus.evaluation.Verdict": "ThalamusEvaluationVerdict",
+    "thalamus.observation.Bound": "ThalamusObservationBound",
+    "thalamus.observation.CompleteReading": "ThalamusObservationCompleteReading",
+    "thalamus.observation.Denominator": "ThalamusObservationDenominator",
+    "thalamus.observation.PartialReading": "ThalamusObservationPartialReading",
+    "thalamus.observation.Provenance": "ThalamusObservationProvenance",
+    "thalamus.observation.QueryDigest": "ThalamusObservationQueryDigest",
+    "thalamus.observation.Reading": "ThalamusObservationReading",
+    "thalamus.observation.RunId": "ThalamusObservationRunId",
+    "thalamus.observation.SampleId": "ThalamusObservationSampleId",
+    "thalamus.observation.SampleRecorded": "ThalamusObservationSampleRecorded",
+    "thalamus.observation.SeriesKey": "ThalamusObservationSeriesKey",
+    "thalamus.observation.SignalSample.State": "ThalamusObservationSignalSampleState",
+    "thalamus.observation.TimeWindow": "ThalamusObservationTimeWindow",
+    "thalamus.observation.UnreadReading": "ThalamusObservationUnreadReading"
+  },
+  "annotations": [
+    {
+      "pointer": "/$defs/thalamus.assertion.Asker/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Asker/properties/ref/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Asker/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Asker/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Asker/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AskerKind/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AskerKind/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AskerKind/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AskerKind/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Assertion.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Assertion.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Assertion.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionAnswered/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionAnswered/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionAnswered/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionAsked/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionAsked/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionAsked/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionResult/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionResult/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionResult/x-ess-attributes",
+      "rule": "x-ess-attributes",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionResult/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionResult/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Within/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Within/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Within/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.assertion.Within/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.AdapterId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.AdapterId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.AdapterId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.AdapterId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Author/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Author/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Author/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Author/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.BaselineKind/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.BaselineKind/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.BaselineKind/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.BaselineKind/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ConnectionId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ConnectionId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ConnectionId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ConnectionId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionActivated/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionActivated/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionActivated/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionMuted/properties/until/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionMuted/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionMuted/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionMuted/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionProposed/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionProposed/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionProposed/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRetired/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRetired/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRetired/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRevised/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRevised/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRevised/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionUnmuted/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionUnmuted/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionUnmuted/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/properties/min_n/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/properties/since/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/min_trend_window/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/min_trend_window/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ExtractorId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ExtractorId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ExtractorId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ExtractorId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Family/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Family/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Family/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Family/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.History/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.History/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.History/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.History/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Links/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Links/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Links/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Links/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Owner/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Owner/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Owner/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Owner/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.QueryText/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.QueryText/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.QueryText/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.QueryText/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.RuleId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.RuleId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.RuleId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.RuleId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalDefinition.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalDefinition.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalDefinition.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalKind/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalKind/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalKind/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalKind/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Source/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Source/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Source/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Source/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/abs/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/abs/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/min_events/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/x/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/x/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Unit/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Unit/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Unit/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Unit/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.Dimension.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.Dimension.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.Dimension.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionKey/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionKey/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionKey/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionKey/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRegistered/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRegistered/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRegistered/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRegistry.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRegistry.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRegistry.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRule/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRule/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRule/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionRule/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionValue/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionValue/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionValue/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionValue/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.Locator/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.Locator/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.Locator/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.Locator/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryDeclared/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryDeclared/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryDeclared/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/oneOf/0/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/oneOf/1/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/oneOf/2/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource/x-ess-union-tag",
+      "rule": "x-ess-union-tag",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Baseline/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Baseline/properties/offsets/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Baseline/properties/reading/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Baseline/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Baseline/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Baseline/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.BaselineLabel/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.BaselineLabel/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.BaselineLabel/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.BaselineLabel/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationRecorded/properties/ts/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationRecorded/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationRecorded/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationRecorded/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.SignalEvaluation.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.SignalEvaluation.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.SignalEvaluation.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Verdict/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Verdict/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Verdict/x-ess-attributes",
+      "rule": "x-ess-attributes",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Verdict/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.Verdict/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Bound/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Bound/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Bound/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Bound/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.CompleteReading/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.CompleteReading/properties/value/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.CompleteReading/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.CompleteReading/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.CompleteReading/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/age_s/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/n/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/since/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/since/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.PartialReading/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.PartialReading/properties/value/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.PartialReading/properties/value/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.PartialReading/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.PartialReading/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.PartialReading/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Provenance/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Provenance/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Provenance/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Provenance/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.QueryDigest/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.QueryDigest/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.QueryDigest/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.QueryDigest/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/oneOf/0/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/oneOf/1/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/oneOf/2/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading/x-ess-union-tag",
+      "rule": "x-ess-union-tag",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.RunId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.RunId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.RunId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.RunId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleRecorded/properties/ts/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleRecorded/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleRecorded/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleRecorded/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SeriesKey/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SeriesKey/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SeriesKey/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SeriesKey/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SignalSample.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SignalSample.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SignalSample.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.TimeWindow/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.TimeWindow/properties/end/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.TimeWindow/properties/start/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.TimeWindow/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.TimeWindow/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.TimeWindow/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.UnreadReading/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.UnreadReading/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.UnreadReading/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.UnreadReading/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    }
+  ],
+  "obligations": [
+    {
+      "pointer": "/$defs/thalamus.assertion.AssertionId/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.AdapterId/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.ConnectionId/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRevised/properties/previous_rev",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DefinitionRevised/properties/previous_rev",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/properties/min_n",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.DenominatorSpec/properties/min_n",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Family/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.SignalId/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/abs/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/min_events",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/min_events",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Threshold/properties/x/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Unit/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.DimensionKey/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.RegistryId/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource",
+      "rule": "oneOf",
+      "detail": "validate exclusive branch membership against the source schema"
+    },
+    {
+      "pointer": "/$defs/thalamus.dimension.ValueSource",
+      "rule": "untagged_selection",
+      "detail": "native union decoding chooses the first structurally decodable alternative; it does not certify source branch constraints or external dispatch"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.BaselineLabel/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.evaluation.EvaluationId/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.CompleteReading/properties/value/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/age_s",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/age_s",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/n",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Denominator/properties/n",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.PartialReading/properties/value/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Provenance/properties/definition_rev",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Provenance/properties/definition_rev",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.QueryDigest/x-ess-alphabet",
+      "rule": "model_alphabet",
+      "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading",
+      "rule": "oneOf",
+      "detail": "validate exclusive branch membership against the source schema"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.Reading",
+      "rule": "untagged_selection",
+      "detail": "native union decoding chooses the first structurally decodable alternative; it does not certify source branch constraints or external dispatch"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.RunId/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.observation.SampleId/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    }
+  ]
+}

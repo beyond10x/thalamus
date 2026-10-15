@@ -14,18 +14,30 @@ history, assertions and events. Cortex is its long-term memory; conductor is its
 | `docs/design/` | the design; read it before planning or code |
 | `.engineering/` | the AEP planning store |
 | `assets/` | the logo |
+| `spec/` | the ESS specification, the source of truth for the model |
+| `generated/` | code and the conformance suite generated from `spec/`; never edited by hand |
+| `crates/` | the Cargo workspace |
 
-Planned (design § 5.1): `spec/` (ESS specification), `generated/` (never edited by hand) and the
-crates `thalamus-model`, `thalamus-core`, `thalamus-store`, `thalamus-sources`, `thalamus-service`
-and `thalamus`.
+Crates (design § 5.1): `thalamus-core`, `thalamus-store`, `thalamus-sources`, `thalamus-pipeline`,
+`thalamus-service` and `thalamus-cli` (binary `thalamus`), over the generated `thalamus-model`.
 
 ## Commands
 
 | command | does |
 |---|---|
+| `task check` | the gate: spec validity, generated-code drift, fmt, clippy (`-D warnings`), every test |
+| `task generate` | regenerate `generated/` and `spec/suite.json` from `spec/` |
+| `task drift` | fail when `generated/` or `spec/suite.json` differ from what `spec/` generates |
+| `task build`, `task test` | release build; every test of the workspace |
 | `aep plan artifact validate` | validate the planning store |
 
-`task check` arrives with the first crate (`Taskfile.yml`, go-task).
+- Every cargo call is `--locked`; `Cargo.lock` is committed.
+- Format with `cargo fmt -p <crate>`. `cargo fmt --all` also formats the generated crates, which
+  are path dependencies, and rewrites them.
+- A story that implements a `thalamus` subcommand removes it from `STUBS` in
+  `crates/thalamus-cli/tests/adv_stub_exit.rs`, which holds every stub to exit 70.
+- `thalamus-core` dev-depends on itself with feature `conformance`, so its integration tests and
+  the clippy step compile `thalamus_core::conformance`.
 
 ## Order of work
 

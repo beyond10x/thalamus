@@ -1,0 +1,15 @@
+[package]
+name = "thalamus-store"
+description = "The append-only sample stream, evaluations and rollups behind one trait."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+thalamus-core = { path = "../thalamus-core" }
+thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
+thalamus-spec-types = { path = "../../generated/spec-types" }
+
+[lints]
+workspace = true

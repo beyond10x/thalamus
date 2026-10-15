@@ -1,0 +1,19 @@
+[package]
+name = "thalamus-sources"
+description = "Adapters that turn a Connectors operation into samples."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "connectors-double"
+path = "src/bin/connectors-double.rs"
+
+[dependencies]
+thalamus-core = { path = "../thalamus-core" }
+thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
+thalamus-spec-types = { path = "../../generated/spec-types" }
+
+[lints]
+workspace = true

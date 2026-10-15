@@ -1,0 +1,20 @@
+[package]
+name = "thalamus-core"
+description = "Definitions, baselines, the verdict ladder, hysteresis and rollups; no I/O and no clock."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+conformance = []
+
+[dependencies]
+thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
+thalamus-spec-types = { path = "../../generated/spec-types" }
+
+[dev-dependencies]
+thalamus-core = { path = ".", features = ["conformance"] }
+
+[lints]
+workspace = true

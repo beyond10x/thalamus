@@ -235,12 +235,14 @@ measured one.
 
 | crate | kind | holds |
 |---|---|---|
-| `thalamus-model` | library, generated | the types ESS synthesises from `spec/`; never edited by hand |
+| `thalamus-model` | library, generated | the types and behaviours ESS synthesises from `spec/` into `generated/thalamus-model`; never edited by hand. ESS names the package `thalamus`; the workspace depends on it renamed `thalamus-model` |
+| `thalamus-spec-types` | library, generated | the serde types of every model type and event (`generated/spec-types`); never edited by hand |
 | `thalamus-core` | library | definition registry and validation, baselines, the verdict ladder, hysteresis, score, rollups. No I/O, no clock: time and samples are passed in |
 | `thalamus-store` | library | the append-only sample stream and rollups behind one trait. First provider: Eventlog (File, SQLite, PostgreSQL) |
 | `thalamus-sources` | library | adapters that turn a Connectors operation into samples: Prometheus/PromQL, Loki/LogQL, SQL, Kubernetes, Git, HTTP probe, test-run events |
+| `thalamus-pipeline` | library | the read → sample → grade → evaluate pass the CLI and the service share |
 | `thalamus-service` | binary | the scheduler that samples each definition on its cadence, the HTTP API (current verdicts, series, assertions), a server-sent-events stream of evaluations, and the CloudEvents emitter |
-| `thalamus` | binary (clap derive) | `define validate`, `sample`, `eval`, `show`, `compare --vs 7d`, `assert`, `rollup`, `view` |
+| `thalamus-cli` | binary `thalamus` (clap derive) | `define validate`, `sample`, `eval`, `show`, `compare --vs 7d`, `assert`, `rollup`, `view` |
 
 `thalamus-core` stays pure so the same code grades a live sample, re-grades history after a
 threshold change, and runs in a test without a source.

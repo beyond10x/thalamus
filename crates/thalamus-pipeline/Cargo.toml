@@ -1,0 +1,17 @@
+[package]
+name = "thalamus-pipeline"
+description = "The read, sample, grade and evaluate pass shared by the CLI and the service."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+thalamus-core = { path = "../thalamus-core" }
+thalamus-store = { path = "../thalamus-store" }
+thalamus-sources = { path = "../thalamus-sources" }
+thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
+thalamus-spec-types = { path = "../../generated/spec-types" }
+
+[lints]
+workspace = true

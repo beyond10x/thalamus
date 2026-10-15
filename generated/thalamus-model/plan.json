@@ -1,0 +1,1062 @@
+{
+  "provenance": {
+    "system": "thalamus",
+    "specification_version": "v1",
+    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "contract_digest": "6426f4dedf49a1f3f982631528ebb33f128fbda5cbdbc34328b8d2e7a2b2c736"
+  },
+  "scope": {
+    "profile": "component-skeletons",
+    "layout": "crate"
+  },
+  "capabilities": [
+    {
+      "kind": "domain_type",
+      "source": "thalamus.assertion.Asker",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.assertion.AskerKind",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.assertion.Assertion.State",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.assertion.AssertionId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.assertion.AssertionResult",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.assertion.Within",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.AdapterId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.Author",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.BaselineKind",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.ConnectionId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.DenominatorSpec",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.EvaluationSpec",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.ExtractorId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.Family",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.History",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.Links",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.Owner",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.QueryText",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.RuleId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.SignalDefinition.State",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.SignalId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.SignalKind",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.Source",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.Threshold",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.definition.Unit",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.Dimension.State",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.DimensionKey",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.DimensionRegistry.State",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.DimensionRule",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.DimensionValue",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.Locator",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.RegistryId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.dimension.ValueSource",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.evaluation.Baseline",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.evaluation.BaselineLabel",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.evaluation.EvaluationId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.evaluation.SignalEvaluation.State",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.evaluation.Verdict",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.Bound",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.CompleteReading",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.Denominator",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.PartialReading",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.Provenance",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.QueryDigest",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.Reading",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.RunId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.SampleId",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.SeriesKey",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.SignalSample.State",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.TimeWindow",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "domain_type",
+      "source": "thalamus.observation.UnreadReading",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "entity_lifecycle",
+      "source": "thalamus.assertion.Assertion",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "entity_lifecycle",
+      "source": "thalamus.definition.SignalDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "entity_lifecycle",
+      "source": "thalamus.dimension.Dimension",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "entity_lifecycle",
+      "source": "thalamus.dimension.DimensionRegistry",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "entity_lifecycle",
+      "source": "thalamus.evaluation.SignalEvaluation",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "entity_lifecycle",
+      "source": "thalamus.observation.SignalSample",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.assertion.AnswerAssertion",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.assertion.AnswerAssertion",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.assertion.AskAssertion",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.assertion.AskAssertion",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "a typed response (`response:`)"
+        },
+        "contract": "given `thalamus.assertion.AskAssertion` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `no-signals` when `signals.count == 0`, error `thalamus.assertion.NoSignals`; `asked` otherwise, creates `thalamus.assertion.Assertion`, emits `thalamus.assertion.AssertionAsked`"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.definition.ActivateDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.definition.ActivateDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.definition.MuteDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.definition.MuteDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.definition.ProposeDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.definition.ProposeDefinition",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed`"
+        },
+        "contract": "given `thalamus.definition.ProposeDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `proposed` otherwise, creates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionProposed`; `already-defined` for an identity a record already carries, error `thalamus.definition.DefinitionExists`"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.definition.RetireDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.definition.RetireDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.definition.ReviseDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.definition.ReviseDefinition",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed`"
+        },
+        "contract": "given `thalamus.definition.ReviseDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `retired` when the existing subject's stored fields satisfy `state == Retired`, error `thalamus.definition.RetiredDefinition`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `revised` otherwise, updates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionRevised`; `no-such-definition` for an identity no record carries, error `thalamus.definition.UnknownDefinition`"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.definition.UnmuteDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.definition.UnmuteDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.dimension.DeclareRegistry",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.dimension.DeclareRegistry",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.dimension.RegisterDimension",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.dimension.RegisterDimension",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "`when_related:` reading several related rows in one command (beyond10x/ess#283)"
+        },
+        "contract": "given `thalamus.dimension.RegisterDimension` input, decide and enact exactly one outcome. Selection precedence: on commands with `when_related:`, check `existing_instance` then `exists: false` (read the related rows in the declaration order of their `exists: false` branches, and the first missing one answers) before input-guarded refusals; choose the first declared input refusal whose guard holds; then check addressed-row existence (`unknown_instance`, and `existing_instance` on commands without `when_related:`); then the held state (`when_subject_state` and `when_subject`), with `wrong_state` only if the selected branch moves from a state the row does not hold; then choose the first declared present `when_related:` predicate refusal whose predicate and optional input guard hold, across rows; then accepting and external branches in declaration order. An accepting branch that moves nothing answers in every state. Related-presence predicates do not precede input-guarded refusals. Declared outcomes (declaration order, not selection precedence): `no-registry` when no `thalamus.dimension.DimensionRegistry` carries the identity `input.registry_id` names, error `thalamus.dimension.UnknownRegistry`; `no-parent` when no `thalamus.dimension.Dimension` carries the identity `input.parent` names, error `thalamus.dimension.UnknownParent`; `registered` otherwise, creates `thalamus.dimension.Dimension`, emits `thalamus.dimension.DimensionRegistered`; `already-registered` for an identity a record already carries, error `thalamus.dimension.DimensionExists`"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.evaluation.RecordEvaluation",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.evaluation.RecordEvaluation",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "a typed response (`response:`)"
+        },
+        "contract": "given `thalamus.evaluation.RecordEvaluation` input, decide and enact exactly one outcome. Selection precedence: on commands with `when_related:`, check `existing_instance` then `exists: false` before input-guarded refusals; choose the first declared input refusal whose guard holds; then check addressed-row existence (`unknown_instance`, and `existing_instance` on commands without `when_related:`); then the held state (`when_subject_state` and `when_subject`), with `wrong_state` only if the selected branch moves from a state the row does not hold; then accepting and external branches in declaration order. An accepting branch that moves nothing answers in every state. Related-presence predicates do not precede input-guarded refusals. Declared outcomes (declaration order, not selection precedence): `unknown-sample` when no `thalamus.observation.SignalSample` carries the identity `input.sample_id` names, error `thalamus.evaluation.UnknownSample`; `reason-missing` when `(verdict != OK and not (defined(reason)))`, error `thalamus.evaluation.ReasonRequired`; `score-not-admitted` when `(verdict in [N_A, UNKNOWN] and defined(score))`, error `thalamus.evaluation.ScoreNotAdmitted`; `recorded` otherwise, creates `thalamus.evaluation.SignalEvaluation`, emits `thalamus.evaluation.EvaluationRecorded`"
+      }
+    },
+    {
+      "kind": "command_contract",
+      "source": "thalamus.observation.RecordSample",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "command_behavior",
+      "source": "thalamus.observation.RecordSample",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "a typed response (`response:`)"
+        },
+        "contract": "given `thalamus.observation.RecordSample` input, decide and enact exactly one outcome. Selection precedence: on commands with `when_related:`, check `existing_instance` then `exists: false` before input-guarded refusals; choose the first declared input refusal whose guard holds; then check addressed-row existence (`unknown_instance`, and `existing_instance` on commands without `when_related:`); then the held state (`when_subject_state` and `when_subject`), with `wrong_state` only if the selected branch moves from a state the row does not hold; then accepting and external branches in declaration order. An accepting branch that moves nothing answers in every state. Related-presence predicates do not precede input-guarded refusals. Declared outcomes (declaration order, not selection precedence): `unknown-signal` when no `thalamus.definition.SignalDefinition` carries the identity `input.signal` names, error `thalamus.observation.UnknownSignal`; `not-active` when the `thalamus.definition.SignalDefinition` that `input.signal` names satisfies `state != Active`, error `thalamus.observation.SignalNotActive`; `recorded` otherwise, creates `thalamus.observation.SignalSample`, emits `thalamus.observation.SampleRecorded`"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.assertion.AssertionAnswered",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.assertion.AssertionAsked",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.definition.DefinitionActivated",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.definition.DefinitionMuted",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.definition.DefinitionProposed",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.definition.DefinitionRetired",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.definition.DefinitionRevised",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.definition.DefinitionUnmuted",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.dimension.DimensionRegistered",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.dimension.RegistryDeclared",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.evaluation.EvaluationRecorded",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "event_type",
+      "source": "thalamus.observation.SampleRecorded",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.assertion.AssertionStateConflict",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.assertion.NoSignals",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.assertion.ReasonRequired",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.assertion.ResultContradictsVerdict",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.assertion.UnknownAssertion",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.definition.DefinitionExists",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.definition.DefinitionStateConflict",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.definition.IncompleteDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.definition.InstantNeedsFixedBaseline",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.definition.MuteExpiryPassed",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.definition.RetiredDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.definition.UnknownDefinition",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.dimension.DimensionExists",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.dimension.RegistryExists",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.dimension.UnknownParent",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.dimension.UnknownRegistry",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.evaluation.ReasonRequired",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.evaluation.ScoreNotAdmitted",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.evaluation.UnknownSample",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.observation.SignalNotActive",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "error_type",
+      "source": "thalamus.observation.UnknownSignal",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.assertion.Assertions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.assertion.Assertions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.assertion.OpenAssertions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.assertion.OpenAssertions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.definition.ActiveDefinitions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.definition.ActiveDefinitions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.definition.Definitions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.definition.Definitions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.dimension.Dimensions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.dimension.Dimensions",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.dimension.Registries",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.dimension.Registries",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.evaluation.Evaluations",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.evaluation.Evaluations",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.evaluation.SeriesVerdicts",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.evaluation.SeriesVerdicts",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "a view parameter (`params:`), which a generated query does not apply"
+        },
+        "contract": "a query answering `thalamus.evaluation.SeriesVerdicts` with rows projected from `thalamus.evaluation.SignalEvaluation` at `read_your_writes` consistency, containing instances where `series == param.series`"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.evaluation.VerdictChanges",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.evaluation.VerdictChanges",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.observation.Samples",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.observation.Samples",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_type",
+      "source": "thalamus.observation.SeriesSamples",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "view_query",
+      "source": "thalamus.observation.SeriesSamples",
+      "disposition": {
+        "disposition": "obligation",
+        "reason": {
+          "class": "undetermined",
+          "construct": "a view parameter (`params:`), which a generated query does not apply"
+        },
+        "contract": "a query answering `thalamus.observation.SeriesSamples` with rows projected from `thalamus.observation.SignalSample` at `read_your_writes` consistency, containing instances where `series == param.series`"
+      }
+    },
+    {
+      "kind": "actor_grants",
+      "source": "thalamus.assertion.Answerer",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "actor_grants",
+      "source": "thalamus.assertion.Caller",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "actor_grants",
+      "source": "thalamus.definition.InstanceOperator",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "actor_grants",
+      "source": "thalamus.dimension.InstanceOperator",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "actor_grants",
+      "source": "thalamus.evaluation.Grader",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "actor_grants",
+      "source": "thalamus.observation.Sampler",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "component_port",
+      "source": "thalamus-service",
+      "disposition": {
+        "disposition": "generated"
+      }
+    },
+    {
+      "kind": "component_transport",
+      "source": "thalamus-service",
+      "disposition": {
+        "disposition": "generated"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/thalamus-core",
+    "crates/thalamus-store",
+    "crates/thalamus-sources",
+    "crates/thalamus-pipeline",
+    "crates/thalamus-service",
+    "crates/thalamus-cli",
+]
+exclude = ["generated/thalamus-model", "generated/spec-types"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
