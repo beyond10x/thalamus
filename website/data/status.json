@@ -60,10 +60,10 @@
     },
     {
       "area": "Grading",
-      "detail": "A baseline older than its series is UNKNOWN. Planned in story:m1-baselines.",
+      "detail": "A baseline older than its series is UNKNOWN.",
       "href": "/docs/concepts/baselines",
       "label": "Offset, pooled, higher-of, lower-of and fixed baselines",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Grading",
@@ -116,10 +116,10 @@
     },
     {
       "area": "Sources",
-      "detail": "With the adapter trait every source implements and a recorded double for tests. Planned in story:m1-connectors-client.",
+      "detail": "With the adapter trait every source implements and a recorded double for tests.",
       "href": "/docs/concepts/signals#sources",
       "label": "One read-only Connectors client for every source",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",
