@@ -158,10 +158,10 @@
     },
     {
       "area": "Sources",
-      "detail": "The availability of one Connectors read operation. Planned in story:m3-http-probe-adapter.",
+      "detail": "The availability of one Connectors read operation.",
       "href": "/docs/concepts/signals#sources",
       "label": "HTTP probe",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",

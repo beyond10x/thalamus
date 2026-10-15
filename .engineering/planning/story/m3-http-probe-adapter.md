@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-http-probe-adapter
 kind: story
-status: active
+status: implemented
 title: An HTTP probe samples the availability of one Connectors read operation
 relations:
 - decomposes: epic:source-adapters
@@ -15,10 +15,11 @@ scope:
   path: crates/thalamus-sources/tests/fixtures/http_probe
 - confidence: inferred
   path: crates/thalamus-sources/tests/http_probe.rs
-revision: 6
+revision: 8
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T06:14:41Z", actor: "human:timo", revision: 4}
 - {from: "proposed", to: "active", at: "2026-10-15T06:14:42Z", actor: "human:timo", revision: 5}
+- {from: "active", to: "implemented", at: "2026-10-15T08:20:44Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Context
 
@@ -62,3 +63,7 @@ Probe latency and arbitrary-URL probes (no Connectors operation).
 
 - Scope: a probe names its operation per definition, so `adapter.rs` gains `Adapter::operations_for(definition)` (defaults to `read_operations`) and `registry.rs` calls it; `connectors.rs` keeps the Connectors `service_code` on a refusal, because on the v0.45.0 wire a 404 and `rate_limited` both arrive as `service_failure` at `dispatch`.
 - Behaviour: design § 11 D21 replaces "a provider-stage error is 0". Down (0) is a `not_found` or `timeout` refusal of the probe's own invoke at `dispatch`; a provider 5xx, 401 and 403 read unknown. `probe_provider_unavailable_is_up_0_with_reason` records a 404 and a dispatch timeout.
+
+## Correction 2 (2026-10-15, from the adversary passes)
+
+- A probe invokes only a catalog read: the `operations describe` answer must name profile `generic-http`, and the invoke pins the revision of the description it checked. `connectors.rs` gains `ReadClient::invoke_if` and `ConnectorsError::NotAdmitted`; every other adapter goes through `invoke` unchanged. Design § 11 D21 says so.

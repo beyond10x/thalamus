@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-git-adapter
 kind: story
-status: active
+status: implemented
 title: GitLab-hosted repository records become count and ratio samples
 relations:
 - decomposes: epic:source-adapters
@@ -15,10 +15,11 @@ scope:
   path: crates/thalamus-sources/tests/fixtures/git
 - confidence: inferred
   path: crates/thalamus-sources/tests/git.rs
-revision: 5
+revision: 6
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T05:44:44Z", actor: "human:timo", revision: 4}
 - {from: "proposed", to: "active", at: "2026-10-15T05:44:44Z", actor: "human:timo", revision: 5}
+- {from: "active", to: "implemented", at: "2026-10-15T06:54:17Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"test_result":1,"review_outcome":3}}}
 ---
 ## Context
 

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T06:54:16Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-git-adapter",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main 03f2e37"
+  }
+}

@@ -249,11 +249,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#sources",
     ),
-    planned(
+    shipped(
         "Sources",
         "HTTP probe",
         "The availability of one Connectors read operation.",
-        "story:m3-http-probe-adapter",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/http_probe.rs::probe_provider_unavailable_is_up_0_with_reason",
+        ),
         "/docs/concepts/signals#sources",
     ),
     planned(
