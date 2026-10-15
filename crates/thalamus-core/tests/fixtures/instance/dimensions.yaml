@@ -1,0 +1,7 @@
+registry_id: example
+title: Example instance
+dimensions:
+  component: { registry: file:registries/components.yaml, otel_attribute: service.name }
+  environment: { registry: file:registries/environments.yaml }
+  endpoint: { registry: open, parent: component, rule: source_only }
+  suite: { registry: open }

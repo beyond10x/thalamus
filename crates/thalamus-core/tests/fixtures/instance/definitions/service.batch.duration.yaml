@@ -1,0 +1,18 @@
+id: service.batch.duration
+title: Seconds the nightly batch ran
+family: service
+kind: gauge
+source: { adapter: sql, connection: batch-replica }
+extractor: sql.value
+query: { value: "select duration_s from batch_runs order by finished_at desc limit 1" }
+window: 1d
+cadence: 1d
+history: store
+evaluation:
+  rule: threshold
+  baselines: [offset_1d]
+links: { components: [batch], issues: [] }
+lifecycle: proposed
+rev: 1
+revised_at: 2026-10-03T00:00:00Z
+revised_by: operator

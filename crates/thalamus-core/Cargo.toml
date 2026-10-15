@@ -12,6 +12,8 @@ conformance = ["thalamus-model/server"]
 [dependencies]
 thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
 thalamus-spec-types = { path = "../../generated/spec-types" }
+serde = { version = "1", features = ["derive"] }
+serde_yaml_ng = "0.10"
 time = { version = "=0.3.45", features = ["formatting", "parsing"] }
 
 [dev-dependencies]
