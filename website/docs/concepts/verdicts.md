@@ -86,16 +86,28 @@ never `OK`.
 
 ## Persistence
 
-A verdict change counts as a **transition** only after `k` consecutive evaluations agree (`k_crit`
-for `CRIT`), and a `WARN` clears after `m` consecutive `OK` evaluations. This is Prometheus' `for:`
+A verdict change counts as a **transition** only after `k` consecutive samples agree (`k_crit`
+for `CRIT`), and a `WARN` clears after `m` consecutive `OK` samples. This is Prometheus' `for:`
 applied to every source; without it a flapping signal opens and closes a downstream flag on every
-pass. `k`, `k_crit` and `m` live on the definition, with defaults 2, 1 and 3. The defaults are a
-starting point: flap rates are to be measured over stored evaluations (`thalamus flaps`, planned)
-before they are fixed per family.
+pass. Only `OK` clears a settled `WARN` or `CRIT`: a run of `N/A` or `UNKNOWN` never does. The count
+is of consecutive samples, not of time, and any differing verdict breaks a run. `k`, `k_crit` and
+`m` live on the definition as `persistence: {k, k_crit, m}`, all three or none, with defaults 2, 1
+and 3. The defaults are a starting point: flap rates are to be measured over stored evaluations
+(`thalamus flaps`, planned) before they are fixed per family.
 
-A transition is its own record: it references the `k` evaluations that settled it and copies the
-series, the definition revision, the verdicts it moved between, and the first and settling
-timestamps and score. It outlives raw retention.
+Each series keeps its newest `max(k, k_crit, m)` samples. A sample reads the verdict of its
+evaluation at the highest definition revision seen: when a revision re-grades history, the
+re-grade replaces that sample's verdict in place, and the run is the longest stretch of the newest
+samples that read one verdict. A re-grade at a revision no higher than the one counted is ignored,
+and so is any evaluation of a sample that has left those newest samples. A new sample older than
+the newest one taken (a sample recorded late) is dropped. Live grading and a replay of stored
+evaluations read them in the order they were minted, so both drop the same late samples and settle
+the same changes.
+
+A transition is its own record: it references the `k` evaluations that settled it, one per sample,
+and copies the series, the verdicts it moved between, the timestamp of its oldest sample, and the
+timestamp, definition revision and score of the settling evaluation, the one that completed the
+run (a re-grade of an older sample included). It outlives raw retention.
 
 ## Other vocabularies
 
