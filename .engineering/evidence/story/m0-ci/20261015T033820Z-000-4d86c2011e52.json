@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T03:38:20Z",
+  "actor": "human:timo",
+  "artifact": "story:m0-ci",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "GitHub Actions Check",
+    "reference": "https://github.com/beyond10x/thalamus/actions/runs/38677187539"
+  }
+}

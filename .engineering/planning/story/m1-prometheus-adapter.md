@@ -15,7 +15,7 @@ scope:
   path: crates/thalamus-sources/tests/fixtures/prometheus
 - confidence: inferred
   path: crates/thalamus-sources/tests/prometheus.rs
-revision: 3
+revision: 4
 ---
 ## Outcome
 
@@ -62,3 +62,7 @@ Planned (inferred):
 ## Out of scope
 
 `rules.list` and `series.query_range`; resolving `denominator.since` (`story:m1-instance-registry`, `story:m1-cli-sample`); Grafana-mediated placement; Loki and every other source (M3); export of recording and alert rules (M4).
+
+## Decision applied (2026-10-15, wave 20261015b)
+
+`query_sha256` is the SHA-256 of the canonical JSON of the whole query map (keys sorted, compact), for one entry or many, as `story:m1-connectors-client` implements it after its adversary pass (a bare-text digest cannot be told apart from some map's canonical JSON). The test `query_sha256_is_of_the_exact_text` becomes `query_sha256_is_of_the_canonical_query_map`.

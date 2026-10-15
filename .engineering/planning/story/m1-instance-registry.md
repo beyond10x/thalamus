@@ -22,7 +22,7 @@ scope:
   path: crates/thalamus-core/tests/fixtures/instance
 - confidence: inferred
   path: crates/thalamus-core/tests/registry.rs
-revision: 3
+revision: 4
 ---
 ## Outcome
 
@@ -75,3 +75,7 @@ Planned (inferred):
 ## Out of scope
 
 Reading files from disk and the instance layout (`story:m1-cli-sample`); definition lifecycle commands and expiry handling (`story:m2-auto-unmute`); `connectors:` registries beyond the refusal (D17: until Connectors offers an inventory operation).
+
+## Addition (2026-10-15, from the m1-baselines adversary pass 2)
+
+Loading a definition also runs `thalamus_core::baseline::plan` and refuses the definition at load when it returns a refusal (for example `PooledNeedsRatio` for a gauge or count that declares two offsets without a combiner), so it never loads Active and fails every pass. Named test: `pooled_on_a_non_ratio_is_refused_at_load`.

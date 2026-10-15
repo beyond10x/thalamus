@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T04:28:50Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-baselines",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.59.0) on main 09d4624",
+    "reference": "MAIN_TASK_CHECK=0, 24 ok lanes; baselines 12, adv_baselines 3, adv_baselines_pass2 3"
+  }
+}

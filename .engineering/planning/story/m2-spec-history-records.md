@@ -37,7 +37,7 @@ scope:
   path: spec/suite.json
 - confidence: inferred
   path: spec/system.yaml
-revision: 6
+revision: 7
 ---
 ## Context
 
@@ -94,3 +94,7 @@ Each check runs on the changed specification; `IR` stands for `ess specify compi
 - The D13 copied fields: `IR | jq -e '(.entities["thalamus.transition.Transition"].fields | map(.name)) as $f | ["series", "definition_rev", "from_verdict", "to_verdict", "first_ts", "settled_ts", "settling_score"] - $f == []'` exits 0.
 - The D14 rollup verdict fields: `IR | jq -e '(.entities["thalamus.rollup.DailyRollup"].fields | map(.name)) as $f | ["worst_verdict", "verdict_counts", "min_score", "max_score"] - $f == []'` exits 0.
 - `task check` exits 0 on the regenerated model, with `cargo test -p thalamus-core --test conformance` passing the scenarios `thalamus.transition.RecordTransition/outcome/recorded`, `thalamus.rollup.RecordRollup/outcome/recorded` and `thalamus.rollup.RecordRollup/outcome/already-rolled-up` and `every_obligation_is_met`.
+
+## Decision applied (2026-10-15, wave 20261015b)
+
+`story:m1-baselines` found that `EvaluationSpec` has no field for the number a `fixed` baseline names (`spec/domains/definition.yaml:122-137`) and passes it as a fifth `fold` argument. This story adds `fixed: Optional<Decimal>` to `EvaluationSpec` (patch drafted at the coordinator's scratch, `evaluation-spec-fixed.patch`), regenerates, and switches `fold` to read it; named test `fixed_baseline_reads_the_definition_number`.

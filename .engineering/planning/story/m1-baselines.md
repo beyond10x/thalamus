@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-baselines
 kind: story
-status: active
+status: implemented
 title: Offset, pooled, higher/lower-of and fixed baselines; one older than its series is UNKNOWN
 relations:
 - decomposes: epic:signal-contract
@@ -13,10 +13,11 @@ scope:
   path: crates/thalamus-core/src/baseline/mod.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/baselines.rs
-revision: 5
+revision: 6
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T03:07:33Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-15T03:07:33Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "active", to: "implemented", at: "2026-10-15T04:28:50Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"test_result":1,"review_outcome":5}}}
 ---
 ## Outcome
 

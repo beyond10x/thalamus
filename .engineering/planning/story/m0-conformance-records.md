@@ -15,8 +15,10 @@ scope:
 - confidence: inferred
   path: crates/thalamus-core/src/behaviour/observation.rs
 - confidence: inferred
+  path: crates/thalamus-core/src/conformance.rs
+- confidence: inferred
   path: crates/thalamus-core/tests/conformance.rs
-revision: 3
+revision: 5
 ---
 ## Context
 
@@ -52,3 +54,7 @@ The module lines in `crates/thalamus-core/src/behaviour/mod.rs` are `story:m0-wo
 ## Acceptance
 
 `task check` exits 0 with `cargo test -p thalamus-core --test conformance` answering every scenario in `spec/suite.json` (73 at ess 0.59.0, none skipped) and its test `every_obligation_is_met` passing.
+
+## Scope addition (2026-10-15, from story:m0-conformance-definitions)
+
+The shared runner `crates/thalamus-core/src/conformance.rs` is this story's too, after `story:m0-conformance-definitions`: replace the five `Unimplemented` port impls (AskAssertion, RecordEvaluation, RecordSample, SeriesVerdicts, SeriesSamples) and support the steps the other 22 scenarios use: `expect_direct_response`, `expect_response_payload`, `query_view` with `params`, `expect_view` `counts` and `ranked`, and the `{field: {any_of: [...]}}` predicate.

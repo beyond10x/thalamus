@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T04:56:51Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-connectors-client",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.59.0) in thalamus-w15b-m1-connectors-client",
+    "reference": "connectors_client 8, adv 6, adv2 2; exit 0"
+  }
+}
