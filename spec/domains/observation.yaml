@@ -1,0 +1,328 @@
+domain: thalamus.observation
+
+summary: One reading of one signal for one series. Append-only; a sample has no lifecycle beyond being recorded.
+
+naming:
+  wire: samples
+  display: Samples
+
+types:
+  - name: thalamus.observation.SampleId
+    kind: newtype
+    of: String
+    prefix: "smp_"
+    naming:
+      summary: A sample id, minted by the producer.
+
+  # UNMAPPED: the series key's spelling (how signal id and dims are joined into one key, the
+  # CloudEvents subject) is not stated in the design, and ESS cannot derive a field from two others.
+  # Decided 2026-10-15 (design § 11 D10): <signal-id>{k1="v1",k2="v2"}, keys sorted ascending, OpenMetrics label escaping; no dims is the bare id.
+  - name: thalamus.observation.SeriesKey
+    kind: newtype
+    of: String
+    naming:
+      summary: One series, a signal id together with its dims values.
+
+  - name: thalamus.observation.RunId
+    kind: newtype
+    of: String
+    prefix: "run_"
+    naming:
+      summary: Groups the samples of one sampling pass.
+
+  - name: thalamus.observation.QueryDigest
+    kind: newtype
+    of: String
+    alphabet: "0123456789abcdef"
+    naming:
+      summary: SHA-256 of the exact query text, lower-case hex.
+
+  - name: thalamus.observation.Bound
+    kind: enum
+    variants: [lower, upper]
+    naming:
+      summary: Which side a partial reading's value bounds.
+
+  - name: thalamus.observation.CompleteReading
+    kind: struct
+    fields:
+      - name: value
+        type: Decimal
+    naming:
+      summary: Read completely.
+
+  - name: thalamus.observation.PartialReading
+    kind: struct
+    fields:
+      - name: value
+        type: Decimal
+        summary: A bound on the true value, never the value itself.
+      - name: bound
+        type: thalamus.observation.Bound
+    naming:
+      summary: Read but cut (a full page, a paged read that could not finish).
+
+  - name: thalamus.observation.UnreadReading
+    kind: struct
+    fields:
+      - name: reason
+        type: String
+    naming:
+      summary: Not read. Carries no value at all, so unknown can never become 0.
+
+  - name: thalamus.observation.Reading
+    kind: union
+    tag: quality
+    variants:
+      ok: thalamus.observation.CompleteReading
+      partial: thalamus.observation.PartialReading
+      unknown: thalamus.observation.UnreadReading
+    naming:
+      summary: The value and its quality as one type. quality unknown has no value and a reason; partial has a value and its bound; ok has a value. The illegal pairs cannot be built.
+
+  - name: thalamus.observation.TimeWindow
+    kind: struct
+    fields:
+      - name: start
+        type: Timestamp
+      - name: end
+        type: Timestamp
+    naming:
+      summary: The span a reading covers.
+
+  - name: thalamus.observation.Denominator
+    kind: struct
+    fields:
+      - name: n
+        type: Integer
+        summary: The population the reading was taken over.
+      - name: unit
+        type: thalamus.definition.Unit
+      - name: since
+        type: Timestamp
+        summary: The earliest moment the population could contain anything.
+      - name: age_s
+        type: Integer
+        summary: Seconds from since to the sample. A baseline whose offset exceeds it is UNKNOWN.
+    naming:
+      summary: The population behind a ratio or count.
+
+  - name: thalamus.observation.Provenance
+    kind: struct
+    fields:
+      - name: producer
+        type: String
+      - name: version
+        type: String
+      - name: definition_rev
+        type: Integer
+      - name: adapter
+        type: thalamus.definition.AdapterId
+      - name: connection
+        type: thalamus.definition.ConnectionId
+      - name: query_sha256
+        type: thalamus.observation.QueryDigest
+      - name: run_id
+        type: thalamus.observation.RunId
+    naming:
+      summary: Enough to re-run the read. Names a connection, never a credential.
+
+entities:
+  - name: thalamus.observation.SignalSample
+    naming:
+      summary: One reading of one signal for one series at one instant.
+    identity:
+      name: sample_id
+      type: thalamus.observation.SampleId
+    fields:
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      # UNMAPPED: every dims key must be registered and every value must resolve in the
+      # dimension registry. ESS has no related-existence guard over the keys of an input map
+      # (or the elements of a list), and value resolution reads a Connectors inventory or a
+      # file outside the model. Held by a Rust test until ESS can state it.
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: ts
+        type: Timestamp
+      - name: window
+        type: thalamus.observation.TimeWindow
+      - name: reading
+        type: thalamus.observation.Reading
+      - name: unit
+        type: thalamus.definition.Unit
+      - name: denominator
+        type: Optional<thalamus.observation.Denominator>
+      - name: provenance
+        type: thalamus.observation.Provenance
+    relations:
+      - name: definition
+        kind: references
+        target: thalamus.definition.SignalDefinition
+        cardinality: one
+        via: signal
+    lifecycle:
+      initial: Recorded
+      states: [Recorded]
+      terminal: [Recorded]
+
+actors:
+  - name: thalamus.observation.Sampler
+    naming:
+      summary: The service's scheduler, the CLI on demand, or a one-shot pass; each reads a source and records what it read.
+    may:
+      - thalamus.observation.RecordSample
+
+errors:
+  - name: thalamus.observation.UnknownSignal
+    summary: No definition has this signal id; nothing was recorded.
+    fields:
+      - name: signal
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.observation.SignalNotActive
+    summary: Only an Active definition is sampled; this one is Proposed, Muted or Retired, so nothing was recorded.
+    fields:
+      - name: signal
+        type: thalamus.definition.SignalId
+
+events:
+  - name: thalamus.observation.SampleRecorded
+    fields:
+      - name: sample_id
+        type: thalamus.observation.SampleId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: ts
+        type: Timestamp
+
+commands:
+  - name: thalamus.observation.RecordSample
+    naming:
+      wire: record
+      display: Record a sample
+      summary: Append one reading of an active signal. Unknown is recorded as unknown, never as 0.
+    input:
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: ts
+        type: Timestamp
+      - name: window
+        type: thalamus.observation.TimeWindow
+      - name: reading
+        type: thalamus.observation.Reading
+      - name: unit
+        type: thalamus.definition.Unit
+      - name: denominator
+        type: Optional<thalamus.observation.Denominator>
+      - name: provenance
+        type: thalamus.observation.Provenance
+    response:
+      - name: sample_id
+        type: thalamus.observation.SampleId
+    outcomes:
+      - name: unknown-signal
+        when_related:
+          via: input.signal
+          exists: false
+        error: thalamus.observation.UnknownSignal
+        payload:
+          thalamus.observation.UnknownSignal:
+            signal: input.signal
+        summary: No definition has this id; nothing was recorded.
+      - name: not-active
+        when_related:
+          via: input.signal
+          predicate: state != Active
+        error: thalamus.observation.SignalNotActive
+        payload:
+          thalamus.observation.SignalNotActive:
+            signal: input.signal
+        summary: The definition is not Active; nothing was recorded.
+      - name: recorded
+        creates: thalamus.observation.SignalSample
+        instance: sample_id
+        returns: true
+        sets:
+          signal: input.signal
+          series: input.series
+          dims: input.dims
+          ts: input.ts
+          window: input.window
+          reading: input.reading
+          unit: input.unit
+          denominator: input.denominator
+          provenance: input.provenance
+        emits: [thalamus.observation.SampleRecorded]
+        payload:
+          thalamus.observation.SampleRecorded:
+            sample_id: {response: sample_id}
+            signal: input.signal
+            series: input.series
+            ts: input.ts
+        summary: The sample is recorded and its id returned.
+
+views:
+  - name: thalamus.observation.Samples
+    source: thalamus.observation.SignalSample
+    consistency: read_your_writes
+    fields:
+      - name: sample_id
+        type: thalamus.observation.SampleId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: ts
+        type: Timestamp
+      - name: window
+        type: thalamus.observation.TimeWindow
+      - name: reading
+        type: thalamus.observation.Reading
+      - name: unit
+        type: thalamus.definition.Unit
+      - name: denominator
+        type: Optional<thalamus.observation.Denominator>
+      - name: provenance
+        type: thalamus.observation.Provenance
+      - name: state
+        type: thalamus.observation.SignalSample.State
+    naming:
+      wire: samples
+      display: Samples
+
+  - name: thalamus.observation.SeriesSamples
+    source: thalamus.observation.SignalSample
+    consistency: read_your_writes
+    params:
+      - name: series
+        type: thalamus.observation.SeriesKey
+    filter: series == param.series
+    order_by: [ts asc]
+    fields:
+      - name: sample_id
+        type: thalamus.observation.SampleId
+      - name: ts
+        type: Timestamp
+      - name: window
+        type: thalamus.observation.TimeWindow
+      - name: reading
+        type: thalamus.observation.Reading
+      - name: unit
+        type: thalamus.definition.Unit
+      - name: denominator
+        type: Optional<thalamus.observation.Denominator>
+    naming:
+      wire: series
+      display: Samples of a series
+      summary: The samples of one series in time order. A gap in sampling is a gap here, never interpolated.

@@ -1,0 +1,39 @@
+components:
+  - component: thalamus-service
+    summary: Samples each active definition on its cadence, grades every sample, answers assertions, and serves current verdicts, series and assertions over HTTP. Read-only against the systems it watches; holds no secret.
+    owns:
+      domains:
+        - thalamus.definition
+        - thalamus.dimension
+        - thalamus.observation
+        - thalamus.evaluation
+        - thalamus.assertion
+    accepts:
+      commands:
+        - thalamus.definition.ProposeDefinition
+        - thalamus.definition.ReviseDefinition
+        - thalamus.definition.ActivateDefinition
+        - thalamus.definition.MuteDefinition
+        - thalamus.definition.UnmuteDefinition
+        - thalamus.definition.RetireDefinition
+        - thalamus.dimension.DeclareRegistry
+        - thalamus.dimension.RegisterDimension
+        - thalamus.observation.RecordSample
+        - thalamus.evaluation.RecordEvaluation
+        - thalamus.assertion.AskAssertion
+        - thalamus.assertion.AnswerAssertion
+    publishes:
+      events:
+        - thalamus.definition.DefinitionProposed
+        - thalamus.definition.DefinitionRevised
+        - thalamus.definition.DefinitionActivated
+        - thalamus.definition.DefinitionMuted
+        - thalamus.definition.DefinitionUnmuted
+        - thalamus.definition.DefinitionRetired
+        - thalamus.dimension.RegistryDeclared
+        - thalamus.dimension.DimensionRegistered
+        - thalamus.observation.SampleRecorded
+        - thalamus.evaluation.EvaluationRecorded
+        - thalamus.assertion.AssertionAsked
+        - thalamus.assertion.AssertionAnswered
+    reached_by: network

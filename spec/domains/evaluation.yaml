@@ -1,0 +1,353 @@
+domain: thalamus.evaluation
+
+summary: One verdict over one sample, with the rule and the definition revision that decided it. Kept apart from the sample so a threshold change re-grades history without reading the source again.
+
+naming:
+  wire: evaluations
+  display: Evaluations
+
+types:
+  - name: thalamus.evaluation.EvaluationId
+    kind: newtype
+    of: String
+    prefix: "evl_"
+    naming:
+      summary: An evaluation id, minted by the grader.
+
+  - name: thalamus.evaluation.Verdict
+    kind: enum
+    attributes:
+      - name: exit
+        type: Integer
+      - name: rank
+        type: Integer
+      - name: scored
+        type: Boolean
+    variants:
+      - name: OK
+        summary: Read, graded, inside bounds.
+        attributes: {exit: 0, rank: 0, scored: true}
+      - name: N_A
+        wire: "N/A"
+        summary: Read, too little to grade (n below min_n). Not OK; a pass in which every signal is N/A exits 3.
+        attributes: {exit: 0, rank: 0, scored: false}
+      - name: WARN
+        summary: Out of bounds.
+        attributes: {exit: 1, rank: 2, scored: true}
+      - name: CRIT
+        summary: Far out of bounds.
+        attributes: {exit: 2, rank: 3, scored: true}
+      - name: UNKNOWN
+        summary: The sample is unknown, or its baseline is. Never folds into OK.
+        attributes: {exit: 3, rank: 1, scored: false}
+    naming:
+      summary: The one verdict ladder. exit is the process exit code; rank orders an aggregate worst-first (CRIT > WARN > UNKNOWN > OK = N/A); scored says whether the verdict carries a score.
+
+  # UNMAPPED: the design's example baseline kind offset_pooled (pooled over offsets 1d and 7d)
+  # is not one of the baseline kinds of the definition table; whether a recorded baseline names
+  # a closed kind or a composed label is open, so it stays a string here.
+  # Decided 2026-10-15 (design § 11 D4): a recorded baseline is a closed kind (the § 3.1 table) plus its offsets; offset_pooled is pooled over [1d, 7d].
+  - name: thalamus.evaluation.BaselineLabel
+    kind: newtype
+    of: String
+    alphabet: "abcdefghijklmnopqrstuvwxyz0123456789_"
+    naming:
+      summary: Which baseline the sample was graded against (offset_pooled, fixed, rolling_median).
+
+  - name: thalamus.evaluation.Baseline
+    kind: struct
+    fields:
+      - name: kind
+        type: thalamus.evaluation.BaselineLabel
+      - name: offsets
+        type: List<String>
+        summary: The offsets pooled (1d, 7d); empty when none.
+      - name: reading
+        type: thalamus.observation.Reading
+        summary: The baseline's own value and quality. A baseline that could not be read, or predates its series, is unknown, never 0.
+    naming:
+      summary: The baseline a sample was graded against.
+
+entities:
+  - name: thalamus.evaluation.SignalEvaluation
+    naming:
+      summary: One verdict over one sample, graded against one definition revision.
+    identity:
+      name: evaluation_id
+      type: thalamus.evaluation.EvaluationId
+    fields:
+      - name: sample_id
+        type: thalamus.observation.SampleId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: ts
+        type: Timestamp
+      - name: definition_rev
+        type: Integer
+        summary: The definition revision whose rule decided the verdict.
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+      - name: prev
+        type: Optional<thalamus.evaluation.Verdict>
+        summary: The series' previous verdict, so a change is visible without a second read; absent on a series' first evaluation.
+      - name: score
+        type: Optional<Decimal>
+        summary: 0 at the baseline, 1 at the WARN line, 2 at the CRIT line, negative when better than the baseline. Absent for UNKNOWN and N/A, never 0.
+      - name: baseline
+        type: Optional<thalamus.evaluation.Baseline>
+      - name: reason
+        type: Optional<String>
+        summary: Why the rule decided this verdict. Required on every verdict other than OK.
+    invariants:
+      - definition_rev >= 1
+      - any: ["verdict == OK", "defined(reason)"]
+      - any: ["verdict.scored == true", "not defined(score)"]
+    relations:
+      - name: sample
+        kind: references
+        target: thalamus.observation.SignalSample
+        cardinality: one
+        via: sample_id
+      - name: definition
+        kind: references
+        target: thalamus.definition.SignalDefinition
+        cardinality: one
+        via: signal
+    lifecycle:
+      initial: Recorded
+      states: [Recorded]
+      terminal: [Recorded]
+
+actors:
+  - name: thalamus.evaluation.Grader
+    naming:
+      summary: The grading core run by the service after each sample, and again over history after a definition revision.
+    may:
+      - thalamus.evaluation.RecordEvaluation
+
+errors:
+  - name: thalamus.evaluation.UnknownSample
+    summary: No sample has this id; nothing was recorded.
+    fields:
+      - name: sample_id
+        type: thalamus.observation.SampleId
+
+  - name: thalamus.evaluation.ReasonRequired
+    summary: Every verdict other than OK carries a reason; none was given, so nothing was recorded.
+    fields:
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+
+  - name: thalamus.evaluation.ScoreNotAdmitted
+    summary: UNKNOWN and N/A carry no score; one was given, so nothing was recorded.
+    fields:
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+
+
+events:
+  - name: thalamus.evaluation.EvaluationRecorded
+    fields:
+      - name: evaluation_id
+        type: thalamus.evaluation.EvaluationId
+      - name: sample_id
+        type: thalamus.observation.SampleId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: ts
+        type: Timestamp
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+      - name: prev
+        type: Optional<thalamus.evaluation.Verdict>
+
+commands:
+  # UNMAPPED: the grading rules that read the sample are not expressible here: an unknown sample
+  # is graded UNKNOWN and never OK, and a partial sample may escalate but never clear (CRIT or
+  # UNKNOWN only). Both need a guard on the related sample's quality, and a union (Reading) has
+  # no predicate selector in ESS. Held by thalamus-core tests until ESS can select a union tag.
+  - name: thalamus.evaluation.RecordEvaluation
+    naming:
+      wire: record
+      display: Record an evaluation
+      summary: Append one verdict over one sample, graded against one definition revision.
+    input:
+      - name: sample_id
+        type: thalamus.observation.SampleId
+      - name: definition_rev
+        type: Integer
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+      - name: prev
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: score
+        type: Optional<Decimal>
+      - name: baseline
+        type: Optional<thalamus.evaluation.Baseline>
+      - name: reason
+        type: Optional<String>
+    response:
+      - name: evaluation_id
+        type: thalamus.evaluation.EvaluationId
+    outcomes:
+      - name: unknown-sample
+        when_related:
+          via: input.sample_id
+          exists: false
+        error: thalamus.evaluation.UnknownSample
+        payload:
+          thalamus.evaluation.UnknownSample:
+            sample_id: input.sample_id
+        summary: No sample has this id; nothing was recorded.
+      - name: reason-missing
+        when:
+          all: ["verdict != OK", "not defined(reason)"]
+        error: thalamus.evaluation.ReasonRequired
+        payload:
+          thalamus.evaluation.ReasonRequired:
+            verdict: input.verdict
+        summary: A verdict other than OK came without a reason; nothing was recorded.
+      - name: score-not-admitted
+        when:
+          all: ["verdict.scored == false", "defined(score)"]
+        error: thalamus.evaluation.ScoreNotAdmitted
+        payload:
+          thalamus.evaluation.ScoreNotAdmitted:
+            verdict: input.verdict
+        summary: UNKNOWN or N/A came with a score; nothing was recorded.
+      # UNMAPPED: whether one sample may carry two evaluations at one definition revision is not
+      # stated. Refusing the second needs a row-set when_related (sample_id and definition_rev),
+      # and ESS refuses a row-set guard beside the identity-addressed guards above in one command
+      # (ESS-COMMAND-009). Open question for the owner; held by a store constraint until settled.
+      # Decided 2026-10-15 (design § 11 D5): at most one evaluation per (sample, definition_rev); held by a store constraint and a Rust test.
+      - name: recorded
+        creates: thalamus.evaluation.SignalEvaluation
+        instance: evaluation_id
+        returns: true
+        sets:
+          sample_id: input.sample_id
+          signal: {related: {via: input.sample_id, field: signal}}
+          series: {related: {via: input.sample_id, field: series}}
+          dims: {related: {via: input.sample_id, field: dims}}
+          ts: {related: {via: input.sample_id, field: ts}}
+          definition_rev: input.definition_rev
+          verdict: input.verdict
+          prev: input.prev
+          score: input.score
+          baseline: input.baseline
+          reason: input.reason
+        emits: [thalamus.evaluation.EvaluationRecorded]
+        payload:
+          thalamus.evaluation.EvaluationRecorded:
+            evaluation_id: {response: evaluation_id}
+            sample_id: input.sample_id
+            signal: {related: {via: input.sample_id, field: signal}}
+            series: {related: {via: input.sample_id, field: series}}
+            ts: {related: {via: input.sample_id, field: ts}}
+            verdict: input.verdict
+            prev: input.prev
+        summary: The evaluation is recorded and its id returned.
+
+views:
+  - name: thalamus.evaluation.Evaluations
+    source: thalamus.evaluation.SignalEvaluation
+    consistency: read_your_writes
+    fields:
+      - name: evaluation_id
+        type: thalamus.evaluation.EvaluationId
+      - name: sample_id
+        type: thalamus.observation.SampleId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: ts
+        type: Timestamp
+      - name: definition_rev
+        type: Integer
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+      - name: prev
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: score
+        type: Optional<Decimal>
+      - name: baseline
+        type: Optional<thalamus.evaluation.Baseline>
+      - name: reason
+        type: Optional<String>
+      - name: state
+        type: thalamus.evaluation.SignalEvaluation.State
+    naming:
+      wire: evaluations
+      display: Evaluations
+
+  # UNMAPPED: "current verdict per series" needs a latest-row-per-group view (the newest
+  # evaluation of each series); ESS aggregates offer count, sum, min and max only. Ordering this
+  # view newest first (order_by: [ts desc] with paging, size 1 = current) validates, but synthesis
+  # then refuses the RecordEvaluation/recorded scenario (ESS-SYNTH-014: two evaluations of one
+  # series cannot be arranged when series is copied from the sample). Unordered until ESS can
+  # arrange it; the reader picks the newest ts.
+  - name: thalamus.evaluation.SeriesVerdicts
+    source: thalamus.evaluation.SignalEvaluation
+    consistency: read_your_writes
+    params:
+      - name: series
+        type: thalamus.observation.SeriesKey
+    filter: series == param.series
+    fields:
+      - name: evaluation_id
+        type: thalamus.evaluation.EvaluationId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: ts
+        type: Timestamp
+      - name: definition_rev
+        type: Integer
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+      - name: prev
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: reason
+        type: Optional<String>
+    naming:
+      wire: verdicts
+      display: Verdicts of a series
+      summary: The verdicts of one series; its current verdict is the row with the newest ts.
+
+  # UNMAPPED: a transition counts only after k consecutive evaluations agree (k = 2, k = 1 for
+  # CRIT; a WARN clears after m = 3 OK). That reads a run of evaluations, which a view filter
+  # cannot; this view lists raw verdict changes (verdict differs from prev). Whether prev is the
+  # previous raw verdict or the previous settled one is also open.
+  # Decided 2026-10-15 (design § 11 D6): prev is the previous raw verdict; settled transitions are their own record, emitted by hysteresis in M2.
+  - name: thalamus.evaluation.VerdictChanges
+    source: thalamus.evaluation.SignalEvaluation
+    consistency: read_your_writes
+    filter:
+      all: ["defined(prev)", "verdict != prev"]
+    fields:
+      - name: evaluation_id
+        type: thalamus.evaluation.EvaluationId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: ts
+        type: Timestamp
+      - name: verdict
+        type: thalamus.evaluation.Verdict
+      - name: prev
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: reason
+        type: Optional<String>
+    naming:
+      wire: transitions
+      display: Verdict changes
+      summary: Evaluations whose verdict differs from the series' previous one.

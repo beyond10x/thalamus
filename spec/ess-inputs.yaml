@@ -1,0 +1,11 @@
+format: ess-inputs/2
+requires: ess 0.59.0
+specification:
+  - system.yaml
+  - components.yaml
+  - domains/definition.yaml
+  - domains/dimension.yaml
+  - domains/observation.yaml
+  - domains/evaluation.yaml
+  - domains/assertion.yaml
+scenarios: []

@@ -1,0 +1,344 @@
+domain: thalamus.assertion
+
+summary: A caller (a release, a merge request, a test run, a controller) asks whether named signals stayed within baseline over a window, and thalamus answers with a result, not a guess. Unknown is not a pass.
+
+naming:
+  wire: assertions
+  display: Assertions
+
+types:
+  - name: thalamus.assertion.AssertionId
+    kind: newtype
+    of: String
+    prefix: "asr_"
+    naming:
+      summary: An assertion id, minted by the service.
+
+  - name: thalamus.assertion.AskerKind
+    kind: enum
+    variants: [release, merge_request, test_run, controller]
+    naming:
+      summary: What kind of caller asked.
+
+  - name: thalamus.assertion.Asker
+    kind: struct
+    fields:
+      - name: kind
+        type: thalamus.assertion.AskerKind
+      - name: ref
+        type: String
+        summary: The caller's own reference (a release tag, a merge request, a run id, a controller name).
+    naming:
+      summary: Who asked; carried into the answer.
+
+  - name: thalamus.assertion.Within
+    kind: enum
+    variants: [baseline]
+    naming:
+      summary: What the signals must stay within.
+
+  - name: thalamus.assertion.AssertionResult
+    kind: enum
+    attributes:
+      - name: passes
+        type: Boolean
+    variants:
+      - name: within
+        summary: Every named signal stayed within its baseline. Exit 0.
+        attributes: {passes: true}
+      - name: breach
+        summary: At least one named signal went out of bounds. Exit 1 (WARN) or 2 (CRIT), the worst verdict's.
+        attributes: {passes: false}
+      - name: unknown
+        summary: It could not be told. Exit 3. Unknown is not a pass.
+        attributes: {passes: false}
+    naming:
+      summary: The answer to an assertion. Only within passes.
+
+entities:
+  - name: thalamus.assertion.Assertion
+    naming:
+      summary: One question whether named signals stayed within baseline after an instant for a horizon, and its answer.
+    identity:
+      name: assertion_id
+      type: thalamus.assertion.AssertionId
+    fields:
+      # UNMAPPED: whether every named signal must exist and be Active when asked is not stated,
+      # and either rule needs a related guard over each element of an input list, which is not
+      # an ESS construct. Held by a Rust test if the owner wants it.
+      # Decided 2026-10-15 (design § 11 D1): every named signal must exist and be Active, else the ask is refused; held by a Rust test.
+      - name: signals
+        type: List<thalamus.definition.SignalId>
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+        summary: The series the assertion is about, narrowed by dimension values.
+      - name: after
+        type: Timestamp
+        summary: The window starts here (a rollout or merge instant).
+      - name: horizon
+        type: Duration
+        summary: How long after `after` the signals must stay within.
+      - name: within
+        type: thalamus.assertion.Within
+      - name: asker
+        type: thalamus.assertion.Asker
+      - name: result
+        type: Optional<thalamus.assertion.AssertionResult>
+      - name: worst
+        type: Optional<thalamus.evaluation.Verdict>
+        summary: The worst verdict over the window; its exit code is the assertion's.
+      - name: reason
+        type: Optional<String>
+        summary: Why the result is breach or unknown.
+    # UNMAPPED: "the result is an evaluation with an assertion block naming who asked" leaves open
+    # whether an answer is its own record (as here) or a SignalEvaluation carrying an assertion
+    # block, and which evaluations an answer cites (their cardinality and ownership). No relation
+    # to SignalEvaluation is declared until the owner settles it.
+    # Decided 2026-10-15 (design § 11 D2): an answer is part of the Assertion record and cites the evaluations it read (references, many).
+    relations:
+      - name: signals
+        kind: references
+        target: thalamus.definition.SignalDefinition
+        cardinality: many
+        via: signals
+    invariants:
+      - any:
+          - all: ["state == Asked", "not defined(result)", "not defined(worst)", "not defined(reason)"]
+          - all: ["state == Answered", "defined(result)", "defined(worst)"]
+    lifecycle:
+      initial: Asked
+      states: [Asked, Answered]
+      terminal: [Answered]
+      transitions:
+        - name: answer
+          from: [Asked]
+          to: Answered
+
+actors:
+  - name: thalamus.assertion.Caller
+    naming:
+      summary: A release, a merge request, a test run or a controller asking about named signals.
+    may:
+      - thalamus.assertion.AskAssertion
+
+  - name: thalamus.assertion.Answerer
+    naming:
+      summary: The service, which answers an assertion from the evaluations over its window.
+    may:
+      - thalamus.assertion.AnswerAssertion
+
+errors:
+  - name: thalamus.assertion.NoSignals
+    summary: An assertion names at least one signal; none was named, so nothing was asked.
+    fields: []
+
+  - name: thalamus.assertion.UnknownAssertion
+    summary: No assertion has this id; nothing changed.
+    fields:
+      - name: assertion_id
+        type: thalamus.assertion.AssertionId
+
+  - name: thalamus.assertion.AssertionStateConflict
+    summary: The assertion is already answered; nothing changed.
+    fields:
+      - name: current
+        type: thalamus.assertion.Assertion.State
+
+  - name: thalamus.assertion.ReasonRequired
+    summary: A breach or unknown result carries a reason; none was given, so nothing was answered.
+    fields:
+      - name: result
+        type: thalamus.assertion.AssertionResult
+
+  - name: thalamus.assertion.ResultContradictsVerdict
+    summary: breach goes with a worst verdict of WARN or CRIT and only then, and within never goes with UNKNOWN; the answer broke that, so nothing was answered.
+    fields:
+      - name: result
+        type: thalamus.assertion.AssertionResult
+      - name: worst
+        type: thalamus.evaluation.Verdict
+
+events:
+  - name: thalamus.assertion.AssertionAsked
+    fields:
+      - name: assertion_id
+        type: thalamus.assertion.AssertionId
+      - name: asker
+        type: thalamus.assertion.Asker
+
+  - name: thalamus.assertion.AssertionAnswered
+    fields:
+      - name: assertion_id
+        type: thalamus.assertion.AssertionId
+      - name: asker
+        type: thalamus.assertion.Asker
+      - name: result
+        type: thalamus.assertion.AssertionResult
+      - name: worst
+        type: thalamus.evaluation.Verdict
+
+commands:
+  - name: thalamus.assertion.AskAssertion
+    naming:
+      wire: ask
+      display: Ask an assertion
+      summary: Ask whether the named signals stay within baseline after an instant, for a horizon.
+    input:
+      - name: signals
+        type: List<thalamus.definition.SignalId>
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: after
+        type: Timestamp
+      - name: horizon
+        type: Duration
+      - name: within
+        type: thalamus.assertion.Within
+      - name: asker
+        type: thalamus.assertion.Asker
+    response:
+      - name: assertion_id
+        type: thalamus.assertion.AssertionId
+    outcomes:
+      - name: no-signals
+        when: signals.count == 0
+        error: thalamus.assertion.NoSignals
+        summary: No signal was named; nothing was asked.
+      - name: asked
+        creates: thalamus.assertion.Assertion
+        instance: assertion_id
+        returns: true
+        sets:
+          signals: input.signals
+          dims: input.dims
+          after: input.after
+          horizon: input.horizon
+          within: input.within
+          asker: input.asker
+        emits: [thalamus.assertion.AssertionAsked]
+        payload:
+          thalamus.assertion.AssertionAsked:
+            assertion_id: {response: assertion_id}
+            asker: input.asker
+        summary: The assertion is open and its id returned; it is answered once its horizon has passed.
+
+  # UNMAPPED: an assertion is answered only after after + horizon has passed. A guard comparing
+  # now with the sum of a stored Timestamp and a stored Duration is not an ESS expression (only
+  # constant offsets of now are). Also unmapped: a window in which every signal is N/A answers
+  # unknown (exit 3), which needs a count over the evaluations the answer reads.
+  # Decided 2026-10-15 (design § 11 D3): the service answers only after after + horizon, and an all-N/A window answers unknown; held by thalamus-core tests.
+  - name: thalamus.assertion.AnswerAssertion
+    naming:
+      wire: answer
+      display: Answer an assertion
+      summary: Close an open assertion with its result and the worst verdict over its window.
+    input:
+      - name: assertion_id
+        type: thalamus.assertion.AssertionId
+      - name: result
+        type: thalamus.assertion.AssertionResult
+      - name: worst
+        type: thalamus.evaluation.Verdict
+      - name: reason
+        type: Optional<String>
+    outcomes:
+      - name: reason-missing
+        when:
+          all: ["result != within", "not defined(reason)"]
+        error: thalamus.assertion.ReasonRequired
+        payload:
+          thalamus.assertion.ReasonRequired:
+            result: input.result
+        summary: breach or unknown came without a reason; nothing was answered.
+      - name: contradicts-verdict
+        when:
+          any:
+            - all: ["result == breach", "worst.rank < 2"]
+            - all: ["result != breach", "worst.rank >= 2"]
+            - all: ["result == within", "worst == UNKNOWN"]
+        error: thalamus.assertion.ResultContradictsVerdict
+        payload:
+          thalamus.assertion.ResultContradictsVerdict:
+            result: input.result
+            worst: input.worst
+        summary: The result and the worst verdict disagree; nothing was answered.
+      - name: answered
+        moves: thalamus.assertion.Assertion.answer
+        instance: assertion_id
+        sets:
+          result: input.result
+          worst: input.worst
+          reason: input.reason
+        emits: [thalamus.assertion.AssertionAnswered]
+        payload:
+          thalamus.assertion.AssertionAnswered:
+            assertion_id: input.assertion_id
+            asker: {subject: asker}
+            result: input.result
+            worst: input.worst
+        summary: The assertion is answered; the asker reads the result, and only within passes.
+      - name: wrong-state
+        wrong_state: true
+        error: thalamus.assertion.AssertionStateConflict
+        payload:
+          thalamus.assertion.AssertionStateConflict:
+            current: {subject: state}
+        summary: The assertion is already answered; nothing changed.
+      - name: no-such-assertion
+        unknown_instance: true
+        error: thalamus.assertion.UnknownAssertion
+        payload:
+          thalamus.assertion.UnknownAssertion:
+            assertion_id: input.assertion_id
+        summary: No assertion has this id; nothing changed.
+
+views:
+  - name: thalamus.assertion.Assertions
+    source: thalamus.assertion.Assertion
+    consistency: read_your_writes
+    fields:
+      - name: assertion_id
+        type: thalamus.assertion.AssertionId
+      - name: signals
+        type: List<thalamus.definition.SignalId>
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: after
+        type: Timestamp
+      - name: horizon
+        type: Duration
+      - name: within
+        type: thalamus.assertion.Within
+      - name: asker
+        type: thalamus.assertion.Asker
+      - name: result
+        type: Optional<thalamus.assertion.AssertionResult>
+      - name: worst
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: reason
+        type: Optional<String>
+      - name: state
+        type: thalamus.assertion.Assertion.State
+    naming:
+      wire: assertions
+      display: Assertions
+
+  - name: thalamus.assertion.OpenAssertions
+    source: thalamus.assertion.Assertion
+    consistency: read_your_writes
+    filter: state == Asked
+    fields:
+      - name: assertion_id
+        type: thalamus.assertion.AssertionId
+      - name: signals
+        type: List<thalamus.definition.SignalId>
+      - name: after
+        type: Timestamp
+      - name: horizon
+        type: Duration
+      - name: asker
+        type: thalamus.assertion.Asker
+    naming:
+      wire: open
+      display: Open assertions
+      summary: Assertions still waiting for their horizon to pass.

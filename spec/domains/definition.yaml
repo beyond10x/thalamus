@@ -1,0 +1,789 @@
+domain: thalamus.definition
+
+summary: What is measured and how. One copy of every threshold lives here and nowhere else.
+
+naming:
+  wire: definitions
+  display: Signal definitions
+
+types:
+  # UNMAPPED: the id grammar <family>.<layer>.<name> (exactly three dot-separated segments) needs a
+  # pattern or segment construct; ESS has alphabet and length only. Held by a Rust test until then.
+  - name: thalamus.definition.SignalId
+    kind: newtype
+    of: String
+    alphabet: "abcdefghijklmnopqrstuvwxyz0123456789_."
+    naming:
+      summary: Stable signal id, spelled <family>.<layer>.<name> in lower case.
+
+  - name: thalamus.definition.Family
+    kind: newtype
+    of: String
+    alphabet: "abcdefghijklmnopqrstuvwxyz0123456789_"
+    naming:
+      summary: An instance-defined grouping of signals.
+
+  - name: thalamus.definition.SignalKind
+    kind: enum
+    variants: [gauge, counter_increase, ratio, instant, count_of_cases]
+    naming:
+      summary: How a reading of the signal is formed. An instant signal gets no trend below its minimum trend window.
+
+  # UNMAPPED: a UCUM unit is a grammar (annotations, prefixes, exponents, products, quotients).
+  # ESS has no pattern or grammar-typed string, so only the character set is held here; the
+  # UCUM validity of the text is held by a Rust test until ESS can type it.
+  - name: thalamus.definition.Unit
+    kind: newtype
+    of: String
+    alphabet: "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    naming:
+      summary: A UCUM unit, case-sensitive form (1, s, By, {request}, {pod}). A ratio has unit 1.
+
+  - name: thalamus.definition.AdapterId
+    kind: newtype
+    of: String
+    alphabet: "abcdefghijklmnopqrstuvwxyz0123456789_"
+    naming:
+      summary: The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).
+
+  # UNMAPPED: "a connection id is never a credential" has no ESS construct (no secrecy or
+  # classification on a type). The alphabet below keeps it an identifier; the rule itself is
+  # held by review and a Rust test.
+  - name: thalamus.definition.ConnectionId
+    kind: newtype
+    of: String
+    alphabet: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.:/"
+    naming:
+      summary: A Connectors connection id. Thalamus holds no secret; the connection holds the credential.
+
+  - name: thalamus.definition.Source
+    kind: struct
+    fields:
+      - name: adapter
+        type: thalamus.definition.AdapterId
+      - name: connection
+        type: thalamus.definition.ConnectionId
+    naming:
+      summary: Where a signal is read; a Connectors connection, never a credential.
+
+  - name: thalamus.definition.ExtractorId
+    kind: newtype
+    of: String
+    naming:
+      summary: A built-in extractor (sql.ratio) or a plugin id.
+
+  - name: thalamus.definition.History
+    kind: enum
+    variants: [source, store]
+    naming:
+      summary: source means the source can be re-queried at an offset; store means only thalamus remembers the series.
+
+  - name: thalamus.definition.DenominatorSpec
+    kind: struct
+    fields:
+      - name: unit
+        type: thalamus.definition.Unit
+      - name: min_n
+        type: Integer
+        summary: Below this population the verdict is N/A.
+      - name: since
+        type: String
+        summary: The earliest moment the population could contain anything, as a reference (dimension.created, source retention start, first sample).
+    naming:
+      summary: The population a ratio or count is taken over.
+
+  - name: thalamus.definition.BaselineKind
+    kind: enum
+    variants: [offset_1d, offset_7d, pooled, higher_of, lower_of, same_slot_median_4w, rolling_median, fixed]
+    naming:
+      summary: A baseline a sample is graded against.
+
+  - name: thalamus.definition.RuleId
+    kind: newtype
+    of: String
+    naming:
+      summary: The grading rule (ratio_vs_pooled_baseline).
+
+  - name: thalamus.definition.Threshold
+    kind: struct
+    fields:
+      - name: x
+        type: Optional<Decimal>
+        summary: Multiplier over the baseline.
+      - name: abs
+        type: Optional<Decimal>
+        summary: Absolute floor the value must also reach.
+      - name: min_events
+        type: Optional<Integer>
+        summary: Fewest events before the line applies.
+    naming:
+      summary: One line (WARN or CRIT) of a grading rule.
+
+  - name: thalamus.definition.EvaluationSpec
+    kind: struct
+    fields:
+      - name: rule
+        type: thalamus.definition.RuleId
+      - name: baselines
+        type: List<thalamus.definition.BaselineKind>
+      - name: warn
+        type: Optional<thalamus.definition.Threshold>
+      - name: crit
+        type: Optional<thalamus.definition.Threshold>
+      - name: min_trend_window
+        type: Optional<Duration>
+        summary: For an instant signal, no delta and no trend below this window.
+    naming:
+      summary: How a sample is graded. The only copy of the signal's thresholds.
+
+  - name: thalamus.definition.Owner
+    kind: newtype
+    of: String
+    naming:
+      summary: Who answers for the signal (team:<name>).
+
+  - name: thalamus.definition.Links
+    kind: struct
+    fields:
+      - name: components
+        type: List<String>
+      - name: issues
+        type: List<String>
+    naming:
+      summary: What the signal is evidence about.
+
+  - name: thalamus.definition.Author
+    kind: newtype
+    of: String
+    naming:
+      summary: Who made a revision.
+
+  - name: thalamus.definition.QueryText
+    kind: newtype
+    of: String
+    naming:
+      summary: Query text, stored once and hashed into every sample.
+
+entities:
+  - name: thalamus.definition.SignalDefinition
+    naming:
+      summary: One signal; what is measured, from which source, and how a sample of it is graded.
+    identity:
+      name: signal_id
+      type: thalamus.definition.SignalId
+    fields:
+      - name: title
+        type: String
+      - name: family
+        type: thalamus.definition.Family
+      - name: kind
+        type: thalamus.definition.SignalKind
+      - name: unit
+        type: Optional<thalamus.definition.Unit>
+      - name: dimensions
+        type: Optional<List<thalamus.dimension.DimensionKey>>
+        summary: Keys from the instance's dimension registry; an empty list declares a signal with no dimensions.
+      - name: source
+        type: thalamus.definition.Source
+      - name: extractor
+        type: thalamus.definition.ExtractorId
+      - name: query
+        type: Map<String, thalamus.definition.QueryText>
+        summary: Named query texts (numerator, denominator), stored once and hashed into every sample.
+      - name: window
+        type: Duration
+      - name: cadence
+        type: Duration
+        summary: How often the service samples the signal.
+      - name: history
+        type: thalamus.definition.History
+      - name: denominator
+        type: Optional<thalamus.definition.DenominatorSpec>
+      - name: evaluation
+        type: thalamus.definition.EvaluationSpec
+      # UNMAPPED: the objective block is OpenSLO-shaped (target, window, indicator, budgeting,
+      # burn-rate pairs) and the design gives one example only; its typed shape, and which
+      # budgeting methods and windows are admitted, are open. Kept as Json until the owner fixes it.
+      # Decided 2026-10-15 (design § 11 D7): untyped JSON until a milestone after M3 types it.
+      - name: objective
+        type: Optional<Json>
+      - name: owner
+        type: Optional<thalamus.definition.Owner>
+      - name: links
+        type: thalamus.definition.Links
+      - name: rev
+        type: Integer
+        summary: Revision counter; 1 at proposal, one more for every revision. An evaluation names the rev it was graded against.
+      - name: revised_at
+        type: Timestamp
+      - name: revised_by
+        type: thalamus.definition.Author
+      - name: mute_reason
+        type: Optional<String>
+      - name: mute_until
+        type: Optional<Timestamp>
+    # UNMAPPED: dimensions names Dimension keys, but a references relation is admitted only on a
+    # List<DimensionKey>, not on Optional<List<…>> (ESS-ENTITY-002). Optional is kept so that a
+    # Proposed definition may leave dimensions undeclared; a required list would make "an Active
+    # definition declares dimensions" vacuous. Owner: is an empty list the same as undeclared?
+    # Decided 2026-10-15 (design § 11 D8): an empty list declares zero dimensions; absent means undeclared.
+    invariants:
+      - rev >= 1
+      - any:
+          - state == Proposed
+          - state == Retired
+          - all: ["defined(unit)", "defined(dimensions)", "defined(denominator)", "defined(owner)"]
+      - any:
+          - all: ["state == Muted", "defined(mute_reason)", "defined(mute_until)"]
+          - all: ["state != Muted", "not defined(mute_reason)", "not defined(mute_until)"]
+    # UNMAPPED: what happens when a mute's expiry passes (an automatic unmute, or a definition
+    # left Muted past its date and flagged) is not stated, and ESS has no time-triggered move.
+    # Decided 2026-10-15 (design § 11 D9): the service unmutes a definition whose expiry has passed (UnmuteDefinition, actor service).
+    lifecycle:
+      initial: Proposed
+      states: [Proposed, Active, Muted, Retired]
+      terminal: [Retired]
+      transitions:
+        - name: activate
+          from: [Proposed]
+          to: Active
+        - name: mute
+          from: [Active]
+          to: Muted
+        - name: unmute
+          from: [Muted]
+          to: Active
+        - name: retire
+          from: [Proposed, Active, Muted]
+          to: Retired
+
+actors:
+  - name: thalamus.definition.InstanceOperator
+    naming:
+      summary: Whoever maintains an instance's definitions, reviewed like code.
+    may:
+      - thalamus.definition.ProposeDefinition
+      - thalamus.definition.ReviseDefinition
+      - thalamus.definition.ActivateDefinition
+      - thalamus.definition.MuteDefinition
+      - thalamus.definition.UnmuteDefinition
+      - thalamus.definition.RetireDefinition
+
+errors:
+  - name: thalamus.definition.DefinitionExists
+    summary: A definition with this id exists; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.UnknownDefinition
+    summary: No definition has this id; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.DefinitionStateConflict
+    summary: The definition is not in a state this command acts from; nothing changed.
+    fields:
+      - name: current
+        type: thalamus.definition.SignalDefinition.State
+
+  - name: thalamus.definition.IncompleteDefinition
+    summary: An active definition declares unit, dimensions, denominator and owner; at least one is missing, so it stays Proposed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.MuteExpiryPassed
+    summary: A mute carries an expiry in the future; this one has passed, so nothing was muted.
+    fields:
+      - name: until
+        type: Timestamp
+
+  - name: thalamus.definition.RetiredDefinition
+    summary: A retired definition takes no revision; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.InstantNeedsFixedBaseline
+    summary: A signal of kind instant is graded against a fixed baseline only; another baseline was declared, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+events:
+  - name: thalamus.definition.DefinitionProposed
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: revised_by
+        type: thalamus.definition.Author
+
+  - name: thalamus.definition.DefinitionRevised
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: previous_rev
+        type: Integer
+      - name: revised_by
+        type: thalamus.definition.Author
+
+  - name: thalamus.definition.DefinitionActivated
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.DefinitionMuted
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: reason
+        type: String
+      - name: until
+        type: Timestamp
+
+  - name: thalamus.definition.DefinitionUnmuted
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.DefinitionRetired
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+commands:
+  # UNMAPPED: every key in dimensions must be registered in the instance's dimension registry.
+  # A related-existence guard over each element of an input list (when_related quantified by
+  # exists/forall over input.dimensions) is not an ESS construct; held by a Rust test until it is.
+  - name: thalamus.definition.ProposeDefinition
+    naming:
+      wire: propose
+      display: Propose a definition
+      summary: Add a signal definition at revision 1, not yet sampled.
+    input:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: title
+        type: String
+      - name: family
+        type: thalamus.definition.Family
+      - name: kind
+        type: thalamus.definition.SignalKind
+      - name: unit
+        type: Optional<thalamus.definition.Unit>
+      - name: dimensions
+        type: Optional<List<thalamus.dimension.DimensionKey>>
+      - name: source
+        type: thalamus.definition.Source
+      - name: extractor
+        type: thalamus.definition.ExtractorId
+      - name: query
+        type: Map<String, thalamus.definition.QueryText>
+      - name: window
+        type: Duration
+      - name: cadence
+        type: Duration
+      - name: history
+        type: thalamus.definition.History
+      - name: denominator
+        type: Optional<thalamus.definition.DenominatorSpec>
+      - name: evaluation
+        type: thalamus.definition.EvaluationSpec
+      - name: objective
+        type: Optional<Json>
+      - name: owner
+        type: Optional<thalamus.definition.Owner>
+      - name: links
+        type: thalamus.definition.Links
+      - name: author
+        type: thalamus.definition.Author
+    outcomes:
+      - name: instant-not-fixed
+        when:
+          all:
+            - kind == instant
+            - exists: {in: evaluation.baselines, as: b, that: b != fixed}
+        error: thalamus.definition.InstantNeedsFixedBaseline
+        payload:
+          thalamus.definition.InstantNeedsFixedBaseline:
+            signal_id: input.signal_id
+        summary: An instant signal declared a baseline other than fixed; nothing was proposed.
+      - name: proposed
+        creates: thalamus.definition.SignalDefinition
+        instance: signal_id
+        sets:
+          title: input.title
+          family: input.family
+          kind: input.kind
+          unit: input.unit
+          dimensions: input.dimensions
+          source: input.source
+          extractor: input.extractor
+          query: input.query
+          window: input.window
+          cadence: input.cadence
+          history: input.history
+          denominator: input.denominator
+          evaluation: input.evaluation
+          objective: input.objective
+          owner: input.owner
+          links: input.links
+          rev: 1
+          revised_at: {generated: true}
+          revised_by: input.author
+        emits: [thalamus.definition.DefinitionProposed]
+        payload:
+          thalamus.definition.DefinitionProposed:
+            signal_id: input.signal_id
+            revised_by: input.author
+        summary: The definition exists at revision 1 and is Proposed.
+      - name: already-defined
+        existing_instance: true
+        error: thalamus.definition.DefinitionExists
+        payload:
+          thalamus.definition.DefinitionExists:
+            signal_id: input.signal_id
+        summary: The id is taken; nothing changed.
+
+  - name: thalamus.definition.ReviseDefinition
+    naming:
+      wire: revise
+      display: Revise a definition
+      summary: Replace a definition's body and count one revision, with its date and author. A revision always declares unit, dimensions, denominator and owner.
+    input:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: title
+        type: String
+      - name: family
+        type: thalamus.definition.Family
+      - name: kind
+        type: thalamus.definition.SignalKind
+      - name: unit
+        type: thalamus.definition.Unit
+      - name: dimensions
+        type: List<thalamus.dimension.DimensionKey>
+      - name: source
+        type: thalamus.definition.Source
+      - name: extractor
+        type: thalamus.definition.ExtractorId
+      - name: query
+        type: Map<String, thalamus.definition.QueryText>
+      - name: window
+        type: Duration
+      - name: cadence
+        type: Duration
+      - name: history
+        type: thalamus.definition.History
+      - name: denominator
+        type: thalamus.definition.DenominatorSpec
+      - name: evaluation
+        type: thalamus.definition.EvaluationSpec
+      - name: objective
+        type: Optional<Json>
+      - name: owner
+        type: thalamus.definition.Owner
+      - name: links
+        type: thalamus.definition.Links
+      - name: author
+        type: thalamus.definition.Author
+    outcomes:
+      - name: retired
+        when_subject:
+          predicate: state == Retired
+        error: thalamus.definition.RetiredDefinition
+        payload:
+          thalamus.definition.RetiredDefinition:
+            signal_id: input.signal_id
+        summary: The definition is retired; nothing changed.
+      - name: instant-not-fixed
+        when:
+          all:
+            - kind == instant
+            - exists: {in: evaluation.baselines, as: b, that: b != fixed}
+        error: thalamus.definition.InstantNeedsFixedBaseline
+        payload:
+          thalamus.definition.InstantNeedsFixedBaseline:
+            signal_id: input.signal_id
+        summary: An instant signal declared a baseline other than fixed; nothing changed.
+      - name: revised
+        updates: thalamus.definition.SignalDefinition
+        instance: signal_id
+        sets:
+          title: input.title
+          family: input.family
+          kind: input.kind
+          unit: input.unit
+          dimensions: input.dimensions
+          source: input.source
+          extractor: input.extractor
+          query: input.query
+          window: input.window
+          cadence: input.cadence
+          history: input.history
+          denominator: input.denominator
+          evaluation: input.evaluation
+          objective: input.objective
+          owner: input.owner
+          links: input.links
+          rev: {increment: 1}
+          revised_at: {generated: true}
+          revised_by: input.author
+        emits: [thalamus.definition.DefinitionRevised]
+        payload:
+          thalamus.definition.DefinitionRevised:
+            signal_id: input.signal_id
+            previous_rev: {subject: rev}
+            revised_by: input.author
+        summary: The body is replaced and rev is one higher; evaluations already recorded keep the rev they name.
+      - name: no-such-definition
+        unknown_instance: true
+        error: thalamus.definition.UnknownDefinition
+        payload:
+          thalamus.definition.UnknownDefinition:
+            signal_id: input.signal_id
+        summary: No definition has this id; nothing changed.
+
+  - name: thalamus.definition.ActivateDefinition
+    naming:
+      wire: activate
+      display: Activate a definition
+      summary: Start sampling a proposed definition.
+    input:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+    outcomes:
+      - name: incomplete
+        when_subject:
+          predicate:
+            any: ["not defined(unit)", "not defined(dimensions)", "not defined(denominator)", "not defined(owner)"]
+        error: thalamus.definition.IncompleteDefinition
+        payload:
+          thalamus.definition.IncompleteDefinition:
+            signal_id: input.signal_id
+        summary: Unit, dimensions, denominator or owner is missing; the definition stays Proposed.
+      - name: activated
+        moves: thalamus.definition.SignalDefinition.activate
+        instance: signal_id
+        emits: [thalamus.definition.DefinitionActivated]
+        payload:
+          thalamus.definition.DefinitionActivated:
+            signal_id: input.signal_id
+        summary: The definition is Active; the scheduler samples it on its cadence.
+      - name: wrong-state
+        wrong_state: true
+        error: thalamus.definition.DefinitionStateConflict
+        payload:
+          thalamus.definition.DefinitionStateConflict:
+            current: {subject: state}
+        summary: The definition is not Proposed; nothing changed.
+      - name: no-such-definition
+        unknown_instance: true
+        error: thalamus.definition.UnknownDefinition
+        payload:
+          thalamus.definition.UnknownDefinition:
+            signal_id: input.signal_id
+        summary: No definition has this id; nothing changed.
+
+  - name: thalamus.definition.MuteDefinition
+    naming:
+      wire: mute
+      display: Mute a definition
+      summary: Stop grading an active definition until an expiry, for a stated reason.
+    input:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: reason
+        type: String
+      - name: until
+        type: Timestamp
+    outcomes:
+      - name: expiry-passed
+        when: until <= now
+        error: thalamus.definition.MuteExpiryPassed
+        payload:
+          thalamus.definition.MuteExpiryPassed:
+            until: input.until
+        summary: The expiry is not in the future; nothing was muted.
+      - name: muted
+        moves: thalamus.definition.SignalDefinition.mute
+        instance: signal_id
+        sets:
+          mute_reason: input.reason
+          mute_until: input.until
+        emits: [thalamus.definition.DefinitionMuted]
+        payload:
+          thalamus.definition.DefinitionMuted:
+            signal_id: input.signal_id
+            reason: input.reason
+            until: input.until
+        summary: The definition is Muted and carries its reason and expiry.
+      - name: wrong-state
+        wrong_state: true
+        error: thalamus.definition.DefinitionStateConflict
+        payload:
+          thalamus.definition.DefinitionStateConflict:
+            current: {subject: state}
+        summary: The definition is not Active; nothing changed.
+      - name: no-such-definition
+        unknown_instance: true
+        error: thalamus.definition.UnknownDefinition
+        payload:
+          thalamus.definition.UnknownDefinition:
+            signal_id: input.signal_id
+        summary: No definition has this id; nothing changed.
+
+  - name: thalamus.definition.UnmuteDefinition
+    naming:
+      wire: unmute
+      display: Unmute a definition
+      summary: Return a muted definition to Active and drop its mute.
+    input:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+    outcomes:
+      - name: unmuted
+        moves: thalamus.definition.SignalDefinition.unmute
+        instance: signal_id
+        sets:
+          mute_reason: {cleared: true}
+          mute_until: {cleared: true}
+        emits: [thalamus.definition.DefinitionUnmuted]
+        payload:
+          thalamus.definition.DefinitionUnmuted:
+            signal_id: input.signal_id
+        summary: The definition is Active again and carries no mute.
+      - name: wrong-state
+        wrong_state: true
+        error: thalamus.definition.DefinitionStateConflict
+        payload:
+          thalamus.definition.DefinitionStateConflict:
+            current: {subject: state}
+        summary: The definition is not Muted; nothing changed.
+      - name: no-such-definition
+        unknown_instance: true
+        error: thalamus.definition.UnknownDefinition
+        payload:
+          thalamus.definition.UnknownDefinition:
+            signal_id: input.signal_id
+        summary: No definition has this id; nothing changed.
+
+  - name: thalamus.definition.RetireDefinition
+    naming:
+      wire: retire
+      display: Retire a definition
+      summary: Stop the signal for good. Its samples and evaluations stay.
+    input:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+    outcomes:
+      - name: retired
+        moves: thalamus.definition.SignalDefinition.retire
+        instance: signal_id
+        sets:
+          mute_reason: {cleared: true}
+          mute_until: {cleared: true}
+        emits: [thalamus.definition.DefinitionRetired]
+        payload:
+          thalamus.definition.DefinitionRetired:
+            signal_id: input.signal_id
+        summary: The definition is Retired; it is never sampled again.
+      - name: wrong-state
+        wrong_state: true
+        error: thalamus.definition.DefinitionStateConflict
+        payload:
+          thalamus.definition.DefinitionStateConflict:
+            current: {subject: state}
+        summary: The definition is already Retired; nothing changed.
+      - name: no-such-definition
+        unknown_instance: true
+        error: thalamus.definition.UnknownDefinition
+        payload:
+          thalamus.definition.UnknownDefinition:
+            signal_id: input.signal_id
+        summary: No definition has this id; nothing changed.
+
+views:
+  - name: thalamus.definition.Definitions
+    source: thalamus.definition.SignalDefinition
+    consistency: read_your_writes
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: title
+        type: String
+      - name: family
+        type: thalamus.definition.Family
+      - name: kind
+        type: thalamus.definition.SignalKind
+      - name: unit
+        type: Optional<thalamus.definition.Unit>
+      - name: dimensions
+        type: Optional<List<thalamus.dimension.DimensionKey>>
+      - name: source
+        type: thalamus.definition.Source
+      - name: extractor
+        type: thalamus.definition.ExtractorId
+      - name: query
+        type: Map<String, thalamus.definition.QueryText>
+      - name: window
+        type: Duration
+      - name: cadence
+        type: Duration
+      - name: history
+        type: thalamus.definition.History
+      - name: denominator
+        type: Optional<thalamus.definition.DenominatorSpec>
+      - name: objective
+        type: Optional<Json>
+      - name: owner
+        type: Optional<thalamus.definition.Owner>
+      - name: links
+        type: thalamus.definition.Links
+      - name: rev
+        type: Integer
+      - name: revised_at
+        type: Timestamp
+      - name: revised_by
+        type: thalamus.definition.Author
+      - name: mute_reason
+        type: Optional<String>
+      - name: mute_until
+        type: Optional<Timestamp>
+      - name: state
+        type: thalamus.definition.SignalDefinition.State
+    naming:
+      wire: definitions
+      display: Definitions
+      summary: Every definition with its state and revision. The grading block (thresholds) is read from the instance's definition files, its one copy, and is not served here.
+
+  - name: thalamus.definition.ActiveDefinitions
+    source: thalamus.definition.SignalDefinition
+    consistency: read_your_writes
+    filter: state == Active
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+      - name: title
+        type: String
+      - name: family
+        type: thalamus.definition.Family
+      - name: kind
+        type: thalamus.definition.SignalKind
+      - name: unit
+        type: Optional<thalamus.definition.Unit>
+      - name: dimensions
+        type: Optional<List<thalamus.dimension.DimensionKey>>
+      - name: source
+        type: thalamus.definition.Source
+      - name: cadence
+        type: Duration
+      - name: owner
+        type: Optional<thalamus.definition.Owner>
+      - name: rev
+        type: Integer
+    naming:
+      wire: active
+      display: Active definitions

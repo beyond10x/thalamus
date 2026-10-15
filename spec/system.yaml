@@ -1,0 +1,10 @@
+format: ess/24
+system: thalamus
+version: v1
+
+domains:
+  - thalamus.definition
+  - thalamus.dimension
+  - thalamus.observation
+  - thalamus.evaluation
+  - thalamus.assertion

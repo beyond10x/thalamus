@@ -1,0 +1,277 @@
+domain: thalamus.dimension
+
+summary: The closed, per-instance set of dimension keys a sample may carry, and where each key's values resolve.
+
+naming:
+  wire: dimensions
+  display: Dimensions
+
+types:
+  - name: thalamus.dimension.RegistryId
+    kind: newtype
+    of: String
+    alphabet: "abcdefghijklmnopqrstuvwxyz0123456789_-"
+    naming:
+      summary: The instance whose dimension registry this is.
+
+  - name: thalamus.dimension.DimensionKey
+    kind: newtype
+    of: String
+    alphabet: "abcdefghijklmnopqrstuvwxyz0123456789_"
+    naming:
+      summary: A dimension key (cluster, namespace, tenant, component, suite).
+
+  - name: thalamus.dimension.DimensionValue
+    kind: newtype
+    of: String
+    naming:
+      summary: A value of one dimension key in one series.
+
+  - name: thalamus.dimension.Locator
+    kind: newtype
+    of: String
+    naming:
+      summary: The inventory or registry file a key's values are listed in (inventory/clusters, registries/components.json).
+
+  - name: thalamus.dimension.DimensionRule
+    kind: enum
+    variants: [source_only, derived]
+    naming:
+      summary: source_only means the key is set only when the source row carries it, never derived from a parent.
+
+  - name: thalamus.dimension.ValueSource
+    kind: union
+    tag: registry
+    variants:
+      connectors: thalamus.dimension.Locator
+      file: thalamus.dimension.Locator
+      open:
+    naming:
+      summary: The registry kind of a key. connectors is a Connectors inventory, file a registry file in the instance, open admits any value (test-run dimensions) and carries no locator.
+
+entities:
+  - name: thalamus.dimension.DimensionRegistry
+    naming:
+      summary: The dimension registry of one instance. It is closed; a sample with an unregistered key is refused.
+    identity:
+      name: registry_id
+      type: thalamus.dimension.RegistryId
+    fields:
+      - name: title
+        type: String
+    relations:
+      - name: dimensions
+        kind: owns
+        target: thalamus.dimension.Dimension
+        cardinality: many
+        via: registry_id
+    lifecycle:
+      initial: Declared
+      states: [Declared]
+      terminal: [Declared]
+
+  - name: thalamus.dimension.Dimension
+    naming:
+      summary: One registered dimension key, its rule and its registry kind.
+    identity:
+      name: key
+      type: thalamus.dimension.DimensionKey
+    fields:
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+      - name: values
+        type: thalamus.dimension.ValueSource
+      - name: rule
+        type: thalamus.dimension.DimensionRule
+      - name: parent
+        type: Optional<thalamus.dimension.DimensionKey>
+        summary: The key this one nests under (namespace under cluster).
+      - name: otel_attribute
+        type: Optional<String>
+        summary: The OpenTelemetry resource attribute the key maps to (k8s.namespace.name, service.name).
+    relations:
+      - name: parent_dimension
+        kind: references
+        target: thalamus.dimension.Dimension
+        cardinality: one
+        via: parent
+    lifecycle:
+      initial: Registered
+      states: [Registered]
+      terminal: [Registered]
+
+actors:
+  - name: thalamus.dimension.InstanceOperator
+    naming:
+      summary: Whoever maintains an instance's registry and definitions.
+    may:
+      - thalamus.dimension.DeclareRegistry
+      - thalamus.dimension.RegisterDimension
+
+errors:
+  - name: thalamus.dimension.RegistryExists
+    summary: A registry with this id is already declared; nothing changed.
+    fields:
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+
+  - name: thalamus.dimension.UnknownRegistry
+    summary: No registry with this id is declared; nothing was registered.
+    fields:
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+
+  - name: thalamus.dimension.DimensionExists
+    summary: The key is already registered; nothing changed.
+    fields:
+      - name: key
+        type: thalamus.dimension.DimensionKey
+
+  - name: thalamus.dimension.UnknownParent
+    summary: The parent key is not registered; nothing was registered.
+    fields:
+      - name: parent
+        type: Optional<thalamus.dimension.DimensionKey>
+
+events:
+  - name: thalamus.dimension.RegistryDeclared
+    fields:
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+
+  - name: thalamus.dimension.DimensionRegistered
+    fields:
+      - name: key
+        type: thalamus.dimension.DimensionKey
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+      - name: rule
+        type: thalamus.dimension.DimensionRule
+
+commands:
+  - name: thalamus.dimension.DeclareRegistry
+    naming:
+      wire: declare-registry
+      display: Declare a dimension registry
+      summary: Declare an instance's dimension registry, holding no keys yet.
+    input:
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+      - name: title
+        type: String
+    outcomes:
+      - name: declared
+        creates: thalamus.dimension.DimensionRegistry
+        instance: registry_id
+        sets:
+          title: input.title
+        emits: [thalamus.dimension.RegistryDeclared]
+        payload:
+          thalamus.dimension.RegistryDeclared:
+            registry_id: input.registry_id
+        summary: The registry exists and admits no key yet.
+      - name: already-declared
+        existing_instance: true
+        error: thalamus.dimension.RegistryExists
+        payload:
+          thalamus.dimension.RegistryExists:
+            registry_id: input.registry_id
+        summary: The id is taken; nothing changed.
+
+  - name: thalamus.dimension.RegisterDimension
+    naming:
+      wire: register-dimension
+      display: Register a dimension key
+      summary: Admit one key to a registry, with its rule and where its values resolve.
+    input:
+      - name: key
+        type: thalamus.dimension.DimensionKey
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+      - name: values
+        type: thalamus.dimension.ValueSource
+      - name: rule
+        type: thalamus.dimension.DimensionRule
+      - name: parent
+        type: Optional<thalamus.dimension.DimensionKey>
+      - name: otel_attribute
+        type: Optional<String>
+    outcomes:
+      - name: no-registry
+        when_related:
+          via: input.registry_id
+          exists: false
+        error: thalamus.dimension.UnknownRegistry
+        payload:
+          thalamus.dimension.UnknownRegistry:
+            registry_id: input.registry_id
+        summary: The registry is not declared; nothing was registered.
+      - name: no-parent
+        when_related:
+          via: input.parent
+          exists: false
+        error: thalamus.dimension.UnknownParent
+        payload:
+          thalamus.dimension.UnknownParent:
+            parent: input.parent
+        summary: A parent key was named and is not registered; nothing was registered.
+      - name: registered
+        creates: thalamus.dimension.Dimension
+        instance: key
+        sets:
+          registry_id: input.registry_id
+          values: input.values
+          rule: input.rule
+          parent: input.parent
+          otel_attribute: input.otel_attribute
+        emits: [thalamus.dimension.DimensionRegistered]
+        payload:
+          thalamus.dimension.DimensionRegistered:
+            key: input.key
+            registry_id: input.registry_id
+            rule: input.rule
+        summary: The key is registered; samples may carry it.
+      - name: already-registered
+        existing_instance: true
+        error: thalamus.dimension.DimensionExists
+        payload:
+          thalamus.dimension.DimensionExists:
+            key: input.key
+        summary: The key is already registered; nothing changed.
+
+views:
+  - name: thalamus.dimension.Registries
+    source: thalamus.dimension.DimensionRegistry
+    consistency: read_your_writes
+    fields:
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+      - name: title
+        type: String
+      - name: state
+        type: thalamus.dimension.DimensionRegistry.State
+    naming:
+      wire: registries
+      display: Dimension registries
+
+  - name: thalamus.dimension.Dimensions
+    source: thalamus.dimension.Dimension
+    consistency: read_your_writes
+    fields:
+      - name: key
+        type: thalamus.dimension.DimensionKey
+      - name: registry_id
+        type: thalamus.dimension.RegistryId
+      - name: values
+        type: thalamus.dimension.ValueSource
+      - name: rule
+        type: thalamus.dimension.DimensionRule
+      - name: parent
+        type: Optional<thalamus.dimension.DimensionKey>
+      - name: otel_attribute
+        type: Optional<String>
+      - name: state
+        type: thalamus.dimension.Dimension.State
+    naming:
+      wire: dimensions
+      display: Dimension keys
