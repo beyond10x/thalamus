@@ -1,0 +1,26 @@
+[
+  {
+    "input": {"query": "SELECT count(*) FROM requests WHERE failed"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "sql",
+        "operation": "query.read",
+        "revision": "op-rev-1",
+        "result": "{\"columns\":[{\"name\":\"count\",\"native_type\":\"int8\"}],\"rows\":[[\"15\"]],\"truncated\":false,\"provenance\":{\"instance\":\"sql\",\"resource\":\"reports\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+      }
+    }
+  },
+  {
+    "input": {"query": "SELECT count(*) FROM requests"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "sql",
+        "operation": "query.read",
+        "revision": "op-rev-1",
+        "result": "{\"columns\":[{\"name\":\"count\",\"native_type\":\"int8\"}],\"rows\":[[\"556\"]],\"truncated\":false,\"provenance\":{\"instance\":\"sql\",\"resource\":\"reports\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+      }
+    }
+  }
+]

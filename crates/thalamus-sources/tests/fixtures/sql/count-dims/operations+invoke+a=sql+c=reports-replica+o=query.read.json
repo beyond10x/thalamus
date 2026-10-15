@@ -1,0 +1,12 @@
+{
+  "input": {"query": "SELECT cluster, tenant, id FROM resolved_incidents"},
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "sql",
+      "operation": "query.read",
+      "revision": "op-rev-1",
+      "result": "{\"columns\":[{\"name\":\"cluster\",\"native_type\":\"text\"},{\"name\":\"tenant\",\"native_type\":\"text\"},{\"name\":\"id\",\"native_type\":\"int8\"}],\"rows\":[[\"alpha\",\"t1\",\"101\"],[\"alpha\",\"t2\",\"102\"],[\"beta\",\"t1\",\"103\"],[null,\"t1\",\"104\"]],\"truncated\":false,\"provenance\":{\"instance\":\"sql\",\"resource\":\"reports\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+    }
+  }
+}

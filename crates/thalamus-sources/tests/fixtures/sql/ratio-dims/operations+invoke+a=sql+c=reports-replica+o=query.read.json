@@ -1,0 +1,26 @@
+[
+  {
+    "input": {"query": "SELECT cluster, count(*) AS value FROM requests WHERE failed GROUP BY cluster"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "sql",
+        "operation": "query.read",
+        "revision": "op-rev-1",
+        "result": "{\"columns\":[{\"name\":\"cluster\",\"native_type\":\"text\"},{\"name\":\"value\",\"native_type\":\"int8\"}],\"rows\":[[\"alpha\",\"1\"]],\"truncated\":false,\"provenance\":{\"instance\":\"sql\",\"resource\":\"reports\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+      }
+    }
+  },
+  {
+    "input": {"query": "SELECT cluster, count(*) AS value FROM requests GROUP BY cluster"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "sql",
+        "operation": "query.read",
+        "revision": "op-rev-1",
+        "result": "{\"columns\":[{\"name\":\"cluster\",\"native_type\":\"text\"},{\"name\":\"value\",\"native_type\":\"int8\"}],\"rows\":[[\"alpha\",\"10\"],[\"beta\",\"40\"]],\"truncated\":false,\"provenance\":{\"instance\":\"sql\",\"resource\":\"reports\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+      }
+    }
+  }
+]
