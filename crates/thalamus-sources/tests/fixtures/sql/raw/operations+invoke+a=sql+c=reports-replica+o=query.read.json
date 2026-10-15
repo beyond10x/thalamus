@@ -1,0 +1,12 @@
+{
+  "input": {"query": "SELECT cluster, value FROM queue_depth"},
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "sql",
+      "operation": "query.read",
+      "revision": "op-rev-1",
+      "result": "{\"columns\":[{\"name\":\"cluster\",\"native_type\":\"text\"},{\"name\":\"value\",\"native_type\":\"numeric\"}],\"rows\":[[\"alpha\",\"0.0250\"],[\"beta\",\"1e-4\"],[\"gamma\",\"-1.5e+3\"],[\"delta\",\"123456789012345678901234567890.000000000000000000001\"],[\"epsilon\",null]],\"truncated\":false,\"provenance\":{\"instance\":\"sql\",\"resource\":\"reports\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+    }
+  }
+}

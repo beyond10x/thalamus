@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "permission denied for table queue_depth",
+      "data": {"kind": "operational", "code": "forbidden", "stage": "dispatch", "next_action": "fix_grants"}
+    }
+  }
+}
