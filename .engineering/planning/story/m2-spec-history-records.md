@@ -2,12 +2,11 @@
 format: aep.planning-md/3
 id: story:m2-spec-history-records
 kind: story
-status: draft
+status: implemented
 title: Specify settled transitions, daily rollups, the rolling-median window and the service unmute actor in ESS
 relations:
 - decomposes: epic:history-and-transitions
 - depends_on: epic:signal-contract
-- depends_on: story:m1-cli-eval-show
 scope:
 - confidence: inferred
   path: crates/thalamus-core/src/behaviour/definition.rs
@@ -37,7 +36,11 @@ scope:
   path: spec/suite.json
 - confidence: inferred
   path: spec/system.yaml
-revision: 7
+revision: 10
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T10:22:57Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-15T10:22:57Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-15T12:32:46Z", actor: "human:timo", revision: 10, decided_on: {"recorded":{"test_result":1,"review_outcome":8}}}
 ---
 ## Context
 

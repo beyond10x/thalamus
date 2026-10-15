@@ -152,19 +152,19 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/baselines",
     ),
+    shipped(
+        "Grading",
+        "Persistence settles verdict changes",
+        "thalamus-core settles a change after k agreeing evaluations (k_crit for CRIT); WARN clears after m OK evaluations, never on N/A or UNKNOWN.",
+        Evidence::Test("crates/thalamus-core/tests/hysteresis.rs::unknown_does_not_clear_warn"),
+        "/docs/concepts/verdicts#persistence",
+    ),
     planned(
         "Grading",
         "Same-slot median and rolling median baselines",
         "Computed from stored samples.",
         "story:m2-store-baselines",
         "/docs/concepts/baselines",
-    ),
-    planned(
-        "Grading",
-        "Persistence settles verdict changes",
-        "A change counts after k agreeing evaluations (k_crit for CRIT); WARN clears after m OK evaluations.",
-        "story:m2-hysteresis-core",
-        "/docs/concepts/verdicts#persistence",
     ),
     shipped(
         "Grading",
@@ -191,11 +191,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals",
     ),
-    planned(
+    shipped(
         "Instances",
         "Samples and evaluations persist in Eventlog",
         "One append-only stream per instance, on the File or SQLite provider.",
-        "story:m1-eventlog-store",
+        Evidence::Test(
+            "crates/thalamus-store/tests/store.rs::reopened_store_reads_series_in_ts_order",
+        ),
         "/docs/concepts/samples#storage",
     ),
     planned(

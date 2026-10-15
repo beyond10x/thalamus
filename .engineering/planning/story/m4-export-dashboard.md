@@ -18,7 +18,7 @@ scope:
   path: crates/thalamus-core/tests/export_dashboard.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/fixtures/export_dashboard
-revision: 3
+revision: 4
 ---
 ## Context
 
@@ -55,3 +55,7 @@ Planned (inferred):
 
 - `cargo test -p thalamus-core --test export_dashboard` passes the failing-first tests `dashboard_known_answer` (golden file `crates/thalamus-core/tests/fixtures/export_dashboard/dashboard.json`), `one_panel_per_exported_definition_grouped_by_layer`, `non_exported_definition_has_no_panel`, `dimension_becomes_template_variable`, `fixed_lines_become_threshold_steps`, `ucum_unit_maps_to_panel_unit` and `datasource_is_a_variable_without_url_or_host`.
 - `cargo test -p thalamus-cli --test export_dashboard` passes `export_dashboard_writes_json_that_parses`.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- The Grafana schema version is the current one when this story lands, pinned by the golden file and named in the § 11 row.

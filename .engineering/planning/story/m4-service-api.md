@@ -14,7 +14,7 @@ scope:
   path: crates/thalamus-service/src/api.rs
 - confidence: inferred
   path: crates/thalamus-service/tests/api.rs
-revision: 4
+revision: 7
 ---
 ## Context
 
@@ -48,3 +48,13 @@ Planned (inferred):
 ## Acceptance
 
 `cargo test -p thalamus-service --test api` passes, against a seeded store with no source reachable, the failing-first tests `verdicts_are_newest_evaluation_per_series_worst_first`, `unknown_verdict_has_no_score_key`, `verdicts_filter_by_signal`, `series_returns_samples_and_evaluations_in_ts_order`, `series_gap_is_not_filled`, `series_range_is_half_open` and `unknown_series_answers_404`.
+
+## Note from story:m1-instance-registry (2026-10-15)
+
+Design § 11 D19: the definition file is the only copy of a definition. Over the file-backed `Instance` ports a generated `ProposeDefinition`, `ReviseDefinition`, `MuteDefinition`, `UnmuteDefinition` or `RetireDefinition` changes nothing, yet the generated behaviour answers success (the ports' `put` cannot fail; the refusal is only an `Instance::refused_writes()` entry). The service API never routes those commands to an `Instance`: it answers them with a refusal naming D19 (definitions change by editing the file), with a failing-first test that a retire request leaves the response a refusal and the file unchanged. `UnmuteDefinition` recorded by the scheduler (D19) goes to the Eventlog store, not to the `Instance`.
+
+From review-result:adversary-m2-spec-history-records-pass-2, finding 5: a network `RecordTransition` that breaks a `Transition` invariant (`first_ts <= settled_ts`, `from_verdict` absent or different from `to_verdict`, `definition_rev >= 1`) is answered 501 with no declared error by the generated server (`generated/thalamus-model/src/server/entry.rs`). When this story routes commands to an instance, such a request is answered with a declared refusal, and a test shows it.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- This story's API decisions (no `score` key on `UNKNOWN`, 404 for an unknown series, 7-day default range) get a § 11 row when it lands.

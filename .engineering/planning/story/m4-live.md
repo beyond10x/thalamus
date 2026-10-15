@@ -22,7 +22,7 @@ scope:
   path: crates/thalamus-service/src/scheduler.rs
 - confidence: inferred
   path: crates/thalamus-service/tests/live.rs
-revision: 5
+revision: 6
 ---
 ## Context
 
@@ -74,3 +74,7 @@ Planned (inferred):
 - `cargo test -p thalamus-pipeline --test cloudevents` passes the failing-first tests `evaluation_envelope_has_type_subject_time_and_record` and `transition_envelope_has_type_subject_and_settling_time`.
 - `cargo test -p thalamus-service --test transitions` (`story:m2-transitions`) still passes unchanged, `transition_emitted_as_cloudevent_with_series_subject` included, and `grep -n '"specversion"' crates/thalamus-service/src/events.rs crates/thalamus-service/src/live.rs` prints nothing (the envelope is built in one place).
 - `cargo test -p thalamus-service --test live` passes, on a fake clock and a fake source driving the scheduler, the failing-first tests `stream_carries_each_recorded_evaluation_as_cloudevent` (type, `subject` = series key, `time` = `ts`, `data` the evaluation record), `stream_unknown_evaluation_has_no_score`, `publish_without_subscriber_does_not_block_the_tick`, `lagging_subscriber_is_closed_with_a_comment`, `live_table_seeded_from_store_then_updated_from_stream`, `live_page_shows_unknown_hatched_never_ok`, `live_page_orders_worst_first` and `live_page_has_no_script_and_refreshes`.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- The SSE channel capacity is 256 events per subscriber.

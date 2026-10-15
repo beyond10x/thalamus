@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T10:02:55Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-verdict-grading",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main 5e92b43"
+  }
+}

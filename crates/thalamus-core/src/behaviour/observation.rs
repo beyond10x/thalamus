@@ -116,7 +116,7 @@ where
 /// three such texts can form a cycle. So the rows are not sorted with it directly. The instants
 /// are sorted by instant and the rest by bytes, and the two runs are merged by
 /// [`timestamp_order`], which puts every adjacent pair in order whatever the texts are.
-pub(crate) fn in_time_order<T>(rows: Vec<T>, ts: impl Fn(&T) -> &str) -> Vec<T> {
+pub fn in_time_order<T>(rows: Vec<T>, ts: impl Fn(&T) -> &str) -> Vec<T> {
     let (mut instants, mut texts): (Vec<T>, Vec<T>) = rows
         .into_iter()
         .partition(|row| Instant::parse(ts(row)).is_some());
@@ -146,7 +146,7 @@ pub(crate) fn in_time_order<T>(rows: Vec<T>, ts: impl Fn(&T) -> &str) -> Vec<T> 
 /// Two `Timestamp` wire texts in order as the ESS reference runner ranks them (`compare_nodes`):
 /// two instants by the instant they name, so `2026-01-05T10:00:01+02:00` is before
 /// `2026-01-05T09:00:03Z`, and any other pair by its UTF-8 bytes.
-pub(crate) fn timestamp_order(left: &str, right: &str) -> Ordering {
+pub fn timestamp_order(left: &str, right: &str) -> Ordering {
     match (Instant::parse(left), Instant::parse(right)) {
         (Some(left), Some(right)) => left.cmp(&right),
         _ => left.as_bytes().cmp(right.as_bytes()),
@@ -158,14 +158,14 @@ pub(crate) fn timestamp_order(left: &str, right: &str) -> Ordering {
 /// `59`, one to nine fraction digits, and `Z`, `z` or a `±HH:MM` offset. No zone database and no
 /// clock. The one instant reader of this crate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) struct Instant {
+pub struct Instant {
     seconds: i64,
     nanos: u32,
 }
 
 impl Instant {
     /// The instant `text` names, or `None` where it is not an RFC 3339 `date-time`.
-    pub(crate) fn parse(text: &str) -> Option<Self> {
+    pub fn parse(text: &str) -> Option<Self> {
         let bytes = text.as_bytes();
         let digits = |from: usize, to: usize| -> Option<u32> {
             let slice = bytes.get(from..to)?;
@@ -234,7 +234,7 @@ impl Instant {
     }
 
     /// The whole seconds from 1970-01-01T00:00:00Z, the fraction dropped.
-    pub(crate) fn seconds(self) -> i64 {
+    pub fn seconds(self) -> i64 {
         self.seconds
     }
 }
@@ -256,9 +256,11 @@ pub(crate) fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
 /// The specification leaves the identity of a recorded sample, evaluation and assertion to the
 /// implementation, and its generated context port mints none. An identity is never issued twice
 /// by one store, also after the row that carried it is deleted, because an evaluation or a
-/// transition still references it (design § 2.3, D13). The in-memory harness holds one sequence
-/// per process for every in-memory store (`crate::conformance`); a durable store mints a ULID
-/// instead (design § 2.2).
+/// transition still references it (design § 2.3, D13). Identities are store-local (design § 2.2).
+/// The in-memory harness holds one sequence per process for every in-memory store
+/// (`crate::conformance`); a durable store keeps its own and resumes it on open, after the highest
+/// number of each prefix it holds, so a store reopened by a new process never issues an identity
+/// again.
 pub trait IdSequence {
     /// The next number of the sequence of `prefix`, one higher than the last it answered, or
     /// `None` once the sequence is spent.
@@ -272,7 +274,7 @@ const LAST_NUMBER: u64 = 999_999_999_999;
 /// sequence in twelve digits (`smp_000000000001`), skipping any `taken` already claims.
 ///
 /// Fixed width makes the identities of one sequence sort as text in the order they were issued,
-/// as a ULID does, so a store keyed by identity keeps rows in the order they were recorded.
+/// so a store keyed by identity keeps rows in the order they were recorded.
 ///
 /// # Errors
 ///

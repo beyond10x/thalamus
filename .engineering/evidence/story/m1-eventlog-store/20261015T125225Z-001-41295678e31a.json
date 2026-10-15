@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T12:52:25Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-eventlog-store",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "coordinator verification, wave 20261015d",
+    "review": "review-result:adversary-m1-eventlog-store-pass-2",
+    "outcome": "fixed"
+  }
+}

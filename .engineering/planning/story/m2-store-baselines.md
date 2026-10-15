@@ -22,7 +22,7 @@ scope:
   path: crates/thalamus-core/tests/store_baselines.rs
 - confidence: inferred
   path: crates/thalamus-pipeline/src/evaluate.rs
-revision: 5
+revision: 9
 ---
 ## Context
 
@@ -58,3 +58,11 @@ Planned (inferred):
 
 - `cargo test -p thalamus-core --test store_baselines` passes the failing-first tests `same_slot_median_of_four_weeks`, `same_slot_missing_week_is_unknown`, `same_slot_before_series_is_unknown`, `same_slot_uses_utc_weekday_and_hour`, `rolling_median_of_last_n_ok`, `rolling_median_skips_unknown_and_partial` and `rolling_median_too_few_is_unknown`.
 - `cargo test -p thalamus-cli --test eval_store_history` passes `eval_grades_store_history_definition_from_stored_samples`.
+
+## Note from story:m2-spec-history-records (2026-10-15)
+
+The specification now declares `persistence`, `evaluation.fixed` and `evaluation.rolling_n` on a definition, but the definition-file loader (`crates/thalamus-core/src/registry.rs`) sets all three to `None`. This story also teaches the loader to read the field(s) it consumes, with the registry's rules (repeated keys refused, values validated), and a failing-first loader test; `website/docs/concepts/signals.md` lists the field.
+
+## Note, superseding the one above (2026-10-15)
+
+The loader now reads `evaluation.fixed`, `evaluation.rolling_n` and `persistence` in story:m2-spec-history-records (its adversary pass 1 found the gap with failing cases); this story no longer edits `crates/thalamus-core/src/registry.rs` for them.

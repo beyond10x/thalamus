@@ -67,16 +67,16 @@
     },
     {
       "area": "Grading",
-      "detail": "Computed from stored samples. Planned in story:m2-store-baselines.",
-      "href": "/docs/concepts/baselines",
-      "label": "Same-slot median and rolling median baselines",
-      "status": "planned"
+      "detail": "thalamus-core settles a change after k agreeing evaluations (k_crit for CRIT); WARN clears after m OK evaluations, never on N/A or UNKNOWN.",
+      "href": "/docs/concepts/verdicts#persistence",
+      "label": "Persistence settles verdict changes",
+      "status": "shipped"
     },
     {
       "area": "Grading",
-      "detail": "A change counts after k agreeing evaluations (k_crit for CRIT); WARN clears after m OK evaluations. Planned in story:m2-hysteresis-core.",
-      "href": "/docs/concepts/verdicts#persistence",
-      "label": "Persistence settles verdict changes",
+      "detail": "Computed from stored samples. Planned in story:m2-store-baselines.",
+      "href": "/docs/concepts/baselines",
+      "label": "Same-slot median and rolling median baselines",
       "status": "planned"
     },
     {
@@ -102,10 +102,10 @@
     },
     {
       "area": "Instances",
-      "detail": "One append-only stream per instance, on the File or SQLite provider. Planned in story:m1-eventlog-store.",
+      "detail": "One append-only stream per instance, on the File or SQLite provider.",
       "href": "/docs/concepts/samples#storage",
       "label": "Samples and evaluations persist in Eventlog",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Instances",

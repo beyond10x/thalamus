@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-cli-sample
 kind: story
-status: draft
+status: active
 title: thalamus sample records one sample per series of every Active definition of an instance
 relations:
 - decomposes: epic:signal-contract
@@ -25,7 +25,10 @@ scope:
   path: crates/thalamus-pipeline/src/instance.rs
 - confidence: inferred
   path: crates/thalamus-pipeline/src/sample.rs
-revision: 3
+revision: 5
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T13:17:35Z", actor: "human:timo", revision: 4}
+- {from: "proposed", to: "active", at: "2026-10-15T13:17:35Z", actor: "human:timo", revision: 5}
 ---
 ## Outcome
 
