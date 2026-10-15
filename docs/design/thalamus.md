@@ -346,6 +346,21 @@ Two constructs to probe first, because the model depends on them:
 If ESS cannot express either, the gap is reported to the ESS repository and the rule is held by a
 Rust test with an `UNMAPPED:` marker in the spec, the pattern cortex uses.
 
+The answers (`story:m0-probes`):
+
+1. **Expressed in ESS.** `thalamus.observation.Reading` is a union tagged on `quality` (§ 11); its
+   `unknown` variant, `UnreadReading`, carries a `reason` and nothing else, so there is no nullable
+   number at all. `thalamus-spec-types` refuses a value under `unknown` (`deny_unknown_fields`).
+   The model's server decoder ignores the extra member and drops it, so the in-memory
+   `Reading::Unknown` never carries a value. `crates/thalamus-core/tests/probes.rs`
+   (`unknown_reading_carries_no_value`, `ok_reading_requires_value`) holds this.
+2. **Not expressible.** ESS has no pattern or grammar-typed string, so `thalamus.definition.Unit`
+   declares only the character set (ASCII 33–126), under an `UNMAPPED:` marker. Neither generated
+   decoder enforces that set (an ESS generator gap), so a space, a control character, non-ASCII
+   text or an empty unit decodes; `parse_ucum` refuses all of them. The grammar is
+   `thalamus_core::unit::parse_ucum`, held by `ucum_admits_design_units` and
+   `ucum_refuses_non_units` in the same file. The gap is listed in § 11.
+
 ## 9. Milestones
 
 | step | ships | acceptance |

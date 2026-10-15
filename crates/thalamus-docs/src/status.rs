@@ -118,11 +118,11 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m0-conformance-records",
         "/docs/reference/ess",
     ),
-    planned(
+    shipped(
         "Specification",
         "An unknown reading carries no value; a unit is UCUM",
         "Tests against both generated crates hold the tagged reading, and a validator holds the unit grammar ESS cannot state.",
-        "story:m0-probes",
+        Evidence::Test("crates/thalamus-core/tests/probes.rs::unknown_reading_carries_no_value"),
         "/docs/concepts/samples",
     ),
     shipped(

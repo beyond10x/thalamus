@@ -29,13 +29,13 @@ types:
     naming:
       summary: How a reading of the signal is formed. An instant signal gets no trend below its minimum trend window.
 
-  # UNMAPPED: a UCUM unit is a grammar (annotations, prefixes, exponents, products, quotients).
-  # ESS has no pattern or grammar-typed string, so only the character set is held here; the
-  # UCUM validity of the text is held by a Rust test until ESS can type it.
+  # UNMAPPED: a UCUM unit is a grammar. ESS has no pattern or grammar-typed string, so only the character set, all of ASCII
+  # 33-126, is held here (widened to it: Decided 2026-10-15 (wave 20261015c coordinator)); the grammar is held by
+  # crates/thalamus-core/tests/probes.rs (ucum_admits_design_units, ucum_refuses_non_units) until ESS types it.
   - name: thalamus.definition.Unit
     kind: newtype
     of: String
-    alphabet: "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    alphabet: "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
     naming:
       summary: A UCUM unit, case-sensitive form (1, s, By, {request}, {pod}). A ratio has unit 1.
 
