@@ -1,0 +1,10 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "metrics",
+      "operation": "series.query",
+      "revision": "op-rev-1"
+    }
+  }
+}

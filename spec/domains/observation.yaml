@@ -35,7 +35,7 @@ types:
     of: String
     alphabet: "0123456789abcdef"
     naming:
-      summary: SHA-256 of the exact query text, lower-case hex.
+      summary: SHA-256 of the canonical JSON of the definition's query map (keys sorted, no whitespace), lower-case hex.
 
   - name: thalamus.observation.Bound
     kind: enum

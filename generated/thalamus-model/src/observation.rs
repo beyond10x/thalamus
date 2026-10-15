@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d
-// contract digest 6426f4dedf49a1f3f982631528ebb33f128fbda5cbdbc34328b8d2e7a2b2c736
+// model digest 51d971079fa66242e2a2f34142dbe44422e1204f980cec980f14fbeb58009d94
+// contract digest fd2d9e49183a79ea356f366023aa03cd159da99e8e343e0af5bc5233645b32af
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! Samples — `thalamus.observation`.
@@ -78,7 +78,7 @@ pub struct Provenance {
 
 /// QueryDigest — `thalamus.observation.QueryDigest`: a distinct wrapper around `String`.
 ///
-/// SHA-256 of the exact query text, lower-case hex.
+/// SHA-256 of the canonical JSON of the definition's query map (keys sorted, no whitespace), lower-case hex.
 ///
 /// Every character is one of `0123456789abcdef`.
 #[derive(Debug, Clone, PartialEq, Eq)]

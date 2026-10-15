@@ -8,8 +8,8 @@
     "x-ess-provenance": {
       "system": "thalamus",
       "specification_version": "v1",
-      "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
-      "contract_digest": "slice-sha256/2:6426f4dedf49a1f3f982631528ebb33f128fbda5cbdbc34328b8d2e7a2b2c736"
+      "source_digest": "51d971079fa66242e2a2f34142dbe44422e1204f980cec980f14fbeb58009d94",
+      "contract_digest": "slice-sha256/2:fd2d9e49183a79ea356f366023aa03cd159da99e8e343e0af5bc5233645b32af"
     },
     "x-ess-reached-by": "network"
   },
@@ -5276,7 +5276,7 @@
       },
       "thalamus.observation.QueryDigest": {
         "title": "QueryDigest",
-        "description": "SHA-256 of the exact query text, lower-case hex.",
+        "description": "SHA-256 of the canonical JSON of the definition's query map (keys sorted, no whitespace), lower-case hex.",
         "x-ess-name": "thalamus.observation.QueryDigest",
         "x-ess-kind": "newtype",
         "type": "string",
@@ -6854,7 +6854,7 @@
     },
     "thalamus.observation.QueryDigest": {
       "title": "QueryDigest",
-      "description": "SHA-256 of the exact query text, lower-case hex.",
+      "description": "SHA-256 of the canonical JSON of the definition's query map (keys sorted, no whitespace), lower-case hex.",
       "x-ess-name": "thalamus.observation.QueryDigest",
       "x-ess-kind": "newtype",
       "type": "string",
