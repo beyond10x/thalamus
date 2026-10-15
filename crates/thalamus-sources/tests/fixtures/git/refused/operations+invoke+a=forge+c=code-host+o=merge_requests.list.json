@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "the connection may not read this project's merge requests",
+      "data": {"kind": "operational", "code": "forbidden", "stage": "dispatch", "next_action": "fix_grants"}
+    }
+  }
+}

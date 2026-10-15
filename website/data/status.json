@@ -151,10 +151,10 @@
     },
     {
       "area": "Sources",
-      "detail": "Repository records as count and ratio samples. Planned in story:m3-git-adapter.",
+      "detail": "GitLab-hosted repository records as count and ratio samples; an unfinished page walk is a lower bound.",
       "href": "/docs/concepts/signals#sources",
       "label": "Git hosting",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",
