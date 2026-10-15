@@ -17,6 +17,7 @@
 
 use std::collections::BTreeMap;
 use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::sync::{Mutex, PoisonError};
 
 use thalamus_model::actor::{Actor, Caller};
 use thalamus_model::behaviour::{
@@ -31,6 +32,8 @@ use thalamus_model::server::entry::Refused;
 use thalamus_model::server::thalamus_service::handle;
 use thalamus_model::system::System;
 use thalamus_model::{assertion, definition, dimension, evaluation, observation};
+
+use crate::behaviour::observation::{IdSequence, Instant, timestamp_order};
 
 /// The published wire contract the scenario values are rendered into.
 const OPENAPI: &str =
@@ -70,6 +73,32 @@ pub struct Ports<S> {
     pub clock: Option<Timestamp>,
 }
 
+impl<S> Ports<S> {
+    /// `storage` and `clock`.
+    pub fn new(storage: S, clock: Option<Timestamp>) -> Self {
+        Self { storage, clock }
+    }
+}
+
+/// The identity sequences of the in-memory stores: one never-decreasing number per prefix.
+///
+/// The sequence belongs with the store, so that every `Ports` over one store draws from it. The
+/// in-memory store is the generated `MemoryPorts`, whose state is private to generated code this
+/// crate does not edit, so it cannot carry a sequence of its own. The sequence is therefore held
+/// once per process, shared by every in-memory store: a number once answered is never answered
+/// again, to any `Ports` over any store, whatever a store deletes. The numbers one store sees
+/// are increasing but not consecutive; minted at a fixed width, they still sort in the order
+/// they were issued. A durable store mints its own identities (design § 2.2).
+static SEQUENCES: Mutex<BTreeMap<&str, u64>> = Mutex::new(BTreeMap::new());
+
+impl<S> IdSequence for Ports<S> {
+    fn next_number(&mut self, prefix: &'static str) -> Option<u64> {
+        let mut sequences = SEQUENCES.lock().unwrap_or_else(PoisonError::into_inner);
+        let last = sequences.entry(prefix).or_insert(0);
+        *last = last.checked_add(1)?;
+        Some(*last)
+    }
+}
 macro_rules! delegate_storage {
     ($port:ident, $identity:ty, $snapshot:ty) => {
         impl<S: $port> $port for Ports<S> {
@@ -158,66 +187,52 @@ impl<S: DimensionStorage + DimensionRegistryStorage>
     }
 }
 
-// The obligations of the observation, evaluation and assertion domains are not met yet: each
-// answers the generated typed refusal, which fails any scenario that reaches it.
-
-impl<S> assertion::obligations::AskAssertionBehavior for Ports<S> {
+impl<S: AssertionStorage> assertion::obligations::AskAssertionBehavior for Ports<S> {
     fn ask_assertion(
         &mut self,
         input: assertion::AskAssertion,
     ) -> Result<assertion::AskAssertionOutcome, UnmetObligation> {
-        assertion::obligations::AskAssertionBehavior::ask_assertion(
-            &mut assertion::obligations::Unimplemented,
-            input,
-        )
+        crate::behaviour::assertion::ask_assertion(self, input)
     }
 }
 
-impl<S> evaluation::obligations::RecordEvaluationBehavior for Ports<S> {
+impl<S: SignalSampleStorage + SignalEvaluationStorage>
+    evaluation::obligations::RecordEvaluationBehavior for Ports<S>
+{
     fn record_evaluation(
         &mut self,
         input: evaluation::RecordEvaluation,
     ) -> Result<evaluation::RecordEvaluationOutcome, UnmetObligation> {
-        evaluation::obligations::RecordEvaluationBehavior::record_evaluation(
-            &mut evaluation::obligations::Unimplemented,
-            input,
-        )
+        crate::behaviour::evaluation::record_evaluation(self, input)
     }
 }
 
-impl<S> observation::obligations::RecordSampleBehavior for Ports<S> {
+impl<S: SignalDefinitionStorage + SignalSampleStorage>
+    observation::obligations::RecordSampleBehavior for Ports<S>
+{
     fn record_sample(
         &mut self,
         input: observation::RecordSample,
     ) -> Result<observation::RecordSampleOutcome, UnmetObligation> {
-        observation::obligations::RecordSampleBehavior::record_sample(
-            &mut observation::obligations::Unimplemented,
-            input,
-        )
+        crate::behaviour::observation::record_sample(self, input)
     }
 }
 
-impl<S> evaluation::obligations::SeriesVerdictsQuery for Ports<S> {
+impl<S: SignalEvaluationStorage> evaluation::obligations::SeriesVerdictsQuery for Ports<S> {
     fn series_verdicts(
         &self,
         series: observation::SeriesKey,
     ) -> Result<Vec<evaluation::SeriesVerdicts>, UnmetObligation> {
-        evaluation::obligations::SeriesVerdictsQuery::series_verdicts(
-            &evaluation::obligations::Unimplemented,
-            series,
-        )
+        crate::behaviour::evaluation::series_verdicts(self, &series)
     }
 }
 
-impl<S> observation::obligations::SeriesSamplesQuery for Ports<S> {
+impl<S: SignalSampleStorage> observation::obligations::SeriesSamplesQuery for Ports<S> {
     fn series_samples(
         &self,
         series: observation::SeriesKey,
     ) -> Result<Vec<observation::SeriesSamples>, UnmetObligation> {
-        observation::obligations::SeriesSamplesQuery::series_samples(
-            &observation::obligations::Unimplemented,
-            series,
-        )
+        crate::behaviour::observation::series_samples(self, &series)
     }
 }
 
@@ -279,10 +294,7 @@ where
             continue;
         }
         report.ran.push(id.clone());
-        let ports = Ports {
-            storage: storage(),
-            clock: Some(Timestamp(timestamp(CLOCK))),
-        };
+        let ports = Ports::new(storage(), Some(Timestamp(timestamp(CLOCK))));
         let outcome = catch_unwind(AssertUnwindSafe(|| {
             Scenario::new(ports, &schemas).play(scenario)
         }));
@@ -314,6 +326,8 @@ enum Answered {
         /// The error's payload, or null where no error was answered.
         payload: Value,
         events: Vec<(String, Value)>,
+        /// The typed response the outcome returned, where it returns one.
+        response: Option<Value>,
     },
 }
 
@@ -417,8 +431,9 @@ impl<'a, S: Storage> Scenario<'a, S> {
             "expect_no_event" => &["step", "event"],
             "expect_not_granted" => &["step", "actor", "unpublished"],
             "capture_instance" => &["step", "instance", "entity", "event", "field"],
-            "query_view" => &["step", "view"],
+            "query_view" => &["step", "view", "params"],
             "expect_view" => &["step", "view", "expectation"],
+            "expect_direct_response" | "expect_response_payload" => &["step", "response"],
             "snapshot_complete_subject" => &["step", "view", "subject", "shape"],
             "expect_complete_subject_unchanged" => &["step", "view"],
             other => return Err(format!("unsupported step {other}")),
@@ -468,12 +483,15 @@ impl<'a, S: Storage> Scenario<'a, S> {
             }
             "query_view" => {
                 let view = text_at(step, "view")?;
-                let rows = self.rows(view)?;
+                let params = self.params(view, step.member("params"))?;
+                let rows = self.rows(view, params)?;
                 self.views.insert(view.to_owned(), rows);
                 self.queried = Some(view.to_owned());
                 Ok(())
             }
             "expect_view" => self.expect_view(step),
+            "expect_direct_response" => self.expect_direct_response(member(step, "response")?),
+            "expect_response_payload" => self.expect_response_payload(member(step, "response")?),
             "snapshot_complete_subject" => self.snapshot(step),
             "expect_complete_subject_unchanged" => self.unchanged(step),
             _ => unreachable!("every admitted step has an arm"),
@@ -698,10 +716,32 @@ impl<'a, S: Storage> Scenario<'a, S> {
         Ok(())
     }
 
-    /// The rows `view` serves now.
-    fn rows(&mut self, view: &str) -> Result<Vec<Value>, String> {
+    /// The parameters of a `query_view`, each resolved and rendered by the schema the wire
+    /// contract declares for that parameter of `view`. A parameter the view does not declare
+    /// fails; one it declares and the step leaves out is the generated decoder's to refuse.
+    fn params(&self, view: &str, params: Option<&Value>) -> Result<Vec<(String, Value)>, String> {
+        let Some(params) = params else {
+            return Ok(Vec::new());
+        };
+        let Value::Object(members) = params else {
+            return Err(format!("params is not an object: {}", show(params)));
+        };
+        members
+            .iter()
+            .map(|(name, written)| {
+                let schema = self.schemas.parameter(view, name)?;
+                Ok((
+                    name.clone(),
+                    self.schemas.render(schema, self.resolve(written)?)?,
+                ))
+            })
+            .collect()
+    }
+
+    /// The rows `view` serves now, given `params`.
+    fn rows(&mut self, view: &str, params: Vec<(String, Value)>) -> Result<Vec<Value>, String> {
         let body =
-            handle(&mut self.system, None, view, Value::Object(Vec::new())).map_err(|refused| {
+            handle(&mut self.system, None, view, Value::Object(params)).map_err(|refused| {
                 format!("{view} answered no rows ({}): {refused}", refused.status())
             })?;
         match body.member("rows") {
@@ -772,8 +812,195 @@ impl<'a, S: Storage> Scenario<'a, S> {
                 }
                 Ok(())
             }
+            "counts" => {
+                keys(
+                    expectation,
+                    &["expect", "at_least", "at_most"],
+                    "a view expectation",
+                )?;
+                let bound = |name: &str| match expectation.member(name) {
+                    None => Ok(None),
+                    Some(Value::Number(spelling)) => spelling
+                        .parse::<usize>()
+                        .map(Some)
+                        .map_err(|_| format!("{name} {spelling} is not a whole number")),
+                    Some(other) => Err(format!("{name} {}", show(other))),
+                };
+                let (at_least, at_most) = (bound("at_least")?, bound("at_most")?);
+                if at_least.is_none() && at_most.is_none() {
+                    return Err("a count with neither at_least nor at_most requires nothing".into());
+                }
+                let held = rows.len();
+                if at_least.is_some_and(|floor| held < floor)
+                    || at_most.is_some_and(|ceiling| held > ceiling)
+                {
+                    return Err(format!(
+                        "{view} holds {held} row(s), outside {}: {}",
+                        show(expectation),
+                        show(&Value::Array(rows.clone()))
+                    ));
+                }
+                Ok(())
+            }
+            "ranked" => {
+                keys(expectation, &["expect", "order_by"], "a view expectation")?;
+                let Value::Array(order_by) = member(expectation, "order_by")? else {
+                    return Err("order_by is not a list".to_owned());
+                };
+                let row = format!("{view}.Row");
+                let decimal = |field: &str| {
+                    self.schemas
+                        .property(&row, field)
+                        .and_then(|schema| self.schemas.resolved(schema))
+                        .is_ok_and(|schema| {
+                            schema.member("format") == Some(&Value::Text("decimal".to_owned()))
+                        })
+                };
+                let rankings = order_by
+                    .iter()
+                    .map(|key| ranking(key, decimal))
+                    .collect::<Result<Vec<_>, _>>()?;
+                if rankings.is_empty() {
+                    return Err("an order by no field requires nothing".to_owned());
+                }
+                ranked(view, &rankings, rows)
+            }
             other => Err(format!("unsupported expectation {other}")),
         }
+    }
+
+    /// The command whose answer a response observation reads: the last one, which must be
+    /// `response.command` and have taken `response.outcome`.
+    fn responding(&self, response: &Value) -> Result<(&Last, Option<&Value>), String> {
+        let command = text_at(response, "command")?;
+        let last = self.last()?;
+        if last.command != command {
+            return Err(format!(
+                "the last command was {}, not {command}",
+                last.command
+            ));
+        }
+        let (outcome, error, _) = last.outcome()?;
+        if let Some(expected) = response.member("outcome") {
+            keys(expected, &["command", "outcome"], "an expected outcome")?;
+            let wanted = text_at(expected, "outcome")?;
+            if text_at(expected, "command")? != command || outcome != wanted {
+                return Err(format!("{command} took {outcome}, not {wanted}"));
+            }
+        }
+        if let Some(error) = error {
+            return Err(format!(
+                "{command} answered the error {error}, not a response"
+            ));
+        }
+        let Answered::Outcome { response, .. } = &last.answered else {
+            unreachable!("an outcome was read above");
+        };
+        Ok((last, response.as_ref()))
+    }
+
+    /// `expect_direct_response`: the last command returned a response of exactly the declared
+    /// fields, each of its declared type and string rules, carrying every `expected` literal.
+    fn expect_direct_response(&self, response: &Value) -> Result<(), String> {
+        keys(
+            response,
+            &[
+                "command",
+                "outcome",
+                "fields",
+                "declarations",
+                "constraints",
+                "expected",
+            ],
+            "a direct response",
+        )?;
+        let contract = ResponseContract::decode(response)?;
+        let (_, actual) = self.responding(response)?;
+        let actual = contract.admit(actual)?;
+        let Value::Object(expected) = member(response, "expected")? else {
+            return Err("expected is not an object".to_owned());
+        };
+        for (name, literal) in expected {
+            if !contract.fields.iter().any(|(field, _)| field == name) {
+                return Err(format!(
+                    "an expected literal names no response field {name}"
+                ));
+            }
+            let got = actual.member(name).unwrap_or(&Value::Null);
+            if !same(got, literal) {
+                return Err(format!(
+                    "response field {name} is {}, not {}",
+                    show(got),
+                    show(literal)
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    /// `expect_response_payload`: the last command returned a response held to its contract,
+    /// published `event`, and each mapped event field carries the response field it maps from.
+    fn expect_response_payload(&self, response: &Value) -> Result<(), String> {
+        keys(
+            response,
+            &[
+                "command",
+                "outcome",
+                "event",
+                "fields",
+                "declarations",
+                "mappings",
+                "targets",
+                "constraints",
+            ],
+            "a response observation",
+        )?;
+        if response.member("outcome").is_none() {
+            return Err("a response observation names no outcome".to_owned());
+        }
+        let contract = ResponseContract::decode(response)?;
+        let targets = typed_fields(member(response, "targets")?, "the response targets")?;
+        let Value::Object(mappings) = member(response, "mappings")? else {
+            return Err("mappings is not an object".to_owned());
+        };
+        let (last, actual) = self.responding(response)?;
+        let actual = contract.admit(actual)?;
+        let event = text_at(response, "event")?;
+        let payload = last.event(event)?;
+        for (target, source) in mappings {
+            let Value::Text(source) = source else {
+                return Err(format!("mapping {target} names {}", show(source)));
+            };
+            let Some((_, source_type)) = contract.fields.iter().find(|(name, _)| name == source)
+            else {
+                return Err(format!("mapping {target} reads no response field {source}"));
+            };
+            let Some((_, target_type)) = targets.iter().find(|(name, _)| name == target) else {
+                return Err(format!("mapping onto {target}, which no target declares"));
+            };
+            let got = actual.member(source);
+            let carried = payload.member(target);
+            let absent = |value: Option<&Value>| matches!(value, None | Some(Value::Null));
+            if source_type.starts_with("Optional<") && absent(got) && absent(carried) {
+                continue;
+            }
+            contract
+                .types
+                .value(target_type, carried, 0)
+                .map_err(|reason| format!("{event}.{target}: {reason}"))?;
+            contract.check_constraints(target_type, carried)?;
+            match (got, carried) {
+                (Some(got), Some(carried)) if same(got, carried) => {}
+                _ => {
+                    return Err(format!(
+                        "{event}.{target} is {}, not the response's {source} {}",
+                        carried.map_or_else(|| "absent".to_owned(), show),
+                        got.map_or_else(|| "absent".to_owned(), show)
+                    ));
+                }
+            }
+        }
+        Ok(())
     }
 
     /// The one row of the view the step names, as the `query_view` just before it read it, whose
@@ -869,6 +1096,12 @@ enum Declared {
 struct SubjectShape {
     identity_field: String,
     fields: Vec<(String, String)>,
+    types: Types,
+}
+
+/// The declarations a suite carries beside a list of typed fields, as a subject shape or a
+/// response observation does: the type graph its field types name.
+struct Types {
     declarations: Vec<(String, Declared)>,
 }
 
@@ -914,8 +1147,64 @@ impl SubjectShape {
         )?;
         let identity_field = text_at(shape, "identity_field")?.to_owned();
         let fields = typed_fields(member(shape, "fields")?, "the subject fields")?;
-        let Value::Object(bodies) = member(shape, "declarations")? else {
-            return Err("the subject declarations are not an object".to_owned());
+        let types = Types::decode(member(shape, "declarations")?, "the subject")?;
+        types.reached_by(&fields, "the subject shape")?;
+        let shape = Self {
+            identity_field,
+            fields,
+            types,
+        };
+        let Some((_, identity)) = shape
+            .fields
+            .iter()
+            .find(|(name, _)| *name == shape.identity_field)
+        else {
+            return Err(format!(
+                "the subject identity {} is not a declared field",
+                shape.identity_field
+            ));
+        };
+        let mut ty = identity.as_str();
+        loop {
+            if ty.starts_with("Optional<") {
+                return Err("the subject identity is optional".to_owned());
+            }
+            match shape.types.declared(ty) {
+                Some(Declared::Newtype(of)) => ty = of,
+                _ => break,
+            }
+        }
+        Ok(shape)
+    }
+
+    /// Requires every declared field of `row`, each of its declared type, and no field the shape
+    /// does not declare.
+    fn admit(&self, row: &Value) -> Result<(), String> {
+        let Value::Object(members) = row else {
+            return Err("the row is not an object".to_owned());
+        };
+        if let Some((field, _)) = members
+            .iter()
+            .find(|(field, _)| !self.fields.iter().any(|(declared, _)| declared == field))
+        {
+            return Err(format!(
+                "it serves {field}, which the shape does not declare"
+            ));
+        }
+        for (field, ty) in &self.fields {
+            self.types
+                .value(ty, row.member(field), 0)
+                .map_err(|reason| format!("{field} ({ty}): {reason}"))?;
+        }
+        Ok(())
+    }
+}
+
+impl Types {
+    /// Reads the declarations of `what`, refusing an unknown member or declaration kind.
+    fn decode(bodies: &Value, what: &str) -> Result<Self, String> {
+        let Value::Object(bodies) = bodies else {
+            return Err(format!("{what} declarations are not an object"));
         };
         let mut declarations = Vec::new();
         for (name, body) in bodies {
@@ -967,39 +1256,19 @@ impl SubjectShape {
             };
             declarations.push((name.clone(), declared));
         }
-        let shape = Self {
-            identity_field,
-            fields,
-            declarations,
-        };
+        Ok(Self { declarations })
+    }
+
+    /// Nothing, where every type of `fields` resolves and every declaration is reached by one.
+    fn reached_by(&self, fields: &[(String, String)], what: &str) -> Result<(), String> {
         let mut used = Vec::new();
-        for (_, ty) in &shape.fields {
-            shape.reach(ty, &mut used, 0)?;
+        for (_, ty) in fields {
+            self.reach(ty, &mut used, 0)?;
         }
-        if used.len() != shape.declarations.len() {
-            return Err("the subject shape carries a declaration no field reaches".to_owned());
+        if used.len() != self.declarations.len() {
+            return Err(format!("{what} carries a declaration no field reaches"));
         }
-        let Some((_, identity)) = shape
-            .fields
-            .iter()
-            .find(|(name, _)| *name == shape.identity_field)
-        else {
-            return Err(format!(
-                "the subject identity {} is not a declared field",
-                shape.identity_field
-            ));
-        };
-        let mut ty = identity.as_str();
-        loop {
-            if ty.starts_with("Optional<") {
-                return Err("the subject identity is optional".to_owned());
-            }
-            match shape.declared(ty) {
-                Some(Declared::Newtype(of)) => ty = of,
-                _ => break,
-            }
-        }
-        Ok(shape)
+        Ok(())
     }
 
     fn declared(&self, name: &str) -> Option<&Declared> {
@@ -1012,7 +1281,7 @@ impl SubjectShape {
     /// Every declaration `ty` reaches, into `used`; an unresolvable type fails.
     fn reach(&self, ty: &str, used: &mut Vec<String>, depth: usize) -> Result<(), String> {
         if depth > 128 {
-            return Err("the subject type graph is too deep".to_owned());
+            return Err("the type graph is too deep".to_owned());
         }
         if let Some(inner) = wrapped(ty, "Optional<").or_else(|| wrapped(ty, "List<")) {
             return self.reach(inner, used, depth + 1);
@@ -1024,7 +1293,7 @@ impl SubjectShape {
             return Ok(());
         }
         let Some(declared) = self.declared(ty) else {
-            return Err(format!("the subject shape cannot resolve the type {ty}"));
+            return Err(format!("cannot resolve the type {ty}"));
         };
         if used.iter().any(|name| name == ty) {
             return Ok(());
@@ -1041,27 +1310,6 @@ impl SubjectShape {
                 .filter_map(|(_, carried)| carried.as_deref())
                 .try_for_each(|carried| self.reach(carried, used, depth + 1)),
         }
-    }
-
-    /// Requires every declared field of `row`, each of its declared type, and no field the shape
-    /// does not declare.
-    fn admit(&self, row: &Value) -> Result<(), String> {
-        let Value::Object(members) = row else {
-            return Err("the row is not an object".to_owned());
-        };
-        if let Some((field, _)) = members
-            .iter()
-            .find(|(field, _)| !self.fields.iter().any(|(declared, _)| declared == field))
-        {
-            return Err(format!(
-                "it serves {field}, which the shape does not declare"
-            ));
-        }
-        for (field, ty) in &self.fields {
-            self.value(ty, row.member(field), 0)
-                .map_err(|reason| format!("{field} ({ty}): {reason}"))?;
-        }
-        Ok(())
     }
 
     /// Requires `value` (`None` where absent) to be one of `ty`.
@@ -1156,6 +1404,296 @@ impl SubjectShape {
     }
 }
 
+/// The string rules a response observation carries for one newtype of `String`.
+struct StringRules {
+    alphabet: Option<String>,
+    prefix: Option<String>,
+}
+
+/// The contract a response observation carries: the fields the command returns with their
+/// types, the declarations those types name, and the string rules of each constrained newtype.
+struct ResponseContract {
+    fields: Vec<(String, String)>,
+    types: Types,
+    constraints: Vec<(String, StringRules)>,
+}
+
+impl ResponseContract {
+    /// Reads the contract of `response`, refusing an unknown member, a type it cannot resolve,
+    /// and a rule it cannot decide: an invariant, or a rule on anything but a newtype of `String`.
+    fn decode(response: &Value) -> Result<Self, String> {
+        let fields = typed_fields(member(response, "fields")?, "the response fields")?;
+        let types = Types::decode(member(response, "declarations")?, "the response")?;
+        let mut used = Vec::new();
+        for (_, ty) in &fields {
+            types.reach(ty, &mut used, 0)?;
+        }
+        let Value::Object(bodies) = member(response, "constraints")? else {
+            return Err("the response constraints are not an object".to_owned());
+        };
+        let mut constraints = Vec::new();
+        for (name, rules) in bodies {
+            let at = format!("the constraint on {name}");
+            keys(rules, &["alphabet", "prefix", "invariants"], &at)?;
+            if !matches!(types.declared(name), Some(Declared::Newtype(of)) if of == "String") {
+                return Err(format!("{at}: {name} is not a declared newtype of String"));
+            }
+            let text = |member: &str| match rules.member(member) {
+                None | Some(Value::Null) => Ok(None),
+                Some(Value::Text(text)) => Ok(Some(text.clone())),
+                Some(other) => Err(format!("{at}: {member} {}", show(other))),
+            };
+            match rules.member("invariants") {
+                None => {}
+                Some(Value::Array(invariants)) if invariants.is_empty() => {}
+                Some(other) => {
+                    return Err(format!("{at}: unsupported invariants {}", show(other)));
+                }
+            }
+            constraints.push((
+                name.clone(),
+                StringRules {
+                    alphabet: text("alphabet")?,
+                    prefix: text("prefix")?,
+                },
+            ));
+        }
+        Ok(Self {
+            fields,
+            types,
+            constraints,
+        })
+    }
+
+    /// The returned response, held to the contract: present, exactly the declared fields, each
+    /// of its declared type and string rules.
+    fn admit<'v>(&self, actual: Option<&'v Value>) -> Result<&'v Value, String> {
+        let Some(actual) = actual else {
+            return Err("the command returned no response".to_owned());
+        };
+        let Value::Object(members) = actual else {
+            return Err(format!("the response {} is not an object", show(actual)));
+        };
+        if let Some((name, _)) = members
+            .iter()
+            .find(|(name, _)| !self.fields.iter().any(|(declared, _)| declared == name))
+        {
+            return Err(format!(
+                "the response carries {name}, which it does not declare"
+            ));
+        }
+        for (name, ty) in &self.fields {
+            self.types
+                .value(ty, actual.member(name), 0)
+                .map_err(|reason| format!("response field {name} ({ty}): {reason}"))?;
+            self.check_constraints(ty, actual.member(name))
+                .map_err(|reason| format!("response field {name}: {reason}"))?;
+        }
+        Ok(actual)
+    }
+
+    /// Holds `value`, of type `ty`, and every value inside it to the string rules of its type.
+    fn check_constraints(&self, ty: &str, value: Option<&Value>) -> Result<(), String> {
+        self.check(ty, value, 0)
+    }
+
+    fn check(&self, ty: &str, value: Option<&Value>, depth: usize) -> Result<(), String> {
+        if depth > 128 {
+            return Err("the value is too deep".to_owned());
+        }
+        let Some(value) = value.filter(|value| !matches!(value, Value::Null)) else {
+            return Ok(());
+        };
+        if let Some(inner) = wrapped(ty, "Optional<") {
+            return self.check(inner, Some(value), depth + 1);
+        }
+        if let Some(inner) = wrapped(ty, "List<") {
+            let Value::Array(items) = value else {
+                return Ok(());
+            };
+            return items
+                .iter()
+                .try_for_each(|item| self.check(inner, Some(item), depth + 1));
+        }
+        if let Some(inner) = wrapped(ty, "Map<String, ") {
+            let Value::Object(members) = value else {
+                return Ok(());
+            };
+            return members
+                .iter()
+                .try_for_each(|(_, item)| self.check(inner, Some(item), depth + 1));
+        }
+        if let Some((_, rules)) = self.constraints.iter().find(|(name, _)| name == ty) {
+            let Value::Text(text) = value else {
+                return Err(format!("{} is not text, as {ty} is", show(value)));
+            };
+            if let Some(prefix) = &rules.prefix
+                && !text.starts_with(prefix.as_str())
+            {
+                return Err(format!(
+                    "{text:?} does not start with {ty}'s prefix {prefix:?}"
+                ));
+            }
+            if let Some(alphabet) = &rules.alphabet
+                && text.chars().any(|character| !alphabet.contains(character))
+            {
+                return Err(format!("{text:?} leaves {ty}'s alphabet {alphabet:?}"));
+            }
+        }
+        match self.types.declared(ty) {
+            Some(Declared::Newtype(of)) => self.check(of, Some(value), depth + 1),
+            Some(Declared::Struct(fields)) => fields
+                .iter()
+                .try_for_each(|(name, field)| self.check(field, value.member(name), depth + 1)),
+            Some(Declared::Union(tag, variants)) => {
+                let label = value.member(tag);
+                let carried = variants
+                    .iter()
+                    .find(|(declared, _)| label == Some(&Value::Text(declared.clone())))
+                    .and_then(|(_, carried)| carried.as_deref());
+                let key = if tag == "value" { "content" } else { "value" };
+                carried.map_or(Ok(()), |carried| {
+                    self.check(carried, value.member(key), depth + 1)
+                })
+            }
+            Some(Declared::Enum(_)) | None => Ok(()),
+        }
+    }
+}
+
+/// One key of a `ranked` expectation.
+struct Ranking {
+    field: String,
+    ascending: bool,
+    /// The view declares the field a `Decimal`, which crosses the wire as a decimal string and
+    /// ranks by value, as the ESS reference runner ranks a semantic number.
+    decimal: bool,
+}
+
+/// One key of a `ranked` expectation, `"<field> asc"` or `"<field> desc"`; `decimal` says
+/// whether the view declares the field a `Decimal`.
+fn ranking(key: &Value, decimal: impl Fn(&str) -> bool) -> Result<Ranking, String> {
+    let Value::Text(key) = key else {
+        return Err(format!("order_by key {}", show(key)));
+    };
+    let (field, ascending) = match key.split_whitespace().collect::<Vec<_>>()[..] {
+        [field, "asc"] => (field, true),
+        [field, "desc"] => (field, false),
+        _ => return Err(format!("unsupported order_by key {key:?}")),
+    };
+    Ok(Ranking {
+        field: field.to_owned(),
+        ascending,
+        decimal: decimal(field),
+    })
+}
+
+/// Every adjacent pair of `rows` in the order `rankings` declares: the first key that differs
+/// decides, and a pair equal on every key is a tie, in order either way. A key a row does not
+/// hold, or whose two values nothing orders, fails rather than passing.
+fn ranked(view: &str, rankings: &[Ranking], rows: &[Value]) -> Result<(), String> {
+    for pair in rows.windows(2) {
+        let (earlier, later) = (&pair[0], &pair[1]);
+        for ranking in rankings {
+            let field = &ranking.field;
+            let (Some(left), Some(right)) = (earlier.member(field), later.member(field)) else {
+                return Err(format!(
+                    "{view} orders by {field}, which {} then {} do not both hold",
+                    show(earlier),
+                    show(later)
+                ));
+            };
+            let Some(order) = rank_order(left, right, ranking.decimal) else {
+                return Err(format!(
+                    "{view}.{field} holds {} then {}, which nothing orders",
+                    show(left),
+                    show(right)
+                ));
+            };
+            let wanted = if ranking.ascending {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
+            };
+            if order == std::cmp::Ordering::Equal {
+                continue;
+            }
+            if order == wanted {
+                break;
+            }
+            return Err(format!(
+                "{view} serves {} then {}, out of order by {field} {}",
+                show(earlier),
+                show(later),
+                if ranking.ascending { "asc" } else { "desc" }
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Two row values in order, as the ESS reference runner's `compare_nodes` ranks them: numbers by
+/// exact value, two decimal strings of a `Decimal` field by value, texts by
+/// [`timestamp_order`] (two RFC 3339 instants by instant, any other pair by bytes), booleans,
+/// and two nulls equal. `None` for values of two kinds.
+fn rank_order(left: &Value, right: &Value, decimal_field: bool) -> Option<std::cmp::Ordering> {
+    match (left, right) {
+        (Value::Number(left), Value::Number(right)) => number_order(left, right),
+        (Value::Text(left), Value::Text(right)) if decimal_field => decimal_order(left, right),
+        (Value::Text(left), Value::Text(right)) => Some(timestamp_order(left, right)),
+        (Value::Bool(left), Value::Bool(right)) => Some(left.cmp(right)),
+        (Value::Null, Value::Null) => Some(std::cmp::Ordering::Equal),
+        _ => None,
+    }
+}
+
+/// Two JSON number spellings ordered by exact value: integers as `i128`, numbers without an
+/// exponent as decimals; only a pair with an exponent falls back to `f64`.
+fn number_order(left: &str, right: &str) -> Option<std::cmp::Ordering> {
+    if let (Ok(left), Ok(right)) = (left.parse::<i128>(), right.parse::<i128>()) {
+        return Some(left.cmp(&right));
+    }
+    decimal_order(left, right).or_else(|| {
+        left.parse::<f64>()
+            .ok()?
+            .partial_cmp(&right.parse::<f64>().ok()?)
+    })
+}
+
+/// Two decimal strings in the published pattern ordered by value, exactly; `None` where either
+/// is not one.
+fn decimal_order(left: &str, right: &str) -> Option<std::cmp::Ordering> {
+    use std::cmp::Ordering;
+    if !(decimal(left) && decimal(right)) {
+        return None;
+    }
+    // Sign and magnitude: the whole part without leading zeros, the fraction without trailing.
+    let parts = |text: &str| {
+        let (negative, unsigned) = match text.strip_prefix('-') {
+            Some(unsigned) => (true, unsigned.to_owned()),
+            None => (false, text.to_owned()),
+        };
+        let (whole, fraction) = unsigned.split_once('.').unwrap_or((&unsigned, ""));
+        let whole = whole.trim_start_matches('0').to_owned();
+        let fraction = fraction.trim_end_matches('0').to_owned();
+        let zero = whole.is_empty() && fraction.is_empty();
+        (negative && !zero, whole, fraction)
+    };
+    let (left_negative, left_whole, left_fraction) = parts(left);
+    let (right_negative, right_whole, right_fraction) = parts(right);
+    let magnitude = left_whole
+        .len()
+        .cmp(&right_whole.len())
+        .then_with(|| left_whole.cmp(&right_whole))
+        .then_with(|| left_fraction.cmp(&right_fraction));
+    Some(match (left_negative, right_negative) {
+        (false, true) => Ordering::Greater,
+        (true, false) => Ordering::Less,
+        (false, false) => magnitude,
+        (true, true) => magnitude.reverse(),
+    })
+}
+
 /// The type inside `prefix…>`, where `ty` is one.
 fn wrapped<'t>(ty: &'t str, prefix: &str) -> Option<&'t str> {
     ty.strip_prefix(prefix)?.strip_suffix('>')
@@ -1193,7 +1731,7 @@ fn caller(name: &str) -> Result<Caller, String> {
 fn answered(body: &Value) -> Result<Answered, String> {
     keys(
         body,
-        &["outcome", "published", "error", "payload"],
+        &["outcome", "published", "error", "payload", "response"],
         "an outcome",
     )?;
     let outcome = text_at(body, "outcome")?.to_owned();
@@ -1220,28 +1758,27 @@ fn answered(body: &Value) -> Result<Answered, String> {
         error,
         payload: body.member("payload").cloned().unwrap_or(Value::Null),
         events,
+        response: body.member("response").cloned(),
     })
 }
 
-/// Holds a published payload to the shape the suite states for its event: a field is present
-/// unless the shape marks it `optional`, a present value is never null and is of the stated kind
-/// or one of the stated variants, and the payload carries no field the shape does not state.
+/// Holds a published payload to the shape the suite states for its event: each stated leaf, a
+/// field or a dotted path into one (`asker.kind`), is present unless the shape marks it
+/// `optional`, and a present value is never null and is of the stated kind or one of the stated
+/// variants. A null on the way down a path is absence; any other non-object there fails.
+///
+/// A field the shape does not state is not refused: the model does not close an event's
+/// payload, and the suite leaves out the fields it checks another way (a response-mapped
+/// identity, read by `expect_response_payload`), as the ESS reference runner's `expect_payload`
+/// does.
 fn check_shape(event: &str, payload: &Value, shape: &Value) -> Result<(), String> {
-    let (Value::Object(fields), Value::Object(descriptors)) = (payload, shape) else {
+    let (Value::Object(_), Value::Object(descriptors)) = (payload, shape) else {
         return Err(format!(
             "{event}: payload {} or shape {} is not an object",
             show(payload),
             show(shape)
         ));
     };
-    if let Some((field, _)) = fields
-        .iter()
-        .find(|(field, _)| !descriptors.iter().any(|(declared, _)| declared == field))
-    {
-        return Err(format!(
-            "{event} carries {field}, which its shape does not state"
-        ));
-    }
     for (field, descriptor) in descriptors {
         let at = format!("{event}.{field}");
         keys(descriptor, &["holds", "kind", "optional", "variants"], &at)?;
@@ -1277,15 +1814,30 @@ fn check_shape(event: &str, payload: &Value, shape: &Value) -> Result<(), String
                     return Err(format!("{at}: variants is not a list"));
                 };
                 let variants = variants.clone();
-                Box::new(move |value| matches!(value, Value::Text(_)) && variants.contains(value))
+                Box::new(
+                    move |value| matches!(value, Value::Text(wire) if variants.iter().any(|variant| matches!(variant, Value::Text(name) if names_variant(wire, name)))),
+                )
             }
             other => return Err(format!("{at}: unsupported holds {other}")),
         };
-        match fields.iter().find(|(name, _)| name == field) {
+        let mut reached = Some(payload);
+        for segment in field.split('.') {
+            reached = match reached {
+                Some(Value::Object(_)) => reached.and_then(|held| held.member(segment)),
+                Some(Value::Null) | None => None,
+                Some(other) => {
+                    return Err(format!(
+                        "{at}: {} holds no field {segment} to read",
+                        show(other)
+                    ));
+                }
+            };
+        }
+        match reached {
             None if optional => {}
             None => return Err(format!("{event} lacks {field}")),
-            Some((_, value)) if admits(value) => {}
-            Some((_, value)) => {
+            Some(value) if admits(value) => {}
+            Some(value) => {
                 return Err(format!(
                     "{at}: {} is not of the stated shape {}",
                     show(value),
@@ -1322,31 +1874,47 @@ fn truth(predicate: &Value, row: &Value) -> Result<Option<bool>, String> {
                 })
             }
             [(not, part)] if not == "not" => Ok(truth(part, row)?.map(|truth| !truth)),
+            // `{field: {any_of: [...]}}`: the field holds one of the values; a field the row does
+            // not hold decides nothing.
+            [(field, Value::Object(test))] if matches!(test.as_slice(), [(any_of, _)] if any_of == "any_of") =>
+            {
+                let Some(Value::Array(values)) = predicate
+                    .member(field)
+                    .and_then(|test| test.member("any_of"))
+                else {
+                    return Err(format!("unsupported predicate form {}", show(predicate)));
+                };
+                Ok(path_value(field, row)?
+                    .map(|held| values.iter().any(|value| same_variant(&held, value))))
+            }
             _ => Err(format!("unsupported predicate form {}", show(predicate))),
         },
         other => Err(format!("unsupported predicate form {}", show(other))),
     }
 }
 
+/// The value the dotted field path `text` reads in `row`, `None` where the row holds none.
+fn path_value(text: &str, row: &Value) -> Result<Option<Value>, String> {
+    if text.is_empty()
+        || !text
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'.')
+    {
+        return Err(format!("unsupported field path {text:?}"));
+    }
+    let mut held = row;
+    for step in text.split('.') {
+        match held.member(step) {
+            Some(Value::Null) | None => return Ok(None),
+            Some(value) => held = value,
+        }
+    }
+    Ok(Some(held.clone()))
+}
+
 fn atom_truth(atom: &str, row: &Value) -> Result<Option<bool>, String> {
     let unsupported = || format!("unsupported predicate {atom:?}");
-    let path = |text: &str| -> Result<Option<Value>, String> {
-        if text.is_empty()
-            || !text
-                .bytes()
-                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'.')
-        {
-            return Err(unsupported());
-        }
-        let mut held = row;
-        for step in text.split('.') {
-            match held.member(step) {
-                Some(Value::Null) | None => return Ok(None),
-                Some(value) => held = value,
-            }
-        }
-        Ok(Some(held.clone()))
-    };
+    let path = |text: &str| path_value(text, row).map_err(|_| unsupported());
     if let Some(inner) = atom
         .strip_prefix("defined(")
         .and_then(|rest| rest.strip_suffix(')'))
@@ -1390,8 +1958,8 @@ fn atom_truth(atom: &str, row: &Value) -> Result<Option<bool>, String> {
         return Ok(None);
     };
     match op {
-        "==" => Ok(Some(text == literal)),
-        "!=" => Ok(Some(text != literal)),
+        "==" => Ok(Some(names_variant(text, literal))),
+        "!=" => Ok(Some(!names_variant(text, literal))),
         _ => Err(unsupported()),
     }
 }
@@ -1401,6 +1969,8 @@ struct Schemas {
     components: Vec<(String, Value)>,
     /// The model's declarations (`x-ess-entities`), entities among them.
     declarations: Vec<(String, Value)>,
+    /// Every operation of the wire contract, by path and method.
+    paths: Vec<(String, Value)>,
 }
 
 impl Schemas {
@@ -1416,10 +1986,38 @@ impl Schemas {
         let Some(Value::Object(declarations)) = document.member("x-ess-entities") else {
             return Err("the OpenAPI document holds no model declarations".to_owned());
         };
+        let Some(Value::Object(paths)) = document.member("paths") else {
+            return Err("the OpenAPI document holds no paths".to_owned());
+        };
         Ok(Self {
             components: components.clone(),
             declarations: declarations.clone(),
+            paths: paths.clone(),
         })
+    }
+
+    /// The schema the operation `operation` declares for its parameter `name`.
+    fn parameter(&self, operation: &str, name: &str) -> Result<&Value, String> {
+        let wanted = Value::Text(operation.to_owned());
+        let declared = self
+            .paths
+            .iter()
+            .filter_map(|(_, methods)| match methods {
+                Value::Object(methods) => Some(methods),
+                _ => None,
+            })
+            .flatten()
+            .map(|(_, declared)| declared)
+            .find(|declared| declared.member("operationId") == Some(&wanted))
+            .ok_or_else(|| format!("the wire contract declares no operation {operation}"))?;
+        let Some(Value::Array(parameters)) = declared.member("parameters") else {
+            return Err(format!("{operation} declares no parameters"));
+        };
+        parameters
+            .iter()
+            .find(|parameter| parameter.member("name") == Some(&Value::Text(name.to_owned())))
+            .and_then(|parameter| parameter.member("schema"))
+            .ok_or_else(|| format!("{operation} declares no parameter {name}"))
     }
 
     /// Nothing, where `entity` is an entity the model declares and `field` one of its fields.
@@ -1503,6 +2101,10 @@ impl Schemas {
             Some(Value::Text(declared)) => declared.as_str(),
             _ => return Ok(value),
         };
+        if let (Some(Value::Array(spellings)), Value::Text(name)) = (schema.member("enum"), &value)
+        {
+            return Ok(wire_variant(spellings, name).unwrap_or(value));
+        }
         Ok(match (declared, value) {
             ("integer", Value::Number(spelling)) => Value::Number(integral(spelling)),
             ("string", Value::Number(spelling))
@@ -1549,6 +2151,54 @@ impl Schemas {
             }
             (_, value) => value,
         })
+    }
+}
+
+/// The variant name a wire spelling stands for, as far as the published contract lets it be
+/// read: a suite writes an enum variant by its declared name (`N_A`) and the wire carries its
+/// declared spelling (`N/A`), and the contract lists only the spellings. A spelling names the
+/// variant written with every character outside `[A-Za-z0-9_]` as `_`; a spelling that is
+/// already a name names only itself.
+fn variant_name(spelling: &str) -> String {
+    spelling
+        .chars()
+        .map(|character| {
+            if character.is_ascii_alphanumeric() || character == '_' {
+                character
+            } else {
+                '_'
+            }
+        })
+        .collect()
+}
+
+/// `true` where the wire spelling `wire` is the variant written `name`.
+fn names_variant(wire: &str, name: &str) -> bool {
+    wire == name || variant_name(wire) == name
+}
+
+/// [`same`], with a text read as an enum variant's spelling on the left.
+fn same_variant(held: &Value, written: &Value) -> bool {
+    match (held, written) {
+        (Value::Text(wire), Value::Text(name)) => names_variant(wire, name),
+        _ => same(held, written),
+    }
+}
+
+/// The spelling among `spellings` the variant written `name` crosses the wire as: `name` itself
+/// where it is one, else the one spelling that names it. `None` where none or several do, for
+/// the generated decoder to refuse.
+fn wire_variant(spellings: &[Value], name: &str) -> Option<Value> {
+    let named = |spelling: &&Value| matches!(spelling, Value::Text(text) if text == name);
+    if let Some(spelling) = spellings.iter().find(named) {
+        return Some(spelling.clone());
+    }
+    let mut naming = spellings
+        .iter()
+        .filter(|spelling| matches!(spelling, Value::Text(text) if variant_name(text) == name));
+    match (naming.next(), naming.next()) {
+        (Some(spelling), None) => Some(spelling.clone()),
+        _ => None,
     }
 }
 
@@ -1651,16 +2301,6 @@ fn decimal(text: &str) -> bool {
     digits(whole) && !(whole.len() > 1 && whole.starts_with('0')) && fraction.is_none_or(digits)
 }
 
-/// Days from 1970-01-01 to the civil date.
-fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
-    let year = if month <= 2 { year - 1 } else { year };
-    let era = year.div_euclid(400);
-    let of_era = year - era * 400;
-    let of_year = (153 * (if month > 2 { month - 3 } else { month + 9 }) + 2) / 5 + day - 1;
-    let of_cycle = of_era * 365 + of_era / 4 - of_era / 100 + of_year;
-    era * 146_097 + of_cycle - 719_468
-}
-
 /// The RFC 3339 rendering, in UTC, of `seconds` from the Unix epoch.
 fn timestamp(seconds: i64) -> String {
     let days = seconds.div_euclid(86_400);
@@ -1682,68 +2322,18 @@ fn timestamp(seconds: i64) -> String {
     )
 }
 
-/// The instant an RFC 3339 `date-time` names, in seconds from the Unix epoch, or `None` for any
-/// other text.
+/// The instant an RFC 3339 `date-time` names, in whole seconds from the Unix epoch, or `None`
+/// for any other text: the crate's one instant reader, `crate::behaviour::observation::Instant`.
 fn instant(text: &str) -> Option<i64> {
-    let bytes = text.as_bytes();
-    let number = |from: usize, to: usize| -> Option<i64> {
-        let slice = bytes.get(from..to)?;
-        if !slice.iter().all(u8::is_ascii_digit) {
-            return None;
-        }
-        std::str::from_utf8(slice).ok()?.parse().ok()
-    };
-    let at = |index: usize, expected: &[u8]| {
-        bytes.get(index).is_some_and(|byte| expected.contains(byte))
-    };
-    if !(at(4, b"-") && at(7, b"-") && at(10, b"Tt") && at(13, b":") && at(16, b":")) {
-        return None;
-    }
-    let (year, month, day) = (number(0, 4)?, number(5, 7)?, number(8, 10)?);
-    let (hour, minute, second) = (number(11, 13)?, number(14, 16)?, number(17, 19)?);
-    let leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
-    let length = match month {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 if leap => 29,
-        2 => 28,
-        _ => return None,
-    };
-    if day < 1 || day > length || hour > 23 || minute > 59 || second > 59 {
-        return None;
-    }
-    let mut position = 19;
-    if at(position, b".") {
-        let start = position + 1;
-        position = start;
-        while bytes.get(position).is_some_and(u8::is_ascii_digit) {
-            position += 1;
-        }
-        if position == start {
-            return None;
-        }
-    }
-    let offset = match bytes.get(position..)? {
-        b"Z" | b"z" => 0,
-        [sign @ (b'+' | b'-'), _, _, b':', _, _] => {
-            let (hours, minutes) = (
-                number(position + 1, position + 3)?,
-                number(position + 4, position + 6)?,
-            );
-            if hours > 23 || minutes > 59 {
-                return None;
-            }
-            let magnitude = hours * 3600 + minutes * 60;
-            if *sign == b'-' { -magnitude } else { magnitude }
-        }
-        _ => return None,
-    };
-    Some(days_from_civil(year, month, day) * 86_400 + hour * 3600 + minute * 60 + second - offset)
+    Instant::parse(text).map(Instant::seconds)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{CLOCK, instant, timestamp};
+    use super::{
+        CLOCK, Ranking, Value, decimal_order, instant, names_variant, number_order, rank_order,
+        ranked, timestamp, wire_variant,
+    };
 
     #[test]
     fn the_clock_renders_and_reads_back_as_the_same_instant() {
@@ -1757,5 +2347,98 @@ mod tests {
         assert_eq!(instant("2026-01-01T01:00:00+01:00"), Some(CLOCK));
         assert_eq!(instant("2026-02-30T00:00:00Z"), None);
         assert_eq!(instant("yesterday"), None);
+    }
+
+    #[test]
+    fn a_decimal_field_ranks_by_value_and_any_other_text_by_bytes() {
+        use std::cmp::Ordering;
+        let text = |value: &str| Value::Text(value.to_owned());
+        assert_eq!(
+            rank_order(&text("9"), &text("10"), true),
+            Some(Ordering::Less)
+        );
+        assert_eq!(
+            rank_order(&text("9"), &text("10"), false),
+            Some(Ordering::Greater)
+        );
+        for (left, right, order) in [
+            ("-10", "-9", Ordering::Less),
+            ("-0.5", "0", Ordering::Less),
+            ("0.25", "0.5", Ordering::Less),
+            ("1.50", "1.5", Ordering::Equal),
+            ("-0", "0.0", Ordering::Equal),
+            ("100", "99.99", Ordering::Greater),
+        ] {
+            assert_eq!(
+                decimal_order(left, right),
+                Some(order),
+                "{left} against {right}"
+            );
+        }
+        assert_eq!(decimal_order("9", "ten"), None);
+        for (left, right, order) in [
+            ("9007199254740993", "9007199254740992", Ordering::Greater),
+            ("-9007199254740993", "-9007199254740992", Ordering::Less),
+            ("9", "10", Ordering::Less),
+            ("0.30000000000000001", "0.3", Ordering::Greater),
+            ("1e3", "999", Ordering::Greater),
+        ] {
+            assert_eq!(
+                number_order(left, right),
+                Some(order),
+                "{left} against {right}"
+            );
+        }
+        let number = |value: &str| Value::Number(value.to_owned());
+        assert_eq!(
+            rank_order(
+                &number("9007199254740993"),
+                &number("9007199254740992"),
+                false
+            ),
+            Some(Ordering::Greater)
+        );
+
+        let row = |score: &str| {
+            Value::Object(vec![
+                ("id".to_owned(), text(score)),
+                ("score".to_owned(), text(score)),
+            ])
+        };
+        let rows = [row("9"), row("10")];
+        let ascending = |decimal: bool| Ranking {
+            field: "score".to_owned(),
+            ascending: true,
+            decimal,
+        };
+        assert_eq!(ranked("v", &[ascending(true)], &rows), Ok(()));
+        let refused = ranked("v", &[ascending(false)], &rows).expect_err("bytes put 10 first");
+        assert!(
+            refused.contains(r#"then {"id":"10","score":"10"}"#),
+            "the refusal names the later row: {refused}"
+        );
+    }
+
+    #[test]
+    fn a_variant_name_reaches_its_wire_spelling_and_only_that_one() {
+        let spellings = |all: &[&str]| -> Vec<Value> {
+            all.iter()
+                .map(|text| Value::Text((*text).to_owned()))
+                .collect()
+        };
+        let verdicts = spellings(&["OK", "N/A", "WARN"]);
+        assert_eq!(
+            wire_variant(&verdicts, "N_A"),
+            Some(Value::Text("N/A".to_owned()))
+        );
+        assert_eq!(
+            wire_variant(&verdicts, "OK"),
+            Some(Value::Text("OK".to_owned()))
+        );
+        assert_eq!(wire_variant(&verdicts, "NA"), None);
+        assert_eq!(wire_variant(&spellings(&["A/B", "A-B"]), "A_B"), None);
+        assert!(names_variant("N/A", "N_A"));
+        assert!(!names_variant("N/A", "NA"));
+        assert!(!names_variant("OK", "WARN"));
     }
 }

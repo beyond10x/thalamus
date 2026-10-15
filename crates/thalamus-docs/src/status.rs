@@ -107,15 +107,17 @@ pub const CAPABILITIES: &[Capability] = &[
         "Definition and dimension scenarios pass",
         "A conformance harness runs every synthesised scenario of the definition and dimension domains.",
         Evidence::Test(
-            "crates/thalamus-core/tests/conformance.rs::every_definition_and_dimension_scenario_of_the_suite_holds",
+            "crates/thalamus-core/tests/conformance.rs::every_scenario_of_the_suite_holds",
         ),
         "/docs/reference/ess",
     ),
-    planned(
+    shipped(
         "Specification",
         "Every synthesised conformance scenario passes",
         "Samples, evaluations and assertions join the harness under task check.",
-        "story:m0-conformance-records",
+        Evidence::Test(
+            "crates/thalamus-core/tests/conformance.rs::every_scenario_of_the_suite_holds",
+        ),
         "/docs/reference/ess",
     ),
     planned(

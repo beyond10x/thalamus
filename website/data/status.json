@@ -32,10 +32,10 @@
     },
     {
       "area": "Specification",
-      "detail": "Samples, evaluations and assertions join the harness under task check. Planned in story:m0-conformance-records.",
+      "detail": "Samples, evaluations and assertions join the harness under task check.",
       "href": "/docs/reference/ess",
       "label": "Every synthesised conformance scenario passes",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Specification",
