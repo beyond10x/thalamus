@@ -137,10 +137,10 @@
     },
     {
       "area": "Sources",
-      "detail": "NULL and unparseable cells are unknown, never 0. Planned in story:m3-sql-adapter.",
+      "detail": "NULL and unparseable cells are unknown, never 0.",
       "href": "/docs/concepts/signals#sources",
       "label": "SQL",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",

@@ -224,11 +224,11 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#sources",
     ),
-    planned(
+    shipped(
         "Sources",
         "SQL",
         "NULL and unparseable cells are unknown, never 0.",
-        "story:m3-sql-adapter",
+        Evidence::Test("crates/thalamus-sources/tests/sql.rs::sql_null_cell_is_unknown_never_zero"),
         "/docs/concepts/signals#sources",
     ),
     shipped(

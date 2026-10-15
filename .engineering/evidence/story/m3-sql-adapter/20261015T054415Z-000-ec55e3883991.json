@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T05:44:15Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-sql-adapter",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.59.0)",
+    "reference": "main 1eadd6d: task check exit 0, 39 ok lanes"
+  }
+}
