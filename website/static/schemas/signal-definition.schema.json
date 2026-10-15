@@ -115,8 +115,8 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
-    "contract_digest": "slice-sha256/2:79c983aec3485c6e460561a251b4eeee0908a5e1180ae9ad0a100ebea8c0ddf5",
+    "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
+    "contract_digest": "slice-sha256/2:ffb64bed21fc003adb508759fbd4930baf88e67df1fbc3da005d4af840b50581",
     "regenerate": "ess generate"
   },
   "$defs": {
@@ -222,6 +222,14 @@
         "rolling_n": {
           "description": "The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.",
           "type": "integer"
+        },
+        "mapping": {
+          "description": "A producer's own vocabulary mapped onto the ladder (a colour, a detector or gate exit code to OK, WARN, CRIT or UNKNOWN). Required, and not empty, when the rule is producer_mapped, and refused under any other rule; a producer value it does not list is UNKNOWN.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/thalamus.evaluation.Verdict"
+          },
+          "x-ess-map-key": "String"
         }
       },
       "required": [
@@ -425,6 +433,58 @@
       "x-ess-kind": "newtype",
       "type": "string",
       "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
+    },
+    "thalamus.evaluation.Verdict": {
+      "title": "Verdict",
+      "description": "The one verdict ladder. exit is the process exit code; rank orders an aggregate worst-first (CRIT > WARN > UNKNOWN > OK = N/A); scored says whether the verdict carries a score.",
+      "x-ess-name": "thalamus.evaluation.Verdict",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "OK",
+        "N/A",
+        "WARN",
+        "CRIT",
+        "UNKNOWN"
+      ],
+      "x-ess-attributes": [
+        {
+          "kind": "integer",
+          "name": "exit",
+          "type": "Integer",
+          "values": {
+            "CRIT": 2,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 3,
+            "WARN": 1
+          }
+        },
+        {
+          "kind": "integer",
+          "name": "rank",
+          "type": "Integer",
+          "values": {
+            "CRIT": 3,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 1,
+            "WARN": 2
+          }
+        },
+        {
+          "kind": "boolean",
+          "name": "scored",
+          "type": "Boolean",
+          "values": {
+            "CRIT": true,
+            "N/A": false,
+            "OK": true,
+            "UNKNOWN": false,
+            "WARN": true
+          }
+        }
+      ]
     }
   }
 }

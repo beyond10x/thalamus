@@ -120,3 +120,13 @@ leave it:
 | a detector exit code | `1` to `CRIT`, `2` to `UNKNOWN` |
 | a blocking gate | a non-zero exit to `CRIT` |
 | an advisory gate | its finding count (`count_of_cases`, unit `{finding}`) against a declared `fixed` baseline: above it `WARN`, at or below `OK`, never `CRIT`; no count printed is `UNKNOWN` |
+
+The first three are tables in the definition's own `evaluation.mapping` under the rule
+`producer_mapped`, never in code: each producer value, as the source printed it, names `OK`,
+`WARN`, `CRIT` or `UNKNOWN`. The sample records the value the adapter read as its `text` and
+keeps its own reading; grading maps the text at the revision it grades, so revising the table
+re-grades history. A read the adapter could not make records no text and stays `UNKNOWN` with its
+own reason, and a value the table does not list is `UNKNOWN`. A definition naming
+`producer_mapped` without a mapping, with an empty one, with one naming `N/A`, or with `warn` or
+`crit` lines is refused, and so is a mapping under any other rule. A mapped verdict's score is its
+position: 0 at `OK`, 1 at `WARN`, 2 at `CRIT`.

@@ -40,6 +40,10 @@
     "reading": {
       "$ref": "#/$defs/thalamus.observation.Reading"
     },
+    "text": {
+      "description": "The producer's value exactly as the source printed it (a text cell, an exit code, an HTTP status), recorded only under a producer_mapped definition and only when the adapter read the value. Grading maps it through the definition's evaluation.mapping at the revision being graded, so a mapping revision re-grades history.",
+      "type": "string"
+    },
     "unit": {
       "$ref": "#/$defs/thalamus.definition.Unit"
     },
@@ -69,8 +73,8 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
-    "contract_digest": "slice-sha256/2:7c7fcdae5b99e1db8cdb8d603fca3375cf9317e2faf8be19f6979b30214a2ce3",
+    "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
+    "contract_digest": "slice-sha256/2:d9e65f52be3dd5634108ec68664a3e6aa4d0bb89cd656c37fe003d2acc081f2b",
     "regenerate": "ess generate"
   },
   "$defs": {

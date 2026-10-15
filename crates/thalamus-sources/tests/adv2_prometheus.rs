@@ -85,6 +85,7 @@ fn ratio(numerator: &str, denominator: &str, dimensions: &[&str]) -> SignalDefin
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,

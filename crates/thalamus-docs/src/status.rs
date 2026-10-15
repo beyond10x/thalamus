@@ -166,11 +166,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m2-store-baselines",
         "/docs/concepts/baselines",
     ),
-    planned(
+    shipped(
         "Grading",
         "Other producers' vocabularies map onto the ladder",
-        "Colour ladders, detector exits and blocking gate exits.",
-        "story:m3-vocabulary-mapping",
+        "Colour ladders, detector exits and blocking gate exits, by the table in evaluation.mapping; na is UNKNOWN, never green.",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/vocabulary.rs::colour_na_never_ranks_as_green",
+        ),
         "/docs/concepts/verdicts#other-vocabularies",
     ),
     planned(

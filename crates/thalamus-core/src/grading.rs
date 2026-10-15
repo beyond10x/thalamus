@@ -4,7 +4,10 @@
 //! In this order:
 //!
 //! 1. a sample whose `denominator.n` was read and is below `min_n` is `N/A`, with no score;
-//! 2. a reading of quality `unknown` is `UNKNOWN`, with the reading's reason;
+//! 2. under `producer_mapped`, a sample that records the producer's text and is not `partial` is
+//!    graded by that text through the mapping at the definition's revision once its baseline is
+//!    read (step 3), whatever the reading's own quality (`crate::rules::mapped`); otherwise a
+//!    reading of quality `unknown` is `UNKNOWN`, with the reading's reason;
 //! 3. a baseline whose reading is not `ok` is `UNKNOWN`, with the baseline's reason;
 //! 4. a `partial` reading may escalate but never clear: `CRIT` when its bound is already over the
 //!    CRIT line, `UNKNOWN` with reason [`REASON_PARTIAL`] otherwise;
@@ -108,6 +111,15 @@ fn decide(
             format!("n {n} below min_n {}: too little to grade", spec.min_n),
         );
     }
+    if let Prepared::Mapped(rule) = prepared
+        && let Some(text) = sample.text.as_deref()
+        && !matches!(sample.reading, Reading::Partial(_))
+    {
+        return match baseline_value(baseline) {
+            Ok(_) => rule.decide_text(text, definition.rev),
+            Err(unread) => unread,
+        };
+    }
     let read = match &sample.reading {
         Reading::Unknown(UnreadReading { reason }) => {
             let reason = if reason.is_empty() {
@@ -120,23 +132,31 @@ fn decide(
         Reading::Ok(CompleteReading { value }) => Ok(value),
         Reading::Partial(partial) => Err(partial),
     };
-    let base = match &baseline.reading {
-        Reading::Ok(CompleteReading { value }) => value,
-        Reading::Unknown(UnreadReading { reason }) => {
-            return unscored(Verdict::UNKNOWN, format!("baseline unknown: {reason}"));
-        }
-        Reading::Partial(_) => {
-            return unscored(
-                Verdict::UNKNOWN,
-                "baseline read partially: a bound is not a baseline".to_owned(),
-            );
-        }
+    let base = match baseline_value(baseline) {
+        Ok(base) => base,
+        Err(unread) => return unread,
     };
     match read {
         Ok(value) => prepared.decide(value, base, n),
         Err(partial) => prepared
             .escalate(&partial.value, partial.bound, base, n)
             .unwrap_or_else(|| unscored(Verdict::UNKNOWN, REASON_PARTIAL.to_owned())),
+    }
+}
+
+/// The baseline's value; `UNKNOWN` with the baseline's reason when its reading is not `ok`
+/// (step 3).
+fn baseline_value(baseline: &Baseline) -> Result<&Decimal, Decision> {
+    match &baseline.reading {
+        Reading::Ok(CompleteReading { value }) => Ok(value),
+        Reading::Unknown(UnreadReading { reason }) => Err(unscored(
+            Verdict::UNKNOWN,
+            format!("baseline unknown: {reason}"),
+        )),
+        Reading::Partial(_) => Err(unscored(
+            Verdict::UNKNOWN,
+            "baseline read partially: a bound is not a baseline".to_owned(),
+        )),
     }
 }
 

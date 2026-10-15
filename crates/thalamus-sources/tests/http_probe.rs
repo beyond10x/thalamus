@@ -108,6 +108,7 @@ fn definition(query: &[(&str, &str)]) -> SignalDefinitionData {
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,

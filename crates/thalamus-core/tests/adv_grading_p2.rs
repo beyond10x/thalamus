@@ -60,6 +60,7 @@ fn define(rule: &str, kind: SignalKind, warn: Threshold, crit: Threshold) -> Sig
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,
@@ -78,6 +79,7 @@ fn define(rule: &str, kind: SignalKind, warn: Threshold, crit: Threshold) -> Sig
 
 fn sample(reading: Reading, n: Option<i64>) -> SignalSampleData {
     SignalSampleData {
+        text: None,
         sample_id: SampleId("smp_1".into()),
         signal: SignalId("platform.namespace.request_failure_ratio".into()),
         series: SeriesKey("platform.namespace.request_failure_ratio".into()),
