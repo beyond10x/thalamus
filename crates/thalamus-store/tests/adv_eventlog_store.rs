@@ -951,7 +951,15 @@ fn whole_suite(locator: fn(&Path) -> Locator) -> Report {
         .map(|failure| format!("{}: {}", failure.scenario, failure.reason))
         .collect();
     assert!(failures.is_empty(), "{}", failures.join("\n"));
-    assert_eq!(report.ran.len(), 73, "every scenario of the suite ran");
+    let scenarios =
+        serde_json::from_str::<serde_json::Value>(&suite).expect("the suite is JSON")["scenarios"]
+            .as_object()
+            .map_or(0, serde_json::Map::len);
+    assert_eq!(
+        report.ran.len(),
+        scenarios,
+        "every scenario of the suite ran"
+    );
     report
 }
 
@@ -966,3 +974,18 @@ fn adv_whole_suite_holds_on_the_postgres_provider() {
 fn adv_whole_suite_holds_on_the_sqlite_provider() {
     whole_suite(|dir| Locator::Sqlite(dir.join("thalamus.sqlite")));
 }
+
+use thalamus_model::behaviour::{DailyRollupStorage, TransitionStorage};
+
+delegate!(
+    TransitionStorage,
+    memory,
+    thalamus_model::transition::TransitionId,
+    thalamus_model::transition::TransitionSnapshot
+);
+delegate!(
+    DailyRollupStorage,
+    memory,
+    thalamus_model::rollup::RollupId,
+    thalamus_model::rollup::DailyRollupSnapshot
+);
