@@ -1,0 +1,6 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {"adapter": "logs", "operation": "logs.query_metric", "schema": "datasource.series/v1alpha1", "revision": "op-rev-metric-1"}
+  }
+}
