@@ -1,0 +1,26 @@
+[
+  {
+    "input": {"cursor": "ns-2"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "kubernetes",
+        "operation": "namespaces.list",
+        "revision": "op-rev-1",
+        "result": "{\"items\":[{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"name\":\"gamma\"},\"status\":{\"phase\":\"Active\"}}],\"next_cursor\":null,\"complete\":true,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"namespaces\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+      }
+    }
+  },
+  {
+    "input": {"limit": 100},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "kubernetes",
+        "operation": "namespaces.list",
+        "revision": "op-rev-1",
+        "result": "{\"items\":[{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"name\":\"alpha\"},\"status\":{\"phase\":\"Active\"}},{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"name\":\"beta\"},\"status\":{\"phase\":\"Active\"}}],\"next_cursor\":\"ns-2\",\"complete\":false,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"namespaces\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+      }
+    }
+  }
+]

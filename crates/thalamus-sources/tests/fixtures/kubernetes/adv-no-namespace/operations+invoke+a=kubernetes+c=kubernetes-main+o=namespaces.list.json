@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "kubernetes",
+      "operation": "namespaces.list",
+      "revision": "op-rev-1",
+      "result": "{\"items\":[],\"next_cursor\":null,\"complete\":true,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"namespaces\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+    }
+  }
+}

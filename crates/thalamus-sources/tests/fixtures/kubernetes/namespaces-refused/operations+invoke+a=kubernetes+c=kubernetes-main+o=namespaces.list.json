@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "a configured namespace could not be read",
+      "data": {"kind": "operational", "code": "forbidden", "stage": "admission", "next_action": "review_grants"}
+    }
+  }
+}

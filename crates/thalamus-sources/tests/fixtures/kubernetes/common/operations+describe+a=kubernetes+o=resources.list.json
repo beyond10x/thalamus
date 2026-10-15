@@ -1,0 +1,6 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {"adapter": "kubernetes", "operation": "resources.list", "schema": "datasource.records/v1alpha1", "revision": "op-rev-1"}
+  }
+}

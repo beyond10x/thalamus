@@ -1,0 +1,12 @@
+{
+  "input": {"namespace": "tenant-a", "kind": "pods", "limit": 100},
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "kubernetes",
+      "operation": "resources.list",
+      "revision": "op-rev-1",
+      "result": "{\"items\":[{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-1\",\"namespace\":\"tenant-a\",\"labels\":{\"tenant\":\"tenant-a\",\"cluster\":\"east\"}},\"status\":{\"phase\":\"Running\"}},{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-2\",\"namespace\":\"tenant-a\",\"labels\":{\"tenant\":\"tenant-a\",\"cluster\":\"east\"}},\"status\":{\"phase\":\"Running\"}}],\"next_cursor\":null,\"complete\":true,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"pods\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":\"4711\"}}"
+    }
+  }
+}
