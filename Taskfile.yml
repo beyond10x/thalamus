@@ -3,6 +3,7 @@ version: '3'
 vars:
   CARGO: 'env CARGO_BUILD_JOBS=4 RUST_TEST_THREADS=4 nice -n 19 cargo'
   ESS: ess
+  POSTGRES_IMAGE: 'postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94'
   CRATES: '-p thalamus-core -p thalamus-store -p thalamus-sources -p thalamus-pipeline -p thalamus-service -p thalamus-cli -p thalamus-docs'
 
 tasks:
@@ -39,9 +40,39 @@ tasks:
       - '{{.CARGO}} build --locked --release'
 
   test:
-    desc: Run every test
+    desc: Run every test; the store's on SQLite and on PostgreSQL (task test-postgres)
     cmds:
-      - '{{.CARGO}} test --locked --workspace'
+      - '{{.CARGO}} test --locked --workspace --exclude thalamus-store'
+      - task: test-postgres
+
+  test-postgres:
+    desc: Run the store tests on SQLite and PostgreSQL, in the database THALAMUS_TEST_POSTGRES_URL names or else in a disposable PostgreSQL 17 container
+    cmds:
+      - |
+        set -eu
+        if [ -n "${THALAMUS_TEST_POSTGRES_URL:-}" ]; then
+          exec {{.CARGO}} test --locked -p thalamus-store
+        fi
+        name="thalamus-test-postgres-$$-$(date +%s)"
+        id=$(docker run --detach --rm --name "$name" \
+          --env POSTGRES_HOST_AUTH_METHOD=trust --publish 127.0.0.1::5432 \
+          --cpus 2 --memory 1g --pids-limit 256 {{.POSTGRES_IMAGE}})
+        trap 'docker rm --force "$id" >/dev/null' EXIT
+        ready=no
+        for _ in $(seq 1 120); do
+          if docker exec "$id" pg_isready --quiet --username postgres --host 127.0.0.1; then
+            ready=yes
+            break
+          fi
+          sleep 1
+        done
+        if [ "$ready" != yes ]; then
+          echo "PostgreSQL container $name did not accept connections" >&2
+          exit 1
+        fi
+        port=$(docker port "$id" 5432/tcp | head -n 1 | sed 's/.*://')
+        THALAMUS_TEST_POSTGRES_URL="postgresql://postgres@127.0.0.1:$port/postgres" \
+          {{.CARGO}} test --locked -p thalamus-store
 
   check:
     desc: The gate — spec validity, generated-code drift, fmt, clippy, tests, documentation drift

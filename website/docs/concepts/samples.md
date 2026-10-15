@@ -22,7 +22,7 @@ The sample is specified and its Rust and serde types are generated. Recording sa
 ## A sample on the wire
 
 ```json
-{"sample_id": "smp_01JA…",
+{"sample_id": "smp_000000000042",
  "signal": "platform.namespace.request_failure_ratio",
  "series": "platform.namespace.request_failure_ratio{cluster=\"prod-a\",namespace=\"shared-1\"}",
  "dims": {"cluster": "prod-a", "namespace": "shared-1"},
@@ -75,7 +75,7 @@ reason `missed_slot`; it is never re-read and never interpolated, and views draw
 
 | record | where | retention |
 |---|---|---|
-| samples and evaluations | an append-only stream per instance; the first store is planned on [Eventlog](https://beyond10x.github.io/ecosystem/eventlog/) ([GitHub](https://github.com/beyond10x/eventlog)) (File, SQLite) | a configured window, by default 35 days: enough for a 7-day offset and a 4-week same-slot median |
+| samples and evaluations | an append-only stream per instance; the first store is [Eventlog](https://beyond10x.github.io/ecosystem/eventlog/) ([GitHub](https://github.com/beyond10x/eventlog)) (File, SQLite) | a configured window, by default 35 days: enough for a 7-day offset and a 4-week same-slot median |
 | daily rollups | one row per series per UTC day: count, unknown and partial counts, min, median, max and last value, worst verdict, verdict counts, min and max score | kept |
 | transitions | emitted as events and, for an instance connected to cortex, as facts | see [Assertions, events and views](./interfaces.md) |
 

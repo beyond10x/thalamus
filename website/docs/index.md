@@ -83,7 +83,7 @@ went out of bounds or came back), a daily rollup, and the definition that explai
 | [Connectors](https://beyond10x.github.io/connectors/) ([GitHub](https://github.com/beyond10x/connectors)) | every source is read through it; it holds every credential |
 | [conductor](https://beyond10x.github.io/conductor/) ([GitHub](https://github.com/beyond10x/conductor)) | thalamus's first consumer: it will assert signals before closing a wave and read the live verdict stream |
 | [ESS](https://beyond10x.github.io/ess/) ([GitHub](https://github.com/beyond10x/ess)) | specifies thalamus; the Rust model and the conformance suite are generated from `spec/` |
-| [Eventlog](https://beyond10x.github.io/ecosystem/eventlog/) ([GitHub](https://github.com/beyond10x/eventlog)) | the planned first store of samples and evaluations |
+| [Eventlog](https://beyond10x.github.io/ecosystem/eventlog/) ([GitHub](https://github.com/beyond10x/eventlog)) | the first store of samples and evaluations (File, SQLite) |
 
 ## Where to go next
 
