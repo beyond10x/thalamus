@@ -123,10 +123,10 @@
     },
     {
       "area": "Sources",
-      "detail": "PromQL reads become typed readings; a ratio is a decimal with unit 1, NaN is unknown. Planned in story:m1-prometheus-adapter.",
+      "detail": "PromQL reads become typed readings; a ratio is a decimal with unit 1, NaN is unknown.",
       "href": "/docs/concepts/signals#sources",
       "label": "Prometheus",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T05:41:40Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-prometheus-adapter",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.59.0)",
+    "reference": "main 75597f8: task check exit 0, 37 ok lanes"
+  }
+}

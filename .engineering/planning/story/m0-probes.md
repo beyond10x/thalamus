@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m0-probes
 kind: story
-status: draft
+status: active
 title: 'Answer the design § 8 probes: an unknown reading carries no value, a unit is UCUM'
 relations:
 - decomposes: epic:specification
@@ -19,7 +19,10 @@ scope:
   path: docs/design/thalamus.md
 - confidence: inferred
   path: spec/domains/definition.yaml
-revision: 3
+revision: 5
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T05:39:23Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-15T05:39:23Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":2}}}
 ---
 ## Context
 

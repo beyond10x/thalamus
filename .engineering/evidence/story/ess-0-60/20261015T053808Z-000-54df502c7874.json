@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T05:38:08Z",
+  "actor": "human:timo",
+  "artifact": "story:ess-0-60",
+  "kind": "story",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "main 5d0ee31: task check exit 0, 34 ok lanes"
+  }
+}

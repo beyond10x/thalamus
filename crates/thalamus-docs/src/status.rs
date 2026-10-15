@@ -206,11 +206,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#sources",
     ),
-    planned(
+    shipped(
         "Sources",
         "Prometheus",
         "PromQL reads become typed readings; a ratio is a decimal with unit 1, NaN is unknown.",
-        "story:m1-prometheus-adapter",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/prometheus.rs::an_empty_numerator_answer_infers_no_zero",
+        ),
         "/docs/concepts/signals#sources",
     ),
     shipped(

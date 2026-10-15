@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-prometheus-adapter
 kind: story
-status: active
+status: implemented
 title: Prometheus reads through Connectors become typed readings; a ratio is a decimal with unit 1, NaN is unknown
 relations:
 - decomposes: epic:signal-contract
@@ -15,10 +15,11 @@ scope:
   path: crates/thalamus-sources/tests/fixtures/prometheus
 - confidence: inferred
   path: crates/thalamus-sources/tests/prometheus.rs
-revision: 6
+revision: 7
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T04:58:55Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-15T04:58:55Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "active", to: "implemented", at: "2026-10-15T05:41:40Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Outcome
 
