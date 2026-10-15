@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-verdict-grading
 kind: story
-status: draft
+status: implemented
 title: A reading graded against a baseline yields one ladder verdict, score and reason; unknown is never OK
 relations:
 - decomposes: epic:signal-contract
@@ -20,7 +20,11 @@ scope:
   path: crates/thalamus-core/src/rules/threshold.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/grading.rs
-revision: 3
+revision: 6
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T08:25:15Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-15T08:25:15Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-15T10:02:55Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"test_result":1,"review_outcome":5}}}
 ---
 ## Outcome
 

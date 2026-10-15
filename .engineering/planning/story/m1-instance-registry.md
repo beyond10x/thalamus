@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-instance-registry
 kind: story
-status: draft
+status: implemented
 title: Instance definitions and dimension registry validate, and only Active definitions with registered dims are sampled
 relations:
 - decomposes: epic:signal-contract
@@ -22,7 +22,11 @@ scope:
   path: crates/thalamus-core/tests/fixtures/instance
 - confidence: inferred
   path: crates/thalamus-core/tests/registry.rs
-revision: 4
+revision: 7
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T08:25:14Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "proposed", to: "active", at: "2026-10-15T08:25:15Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "active", to: "implemented", at: "2026-10-15T10:21:55Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Outcome
 

@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T09:59:28Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-instance-registry",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:adversary-m1-instance-registry-pass-1",
+    "review": "review-result:adversary-m1-instance-registry-pass-1",
+    "outcome": "fixed"
+  }
+}

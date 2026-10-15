@@ -20,7 +20,7 @@ scope:
   path: crates/thalamus-cli/tests/fixtures/eval_show
 - confidence: inferred
   path: crates/thalamus-pipeline/src/evaluate.rs
-revision: 3
+revision: 4
 ---
 ## Outcome
 
@@ -64,3 +64,7 @@ No subcommand enum line: `story:m0-workspace` declares `eval` and `show`.
 ## Out of scope
 
 Hysteresis and settled transitions, CloudEvents, `compare`, `rollup` (M2); re-grading history after a revision beyond grading samples not yet graded at the current `rev`.
+
+## Note from story:m1-eventlog-store (2026-10-15)
+
+Design § 11 D5 (at most one evaluation per `(sample, definition_rev)`) has no declared error on `RecordEvaluation` (`spec/domains/evaluation.yaml:224`, `UNMAPPED:`), and the generated storage port's `put` cannot return one, so the Eventlog store panics on a second evaluation as a guard. The pipeline grades only samples `unevaluated_samples(signal, definition_rev)` returns, and appends through `EventlogStore::append_evaluation`, which returns the D5 refusal as a value; a test shows a re-run of `thalamus eval` over the same samples records nothing twice and does not panic.
