@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "logs",
+      "operation": "logs.query_metric",
+      "revision": "op-rev-metric-1",
+      "result": "{\"result_type\":\"vector\",\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[{\"timestamp_unix_ns\":\"1792018623000000000\",\"value\":\"NaN\"}]},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[{\"timestamp_unix_ns\":\"1792018623000000000\",\"value\":\"+Inf\"}]},{\"labels\":{\"cluster\":\"gamma\"},\"samples\":[{\"timestamp_unix_ns\":\"1792018623000000000\",\"value\":\"-Inf\"}]},{\"labels\":{\"cluster\":\"epsilon\"},\"samples\":[{\"timestamp_unix_ns\":\"1792018623000000000\",\"value\":\"3\"}]}],\"complete\":true,\"truncation\":[],\"provenance\":{\"instance\":\"loki-test\",\"profile\":\"logql-metric\",\"observed_at_unix_ms\":1792018623000}}"
+    }
+  }
+}

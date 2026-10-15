@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "logs",
+      "operation": "logs.query_range",
+      "revision": "op-rev-range-1",
+      "result": "{\"lines\":[{\"timestamp_unix_ns\":\"1792018600000000000\",\"stream\":{\"app\":\"api\",\"cluster\":\"alpha\"},\"line\":\"request failed\",\"line_truncated\":false,\"redacted\":false,\"source\":null},{\"timestamp_unix_ns\":\"1792018500000000000\",\"stream\":{\"app\":\"api\",\"cluster\":\"beta\"},\"line\":\"request fai\",\"line_truncated\":true,\"redacted\":false,\"source\":null},{\"timestamp_unix_ns\":\"1792018400000000000\",\"stream\":{\"app\":\"api\",\"cluster\":\"alpha\"},\"line\":\"request failed\",\"line_truncated\":false,\"redacted\":false,\"source\":null}],\"selection\":{\"kind\":\"loki-range\",\"start_unix_ns\":\"1791997023000000000\",\"end_unix_ns\":\"1792018623000000000\",\"direction\":\"backward\"},\"order\":\"timestamp-backward\",\"complete\":true,\"truncation\":{\"causes\":[\"line_bytes\"],\"occurrences_dropped\":0,\"stream_groups_dropped\":0},\"next_cursor\":null,\"provenance\":{\"instance\":\"loki-test\",\"resource\":\"loki:query_range\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+    }
+  }
+}

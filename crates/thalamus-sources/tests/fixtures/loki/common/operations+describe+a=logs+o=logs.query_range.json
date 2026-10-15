@@ -1,0 +1,6 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {"adapter": "logs", "operation": "logs.query_range", "schema": "datasource.logs/v1alpha1", "revision": "op-rev-range-1"}
+  }
+}
