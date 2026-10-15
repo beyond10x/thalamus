@@ -322,10 +322,20 @@
         "crit": {
           "$ref": "#/$defs/thalamus.definition.Threshold"
         },
+        "fixed": {
+          "description": "The number a fixed baseline is (a hard zero, or no history yet). A fixed baseline without it is unknown, never 0.",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        },
         "min_trend_window": {
           "description": "For an instant signal, no delta and no trend below this window.",
           "format": "duration",
           "type": "string"
+        },
+        "rolling_n": {
+          "description": "The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.",
+          "type": "integer"
         },
         "rule": {
           "$ref": "#/$defs/thalamus.definition.RuleId"
@@ -401,6 +411,33 @@
       "type": "string",
       "x-ess-kind": "newtype",
       "x-ess-name": "thalamus.definition.Owner"
+    },
+    "thalamus.definition.Persistence": {
+      "additionalProperties": false,
+      "description": "How many evaluations must agree before a verdict change is a transition (design § 3.2, § 11 D15). Absent on a definition, the service applies k 2, k_crit 1, m 3.",
+      "properties": {
+        "k": {
+          "description": "Consecutive agreeing evaluations before a change of verdict settles.",
+          "type": "integer"
+        },
+        "k_crit": {
+          "description": "Consecutive agreeing evaluations before a change to CRIT settles.",
+          "type": "integer"
+        },
+        "m": {
+          "description": "Consecutive OK evaluations before a WARN clears.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "k",
+        "k_crit",
+        "m"
+      ],
+      "title": "Persistence",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.definition.Persistence"
     },
     "thalamus.definition.QueryText": {
       "description": "Query text, stored once and hashed into every sample.",
@@ -1097,12 +1134,141 @@
       "type": "object",
       "x-ess-kind": "struct",
       "x-ess-name": "thalamus.observation.UnreadReading"
+    },
+    "thalamus.rollup.DailyRollup.State": {
+      "enum": [
+        "Recorded"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.rollup.DailyRollup.State"
+    },
+    "thalamus.rollup.RollupId": {
+      "description": "A rollup id, spelled from the series key and the UTC day.",
+      "title": "RollupId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.rollup.RollupId"
+    },
+    "thalamus.rollup.RollupRecorded": {
+      "additionalProperties": false,
+      "properties": {
+        "day": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "rollup_id": {
+          "$ref": "#/$defs/thalamus.rollup.RollupId"
+        },
+        "series": {
+          "$ref": "#/$defs/thalamus.observation.SeriesKey"
+        },
+        "signal": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        }
+      },
+      "required": [
+        "rollup_id",
+        "signal",
+        "series",
+        "day"
+      ],
+      "title": "RollupRecorded",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.rollup.RollupRecorded"
+    },
+    "thalamus.rollup.VerdictCounts": {
+      "additionalProperties": false,
+      "description": "One count per verdict of the ladder, over the day's evaluations.",
+      "properties": {
+        "crit": {
+          "type": "integer"
+        },
+        "na": {
+          "description": "The N/A verdicts.",
+          "type": "integer"
+        },
+        "ok": {
+          "type": "integer"
+        },
+        "unknown": {
+          "type": "integer"
+        },
+        "warn": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ok",
+        "na",
+        "warn",
+        "crit",
+        "unknown"
+      ],
+      "title": "VerdictCounts",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "thalamus.rollup.VerdictCounts"
+    },
+    "thalamus.transition.Transition.State": {
+      "enum": [
+        "Recorded"
+      ],
+      "title": "State",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "thalamus.transition.Transition.State"
+    },
+    "thalamus.transition.TransitionId": {
+      "description": "A transition id, minted by the service.",
+      "pattern": "^trn_",
+      "title": "TransitionId",
+      "type": "string",
+      "x-ess-kind": "newtype",
+      "x-ess-name": "thalamus.transition.TransitionId"
+    },
+    "thalamus.transition.TransitionRecorded": {
+      "additionalProperties": false,
+      "properties": {
+        "from_verdict": {
+          "$ref": "#/$defs/thalamus.evaluation.Verdict"
+        },
+        "series": {
+          "$ref": "#/$defs/thalamus.observation.SeriesKey"
+        },
+        "settled_ts": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "signal": {
+          "$ref": "#/$defs/thalamus.definition.SignalId"
+        },
+        "to_verdict": {
+          "$ref": "#/$defs/thalamus.evaluation.Verdict"
+        },
+        "transition_id": {
+          "$ref": "#/$defs/thalamus.transition.TransitionId"
+        }
+      },
+      "required": [
+        "transition_id",
+        "signal",
+        "series",
+        "to_verdict",
+        "settled_ts"
+      ],
+      "title": "TransitionRecorded",
+      "type": "object",
+      "x-ess-kind": "event-payload",
+      "x-ess-name": "thalamus.transition.TransitionRecorded"
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:e6a3109ff3489fba25d884b5b59c33ac9ed99c80e3d4d1a8d301f610af0b90d1",
-    "source_digest": "827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0",
+    "contract_digest": "slice-sha256/2:84d3d1094d63e08d05e6556b5f633589c98643752b8ff1c198bb1b21b3d6a6c7",
+    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
     "specification_version": "v1",
     "system": "thalamus"
   }

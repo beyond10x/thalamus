@@ -22,8 +22,9 @@ use std::sync::{Mutex, PoisonError};
 
 use thalamus_model::actor::{Actor, Caller};
 use thalamus_model::behaviour::{
-    AssertionStorage, Context, DimensionRegistryStorage, DimensionStorage, Generated,
-    SignalDefinitionStorage, SignalEvaluationStorage, SignalSampleStorage,
+    AssertionStorage, Context, DailyRollupStorage, DimensionRegistryStorage, DimensionStorage,
+    Generated, SignalDefinitionStorage, SignalEvaluationStorage, SignalSampleStorage,
+    TransitionStorage,
 };
 use thalamus_model::json::{self, Value};
 use thalamus_model::obligation::UnmetObligation;
@@ -32,7 +33,9 @@ use thalamus_model::primitives::Timestamp;
 use thalamus_model::server::entry::Refused;
 use thalamus_model::server::thalamus_service::handle;
 use thalamus_model::system::System;
-use thalamus_model::{assertion, definition, dimension, evaluation, observation};
+use thalamus_model::{
+    assertion, definition, dimension, evaluation, observation, rollup, transition,
+};
 
 use crate::behaviour::observation::{IdSequence, Instant, timestamp_order};
 
@@ -52,6 +55,8 @@ pub trait Storage:
     + DimensionRegistryStorage
     + SignalEvaluationStorage
     + SignalSampleStorage
+    + TransitionStorage
+    + DailyRollupStorage
 {
 }
 
@@ -62,6 +67,8 @@ impl<S> Storage for S where
         + DimensionRegistryStorage
         + SignalEvaluationStorage
         + SignalSampleStorage
+        + TransitionStorage
+        + DailyRollupStorage
 {
 }
 
@@ -187,6 +194,16 @@ delegate_storage!(
     observation::SampleId,
     observation::SignalSampleSnapshot
 );
+delegate_storage!(
+    TransitionStorage,
+    transition::TransitionId,
+    transition::TransitionSnapshot
+);
+delegate_storage!(
+    DailyRollupStorage,
+    rollup::RollupId,
+    rollup::DailyRollupSnapshot
+);
 
 impl<S, Q> Context for Ports<S, Q> {
     fn command_clock(&mut self) -> Option<Timestamp> {
@@ -280,6 +297,35 @@ impl<S: SignalSampleStorage, Q> observation::obligations::SeriesSamplesQuery for
         series: observation::SeriesKey,
     ) -> Result<Vec<observation::SeriesSamples>, UnmetObligation> {
         crate::behaviour::observation::series_samples(self, &series)
+    }
+}
+
+impl<S: SignalDefinitionStorage + TransitionStorage>
+    transition::obligations::RecordTransitionBehavior for Ports<S>
+{
+    fn record_transition(
+        &mut self,
+        input: transition::RecordTransition,
+    ) -> Result<transition::RecordTransitionOutcome, UnmetObligation> {
+        crate::behaviour::transition::record_transition(self, input)
+    }
+}
+
+impl<S: TransitionStorage> transition::obligations::SeriesTransitionsQuery for Ports<S> {
+    fn series_transitions(
+        &self,
+        series: observation::SeriesKey,
+    ) -> Result<Vec<transition::SeriesTransitions>, UnmetObligation> {
+        crate::behaviour::transition::series_transitions(self, &series)
+    }
+}
+
+impl<S: DailyRollupStorage> rollup::obligations::SeriesRollupsQuery for Ports<S> {
+    fn series_rollups(
+        &self,
+        series: observation::SeriesKey,
+    ) -> Result<Vec<rollup::SeriesRollups>, UnmetObligation> {
+        crate::behaviour::rollup::series_rollups(self, &series)
     }
 }
 
@@ -1960,6 +2006,12 @@ fn truth(predicate: &Value, row: &Value) -> Result<Option<bool>, String> {
                 })
             }
             [(not, part)] if not == "not" => Ok(truth(part, row)?.map(|truth| !truth)),
+            // `{compare: {as: timestamp, left, op, right: {fact}}}`: two timestamp fields of the
+            // row compared as instants.
+            [(compare, Value::Object(_))] if compare == "compare" => {
+                compare_truth(predicate.member("compare"), row)
+                    .map_err(|()| format!("unsupported predicate form {}", show(predicate)))
+            }
             // `{field: {any_of: [...]}}`: the field holds one of the values; a field the row does
             // not hold decides nothing.
             [(field, Value::Object(test))] if matches!(test.as_slice(), [(any_of, _)] if any_of == "any_of") =>
@@ -1973,10 +2025,109 @@ fn truth(predicate: &Value, row: &Value) -> Result<Option<bool>, String> {
                 Ok(path_value(field, row)?
                     .map(|held| values.iter().any(|value| same_variant(&held, value))))
             }
+            // `{field: {lte: {fact: other}}}`: the field compared with another field of the same
+            // row; a field the row does not hold, or a pair with no order, decides nothing.
+            [(field, Value::Object(test))]
+                if matches!(test.as_slice(), [(_, Value::Object(operand))]
+                    if matches!(operand.as_slice(), [(fact, Value::Text(_))] if fact == "fact")) =>
+            {
+                let [(keyword, Value::Object(operand))] = test.as_slice() else {
+                    return Err(format!("unsupported predicate form {}", show(predicate)));
+                };
+                let [(_, Value::Text(other))] = operand.as_slice() else {
+                    return Err(format!("unsupported predicate form {}", show(predicate)));
+                };
+                fact_truth(keyword, field, other, row)
+                    .map_err(|()| format!("unsupported predicate form {}", show(predicate)))
+            }
             _ => Err(format!("unsupported predicate form {}", show(predicate))),
         },
         other => Err(format!("unsupported predicate form {}", show(other))),
     }
+}
+
+/// `field keyword other` over two fields of `row`, with `keyword` one of the structured
+/// comparison keywords ESS writes (`eq`, `ne`, `lt`, `lte`, `gt`, `gte`). Numbers and decimal
+/// strings compare by exact value; any other pair only for equality. `Ok(None)` where either
+/// field is absent or the pair has no order; `Err` for an unknown keyword or field path.
+fn fact_truth(keyword: &str, field: &str, other: &str, row: &Value) -> Result<Option<bool>, ()> {
+    use std::cmp::Ordering;
+    let accepts = comparison(keyword)?;
+    let (Some(left), Some(right)) = (
+        path_value(field, row).map_err(|_| ())?,
+        path_value(other, row).map_err(|_| ())?,
+    ) else {
+        return Ok(None);
+    };
+    let ordering = match (&left, &right) {
+        (Value::Number(left), Value::Number(right)) => number_order(left, right),
+        (Value::Text(left), Value::Text(right)) if decimal(left) && decimal(right) => {
+            decimal_order(left, right)
+        }
+        _ if matches!(keyword, "eq" | "ne") => Some(if same(&left, &right) {
+            Ordering::Equal
+        } else {
+            Ordering::Less
+        }),
+        _ => None,
+    };
+    Ok(ordering.map(accepts))
+}
+
+/// The typed comparison ESS writes for two timestamp facts:
+/// `{as: timestamp, left: <field>, op: <keyword>, right: {fact: <field>}}`. Both fields must
+/// name RFC 3339 instants; `Ok(None)` where either is absent or is no instant. `Err` for any other
+/// shape, `as` or keyword.
+fn compare_truth(spec: Option<&Value>, row: &Value) -> Result<Option<bool>, ()> {
+    let Some(Value::Object(members)) = spec else {
+        return Err(());
+    };
+    let mut names: Vec<&str> = members.iter().map(|(name, _)| name.as_str()).collect();
+    names.sort_unstable();
+    if names != ["as", "left", "op", "right"] {
+        return Err(());
+    }
+    let text = |name: &str| match spec.and_then(|spec| spec.member(name)) {
+        Some(Value::Text(text)) => Ok(text.as_str()),
+        _ => Err(()),
+    };
+    if text("as")? != "timestamp" {
+        return Err(());
+    }
+    let (left, op) = (text("left")?, text("op")?);
+    let right = match spec.and_then(|spec| spec.member("right")) {
+        Some(Value::Object(operand)) => match operand.as_slice() {
+            [(fact, Value::Text(field))] if fact == "fact" => field.as_str(),
+            _ => return Err(()),
+        },
+        _ => return Err(()),
+    };
+    let accepts = comparison(op)?;
+    let (Some(Value::Text(left)), Some(Value::Text(right))) = (
+        path_value(left, row).map_err(|_| ())?,
+        path_value(right, row).map_err(|_| ())?,
+    ) else {
+        return Ok(None);
+    };
+    if Instant::parse(&left).is_none() || Instant::parse(&right).is_none() {
+        return Ok(None);
+    }
+    Ok(Some(accepts(timestamp_order(&left, &right))))
+}
+
+/// The ordering test a structured comparison keyword names (`eq`, `ne`, `lt`, `lte`, `gt`,
+/// `gte`); `Err` for any other.
+fn comparison(keyword: &str) -> Result<fn(std::cmp::Ordering) -> bool, ()> {
+    use std::cmp::Ordering;
+    Ok(match keyword {
+        "eq" => Ordering::is_eq,
+        "ne" => Ordering::is_ne,
+        "lt" => Ordering::is_lt,
+        "lte" => Ordering::is_le,
+        "gt" => Ordering::is_gt,
+        "gte" => Ordering::is_ge,
+        _ => return Err(()),
+    })
 }
 
 /// The value the dotted field path `text` reads in `row`, `None` where the row holds none.

@@ -53,10 +53,10 @@
     },
     {
       "area": "Grading",
-      "detail": "thalamus-core grades a reading against a baseline onto the ladder; an unknown reading is never OK. Planned in story:m1-verdict-grading.",
+      "detail": "thalamus-core grades a reading against a baseline onto the ladder; an unknown reading is never OK.",
       "href": "/docs/concepts/verdicts",
       "label": "One verdict, score and reason per reading",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Grading",
@@ -95,10 +95,10 @@
     },
     {
       "area": "Instances",
-      "detail": "Only Active definitions whose dimensions are registered are sampled. Planned in story:m1-instance-registry.",
+      "detail": "Only Active definitions whose dimensions are registered are sampled.",
       "href": "/docs/concepts/signals",
       "label": "Definitions and the dimension registry load and validate",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Instances",

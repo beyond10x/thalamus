@@ -133,8 +133,29 @@ types:
       - name: min_trend_window
         type: Optional<Duration>
         summary: For an instant signal, no delta and no trend below this window.
+      - name: fixed
+        type: Optional<Decimal>
+        summary: The number a fixed baseline is (a hard zero, or no history yet). A fixed baseline without it is unknown, never 0.
+      - name: rolling_n
+        type: Optional<Integer>
+        summary: The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.
     naming:
       summary: How a sample is graded. The only copy of the signal's thresholds.
+
+  - name: thalamus.definition.Persistence
+    kind: struct
+    fields:
+      - name: k
+        type: Integer
+        summary: Consecutive agreeing evaluations before a change of verdict settles.
+      - name: k_crit
+        type: Integer
+        summary: Consecutive agreeing evaluations before a change to CRIT settles.
+      - name: m
+        type: Integer
+        summary: Consecutive OK evaluations before a WARN clears.
+    naming:
+      summary: How many evaluations must agree before a verdict change is a transition (design § 3.2, § 11 D15). Absent on a definition, the service applies k 2, k_crit 1, m 3.
 
   - name: thalamus.definition.Owner
     kind: newtype
@@ -201,6 +222,9 @@ entities:
         type: Optional<thalamus.definition.DenominatorSpec>
       - name: evaluation
         type: thalamus.definition.EvaluationSpec
+      - name: persistence
+        type: Optional<thalamus.definition.Persistence>
+        summary: The hysteresis of the signal's transitions; absent means the defaults k 2, k_crit 1, m 3.
       # UNMAPPED: the objective block is OpenSLO-shaped (target, window, indicator, budgeting,
       # burn-rate pairs) and the design gives one example only; its typed shape, and which
       # budgeting methods and windows are admitted, are open. Kept as Json until the owner fixes it.
@@ -269,6 +293,16 @@ actors:
       - thalamus.definition.UnmuteDefinition
       - thalamus.definition.RetireDefinition
 
+  # UNMAPPED: the service may unmute only a definition whose mute expiry has passed (design § 11
+  # D9, D19). The guard compares the stored mute_until with now for this actor alone, and a grant
+  # carries no guard in ESS; UnmuteDefinition's outcomes cannot tell the service from an
+  # InstanceOperator. Held by the Rust test of story:m2-auto-unmute (design § 11 D28).
+  - name: thalamus.definition.Service
+    naming:
+      summary: The running service. It unmutes a definition whose mute expiry has passed and records that event in its store, never in the definition file (design § 11 D9, D19).
+    may:
+      - thalamus.definition.UnmuteDefinition
+
 errors:
   - name: thalamus.definition.DefinitionExists
     summary: A definition with this id exists; nothing changed.
@@ -308,6 +342,36 @@ errors:
 
   - name: thalamus.definition.InstantNeedsFixedBaseline
     summary: A signal of kind instant is graded against a fixed baseline only; another baseline was declared, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.RollingWindowMissing
+    summary: A rolling_median baseline is the median of the last N samples, and evaluation.rolling_n declares no N of at least 1; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.RollingWindowUnused
+    summary: evaluation.rolling_n is declared, and no rolling_median baseline reads it; a threshold nothing reads is not kept, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.FixedNumberMissing
+    summary: A fixed baseline is the definition's own number, and evaluation.fixed declares none; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.FixedNumberUnused
+    summary: evaluation.fixed is declared, and no fixed baseline reads it; a threshold nothing reads is not kept, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.PersistenceTooSmall
+    summary: persistence k, k_crit or m is below 1, which settles or clears a verdict on no evaluation; nothing changed.
     fields:
       - name: signal_id
         type: thalamus.definition.SignalId
@@ -391,6 +455,8 @@ commands:
         type: Optional<thalamus.definition.DenominatorSpec>
       - name: evaluation
         type: thalamus.definition.EvaluationSpec
+      - name: persistence
+        type: Optional<thalamus.definition.Persistence>
       - name: objective
         type: Optional<Json>
       - name: owner
@@ -410,6 +476,60 @@ commands:
           thalamus.definition.InstantNeedsFixedBaseline:
             signal_id: input.signal_id
         summary: An instant signal declared a baseline other than fixed; nothing was proposed.
+      # UNMAPPED: an N below 1 is no N either: a median of the last 0 samples has no meaning
+      # (design § 11 D25). ESS 0.60.0 cannot decide `evaluation.rolling_n < 1` when a candidate
+      # leaves the optional rolling_n out (ESS-SYNTH-002), and guarding it with
+      # `defined(evaluation.rolling_n)` leaves that child unwitnessed (ESS-SYNTH-022). The behaviour
+      # selects this outcome for rolling_n < 1 too; held by
+      # crates/thalamus-core/tests/conformance.rs::rolling_median_over_fewer_than_one_sample_is_refused.
+      - name: rolling-n-missing
+        when:
+          all:
+            - exists: {in: evaluation.baselines, as: b, that: b == rolling_median}
+            - not defined(evaluation.rolling_n)
+        error: thalamus.definition.RollingWindowMissing
+        payload:
+          thalamus.definition.RollingWindowMissing:
+            signal_id: input.signal_id
+        summary: A rolling_median baseline was declared without evaluation.rolling_n; nothing was proposed.
+      - name: rolling-n-unused
+        when:
+          all:
+            - defined(evaluation.rolling_n)
+            - forall: {in: evaluation.baselines, as: b, that: b != rolling_median}
+        error: thalamus.definition.RollingWindowUnused
+        payload:
+          thalamus.definition.RollingWindowUnused:
+            signal_id: input.signal_id
+        summary: evaluation.rolling_n was declared without a rolling_median baseline to read it; nothing was proposed.
+      - name: fixed-number-missing
+        when:
+          all:
+            - exists: {in: evaluation.baselines, as: b, that: b == fixed}
+            - not defined(evaluation.fixed)
+        error: thalamus.definition.FixedNumberMissing
+        payload:
+          thalamus.definition.FixedNumberMissing:
+            signal_id: input.signal_id
+        summary: A fixed baseline was declared without evaluation.fixed; nothing was proposed.
+      - name: fixed-number-unused
+        when:
+          all:
+            - defined(evaluation.fixed)
+            - forall: {in: evaluation.baselines, as: b, that: b != fixed}
+        error: thalamus.definition.FixedNumberUnused
+        payload:
+          thalamus.definition.FixedNumberUnused:
+            signal_id: input.signal_id
+        summary: evaluation.fixed was declared without a fixed baseline to read it; nothing was proposed.
+      - name: persistence-below-one
+        when:
+          any: ["persistence.k < 1", "persistence.k_crit < 1", "persistence.m < 1"]
+        error: thalamus.definition.PersistenceTooSmall
+        payload:
+          thalamus.definition.PersistenceTooSmall:
+            signal_id: input.signal_id
+        summary: persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing was proposed.
       - name: proposed
         creates: thalamus.definition.SignalDefinition
         instance: signal_id
@@ -427,6 +547,7 @@ commands:
           history: input.history
           denominator: input.denominator
           evaluation: input.evaluation
+          persistence: input.persistence
           objective: input.objective
           owner: input.owner
           links: input.links
@@ -481,6 +602,8 @@ commands:
         type: thalamus.definition.DenominatorSpec
       - name: evaluation
         type: thalamus.definition.EvaluationSpec
+      - name: persistence
+        type: Optional<thalamus.definition.Persistence>
       - name: objective
         type: Optional<Json>
       - name: owner
@@ -508,6 +631,60 @@ commands:
           thalamus.definition.InstantNeedsFixedBaseline:
             signal_id: input.signal_id
         summary: An instant signal declared a baseline other than fixed; nothing changed.
+      # UNMAPPED: an N below 1 is no N either: a median of the last 0 samples has no meaning
+      # (design § 11 D25). ESS 0.60.0 cannot decide `evaluation.rolling_n < 1` when a candidate
+      # leaves the optional rolling_n out (ESS-SYNTH-002), and guarding it with
+      # `defined(evaluation.rolling_n)` leaves that child unwitnessed (ESS-SYNTH-022). The behaviour
+      # selects this outcome for rolling_n < 1 too; held by
+      # crates/thalamus-core/tests/conformance.rs::rolling_median_over_fewer_than_one_sample_is_refused.
+      - name: rolling-n-missing
+        when:
+          all:
+            - exists: {in: evaluation.baselines, as: b, that: b == rolling_median}
+            - not defined(evaluation.rolling_n)
+        error: thalamus.definition.RollingWindowMissing
+        payload:
+          thalamus.definition.RollingWindowMissing:
+            signal_id: input.signal_id
+        summary: A rolling_median baseline was declared without evaluation.rolling_n; nothing changed.
+      - name: rolling-n-unused
+        when:
+          all:
+            - defined(evaluation.rolling_n)
+            - forall: {in: evaluation.baselines, as: b, that: b != rolling_median}
+        error: thalamus.definition.RollingWindowUnused
+        payload:
+          thalamus.definition.RollingWindowUnused:
+            signal_id: input.signal_id
+        summary: evaluation.rolling_n was declared without a rolling_median baseline to read it; nothing changed.
+      - name: fixed-number-missing
+        when:
+          all:
+            - exists: {in: evaluation.baselines, as: b, that: b == fixed}
+            - not defined(evaluation.fixed)
+        error: thalamus.definition.FixedNumberMissing
+        payload:
+          thalamus.definition.FixedNumberMissing:
+            signal_id: input.signal_id
+        summary: A fixed baseline was declared without evaluation.fixed; nothing changed.
+      - name: fixed-number-unused
+        when:
+          all:
+            - defined(evaluation.fixed)
+            - forall: {in: evaluation.baselines, as: b, that: b != fixed}
+        error: thalamus.definition.FixedNumberUnused
+        payload:
+          thalamus.definition.FixedNumberUnused:
+            signal_id: input.signal_id
+        summary: evaluation.fixed was declared without a fixed baseline to read it; nothing changed.
+      - name: persistence-below-one
+        when:
+          any: ["persistence.k < 1", "persistence.k_crit < 1", "persistence.m < 1"]
+        error: thalamus.definition.PersistenceTooSmall
+        payload:
+          thalamus.definition.PersistenceTooSmall:
+            signal_id: input.signal_id
+        summary: persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing changed.
       - name: revised
         updates: thalamus.definition.SignalDefinition
         instance: signal_id
@@ -525,6 +702,7 @@ commands:
           history: input.history
           denominator: input.denominator
           evaluation: input.evaluation
+          persistence: input.persistence
           objective: input.objective
           owner: input.owner
           links: input.links

@@ -134,11 +134,13 @@ pub const CAPABILITIES: &[Capability] = &[
         Evidence::Task("check"),
         "/docs/getting-started",
     ),
-    planned(
+    shipped(
         "Grading",
         "One verdict, score and reason per reading",
         "thalamus-core grades a reading against a baseline onto the ladder; an unknown reading is never OK.",
-        "story:m1-verdict-grading",
+        Evidence::Test(
+            "crates/thalamus-core/tests/grading.rs::unknown_reading_is_unknown_never_ok",
+        ),
         "/docs/concepts/verdicts",
     ),
     shipped(
@@ -178,11 +180,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m3-advisory-gate-mapping",
         "/docs/concepts/verdicts#other-vocabularies",
     ),
-    planned(
+    shipped(
         "Instances",
         "Definitions and the dimension registry load and validate",
         "Only Active definitions whose dimensions are registered are sampled.",
-        "story:m1-instance-registry",
+        Evidence::Test(
+            "crates/thalamus-core/tests/registry.rs::sample_of_non_active_definition_is_refused",
+        ),
         "/docs/concepts/signals",
     ),
     shipped(

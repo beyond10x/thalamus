@@ -1,0 +1,221 @@
+domain: thalamus.transition
+
+summary: A settled change of a series' verdict, emitted by the hysteresis once k consecutive evaluations agree. It copies what a reader needs from the evaluations that settled it, so it outlives their raw retention.
+
+naming:
+  wire: transitions
+  display: Transitions
+
+types:
+  - name: thalamus.transition.TransitionId
+    kind: newtype
+    of: String
+    prefix: "trn_"
+    naming:
+      summary: A transition id, minted by the service.
+
+entities:
+  - name: thalamus.transition.Transition
+    naming:
+      summary: One settled verdict change of one series, with the evaluations that settled it (design § 11 D13).
+    identity:
+      name: transition_id
+      type: thalamus.transition.TransitionId
+    fields:
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: definition_rev
+        type: Integer
+        summary: The definition revision of the settling evaluation.
+      - name: from_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+        summary: The series' previous settled verdict; absent on its first settled verdict.
+      - name: to_verdict
+        type: thalamus.evaluation.Verdict
+      - name: first_ts
+        type: Timestamp
+        summary: The ts of the first of the agreeing evaluations.
+      - name: settled_ts
+        type: Timestamp
+        summary: The ts of the settling evaluation.
+      - name: settling_score
+        type: Optional<Decimal>
+        summary: The settling evaluation's score; absent when its verdict carries none, never 0.
+      - name: evaluations
+        type: List<thalamus.evaluation.EvaluationId>
+        summary: The k evaluations that settled the transition. One that has left raw retention reads as expired.
+    invariants:
+      - definition_rev >= 1
+      - first_ts <= settled_ts
+      - any: ["not defined(from_verdict)", "from_verdict != to_verdict"]
+    relations:
+      - name: evaluations
+        kind: references
+        target: thalamus.evaluation.SignalEvaluation
+        cardinality: many
+        via: evaluations
+      - name: definition
+        kind: references
+        target: thalamus.definition.SignalDefinition
+        cardinality: one
+        via: signal
+    lifecycle:
+      initial: Recorded
+      states: [Recorded]
+      terminal: [Recorded]
+
+actors:
+  - name: thalamus.transition.Hysteresis
+    naming:
+      summary: The persistence check run by the service after each evaluation; it records a transition once k consecutive evaluations agree.
+    may:
+      - thalamus.transition.RecordTransition
+
+errors:
+  - name: thalamus.transition.UnknownSignal
+    summary: No definition has this signal id; nothing was recorded.
+    fields:
+      - name: signal
+        type: thalamus.definition.SignalId
+
+events:
+  - name: thalamus.transition.TransitionRecorded
+    fields:
+      - name: transition_id
+        type: thalamus.transition.TransitionId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: from_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: to_verdict
+        type: thalamus.evaluation.Verdict
+      - name: settled_ts
+        type: Timestamp
+
+commands:
+  - name: thalamus.transition.RecordTransition
+    naming:
+      wire: record
+      display: Record a transition
+      summary: Append one settled verdict change of one series.
+    input:
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: dims
+        type: Map<thalamus.dimension.DimensionKey, thalamus.dimension.DimensionValue>
+      - name: definition_rev
+        type: Integer
+      - name: from_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: to_verdict
+        type: thalamus.evaluation.Verdict
+      - name: first_ts
+        type: Timestamp
+      - name: settled_ts
+        type: Timestamp
+      - name: settling_score
+        type: Optional<Decimal>
+      - name: evaluations
+        type: List<thalamus.evaluation.EvaluationId>
+    response:
+      - name: transition_id
+        type: thalamus.transition.TransitionId
+    outcomes:
+      - name: unknown-signal
+        when_related:
+          via: input.signal
+          exists: false
+        error: thalamus.transition.UnknownSignal
+        payload:
+          thalamus.transition.UnknownSignal:
+            signal: input.signal
+        summary: No definition has this id; nothing was recorded.
+      - name: recorded
+        creates: thalamus.transition.Transition
+        instance: transition_id
+        returns: true
+        sets:
+          signal: input.signal
+          series: input.series
+          dims: input.dims
+          definition_rev: input.definition_rev
+          from_verdict: input.from_verdict
+          to_verdict: input.to_verdict
+          first_ts: input.first_ts
+          settled_ts: input.settled_ts
+          settling_score: input.settling_score
+          evaluations: input.evaluations
+        emits: [thalamus.transition.TransitionRecorded]
+        payload:
+          thalamus.transition.TransitionRecorded:
+            transition_id: {response: transition_id}
+            signal: input.signal
+            series: input.series
+            from_verdict: input.from_verdict
+            to_verdict: input.to_verdict
+            settled_ts: input.settled_ts
+        summary: The transition is recorded and its id returned.
+
+views:
+  - name: thalamus.transition.Transitions
+    source: thalamus.transition.Transition
+    consistency: read_your_writes
+    fields:
+      - name: transition_id
+        type: thalamus.transition.TransitionId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: from_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: to_verdict
+        type: thalamus.evaluation.Verdict
+      - name: settled_ts
+        type: Timestamp
+      - name: state
+        type: thalamus.transition.Transition.State
+    naming:
+      wire: transitions
+      display: Transitions
+      summary: Every settled transition, by series; the evidence of one series is read from its series view.
+
+  - name: thalamus.transition.SeriesTransitions
+    source: thalamus.transition.Transition
+    consistency: read_your_writes
+    params:
+      - name: series
+        type: thalamus.observation.SeriesKey
+    filter: series == param.series
+    order_by: [settled_ts asc]
+    fields:
+      - name: transition_id
+        type: thalamus.transition.TransitionId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: definition_rev
+        type: Integer
+      - name: from_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: to_verdict
+        type: thalamus.evaluation.Verdict
+      - name: first_ts
+        type: Timestamp
+      - name: settled_ts
+        type: Timestamp
+      - name: settling_score
+        type: Optional<Decimal>
+      - name: evaluations
+        type: List<thalamus.evaluation.EvaluationId>
+    naming:
+      wire: series
+      display: Transitions of a series
+      summary: The settled transitions of one series in the order they settled.

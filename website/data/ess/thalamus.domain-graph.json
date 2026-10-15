@@ -127,6 +127,10 @@
           "type": "EvaluationSpec"
         },
         {
+          "name": "persistence",
+          "type": "Optional<Persistence>"
+        },
+        {
           "name": "objective",
           "type": "Optional<json>"
         },
@@ -389,6 +393,140 @@
         ]
       },
       "name": "SignalSample"
+    },
+    {
+      "fields": [
+        {
+          "name": "signal",
+          "type": "SignalId"
+        },
+        {
+          "name": "series",
+          "type": "SeriesKey"
+        },
+        {
+          "name": "day",
+          "type": "timestamp"
+        },
+        {
+          "name": "n",
+          "type": "integer"
+        },
+        {
+          "name": "unknown",
+          "type": "integer"
+        },
+        {
+          "name": "partial",
+          "type": "integer"
+        },
+        {
+          "name": "min",
+          "type": "Optional<decimal>"
+        },
+        {
+          "name": "p50",
+          "type": "Optional<decimal>"
+        },
+        {
+          "name": "max",
+          "type": "Optional<decimal>"
+        },
+        {
+          "name": "last",
+          "type": "Optional<decimal>"
+        },
+        {
+          "name": "worst_verdict",
+          "type": "Optional<Verdict>"
+        },
+        {
+          "name": "verdict_counts",
+          "type": "VerdictCounts"
+        },
+        {
+          "name": "min_score",
+          "type": "Optional<decimal>"
+        },
+        {
+          "name": "max_score",
+          "type": "Optional<decimal>"
+        }
+      ],
+      "id": "thalamus.rollup.DailyRollup",
+      "identity": {
+        "name": "rollup_id",
+        "type": "RollupId"
+      },
+      "lifecycle": {
+        "initial": "Recorded",
+        "states": [
+          "Recorded"
+        ],
+        "terminal": [
+          "Recorded"
+        ]
+      },
+      "name": "DailyRollup"
+    },
+    {
+      "fields": [
+        {
+          "name": "signal",
+          "type": "SignalId"
+        },
+        {
+          "name": "series",
+          "type": "SeriesKey"
+        },
+        {
+          "name": "dims",
+          "type": "Map<string, DimensionValue>"
+        },
+        {
+          "name": "definition_rev",
+          "type": "integer"
+        },
+        {
+          "name": "from_verdict",
+          "type": "Optional<Verdict>"
+        },
+        {
+          "name": "to_verdict",
+          "type": "Verdict"
+        },
+        {
+          "name": "first_ts",
+          "type": "timestamp"
+        },
+        {
+          "name": "settled_ts",
+          "type": "timestamp"
+        },
+        {
+          "name": "settling_score",
+          "type": "Optional<decimal>"
+        },
+        {
+          "name": "evaluations",
+          "type": "List<EvaluationId>"
+        }
+      ],
+      "id": "thalamus.transition.Transition",
+      "identity": {
+        "name": "transition_id",
+        "type": "TransitionId"
+      },
+      "lifecycle": {
+        "initial": "Recorded",
+        "states": [
+          "Recorded"
+        ],
+        "terminal": [
+          "Recorded"
+        ]
+      },
+      "name": "Transition"
     }
   ],
   "format": "b10x-domain-graph/1",
@@ -436,6 +574,30 @@
     {
       "cardinality": "one",
       "from": "thalamus.observation.SignalSample",
+      "kind": "references",
+      "name": "definition",
+      "to": "thalamus.definition.SignalDefinition",
+      "via": "signal"
+    },
+    {
+      "cardinality": "one",
+      "from": "thalamus.rollup.DailyRollup",
+      "kind": "references",
+      "name": "definition",
+      "to": "thalamus.definition.SignalDefinition",
+      "via": "signal"
+    },
+    {
+      "cardinality": "many",
+      "from": "thalamus.transition.Transition",
+      "kind": "references",
+      "name": "evaluations",
+      "to": "thalamus.evaluation.SignalEvaluation",
+      "via": "evaluations"
+    },
+    {
+      "cardinality": "one",
+      "from": "thalamus.transition.Transition",
       "kind": "references",
       "name": "definition",
       "to": "thalamus.definition.SignalDefinition",

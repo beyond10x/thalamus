@@ -1,0 +1,28 @@
+id: service.queue.depth
+title: Messages waiting in the work queue now
+family: service
+kind: instant
+unit: "{message}"
+dimensions: []
+source: { adapter: prometheus, connection: metrics-main }
+extractor: promql.instant
+query: { value: sum(queue_depth) }
+window: PT5M
+cadence: PT5M
+history: store
+denominator: { unit: "{message}", min_n: 0, since: 2026-01-01T00:00:00Z }
+evaluation:
+  rule: threshold
+  baselines: [fixed]
+  fixed: "0"
+  warn: { abs: "100" }
+  crit: { abs: "1000" }
+  min_trend_window: 1h
+owner: team:service
+links: { components: [], issues: [] }
+lifecycle: muted
+mute_reason: queue migration in progress
+mute_until: 2026-11-01T00:00:00Z
+rev: 1
+revised_at: 2026-10-02T00:00:00Z
+revised_by: operator

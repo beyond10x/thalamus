@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Transition",
+  "description": "One settled verdict change of one series, with the evaluations that settled it (design § 11 D13).",
+  "x-ess-name": "thalamus.transition.Transition",
+  "x-ess-kind": "entity",
+  "type": "object",
+  "properties": {
+    "transition_id": {
+      "$ref": "#/$defs/thalamus.transition.TransitionId"
+    },
+    "signal": {
+      "$ref": "#/$defs/thalamus.definition.SignalId",
+      "x-ess-relation": {
+        "name": "definition",
+        "kind": "references",
+        "source": "thalamus.transition.Transition",
+        "target": "thalamus.definition.SignalDefinition",
+        "cardinality": "one",
+        "via": "signal"
+      }
+    },
+    "series": {
+      "$ref": "#/$defs/thalamus.observation.SeriesKey"
+    },
+    "dims": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/thalamus.dimension.DimensionValue"
+      },
+      "x-ess-map-key": "String"
+    },
+    "definition_rev": {
+      "description": "The definition revision of the settling evaluation.",
+      "type": "integer"
+    },
+    "from_verdict": {
+      "$ref": "#/$defs/thalamus.evaluation.Verdict",
+      "description": "The series' previous settled verdict; absent on its first settled verdict."
+    },
+    "to_verdict": {
+      "$ref": "#/$defs/thalamus.evaluation.Verdict"
+    },
+    "first_ts": {
+      "description": "The ts of the first of the agreeing evaluations.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "settled_ts": {
+      "description": "The ts of the settling evaluation.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "settling_score": {
+      "description": "The settling evaluation's score; absent when its verdict carries none, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "evaluations": {
+      "description": "The k evaluations that settled the transition. One that has left raw retention reads as expired.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/thalamus.evaluation.EvaluationId"
+      },
+      "x-ess-relation": {
+        "name": "evaluations",
+        "kind": "references",
+        "source": "thalamus.transition.Transition",
+        "target": "thalamus.evaluation.SignalEvaluation",
+        "cardinality": "many",
+        "via": "evaluations"
+      }
+    },
+    "state": {
+      "$ref": "#/$defs/thalamus.transition.Transition.State"
+    }
+  },
+  "required": [
+    "transition_id",
+    "signal",
+    "series",
+    "dims",
+    "definition_rev",
+    "to_verdict",
+    "first_ts",
+    "settled_ts",
+    "evaluations",
+    "state"
+  ],
+  "additionalProperties": false,
+  "x-ess-provenance": {
+    "system": "thalamus",
+    "specification_version": "v1",
+    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
+    "contract_digest": "slice-sha256/2:b80e09d416e76267234866c4557b5482ad228f272070c21ab9c5e6bfbc08b465",
+    "regenerate": "ess generate"
+  },
+  "$defs": {
+    "thalamus.definition.SignalId": {
+      "title": "SignalId",
+      "description": "Stable signal id, spelled <family>.<layer>.<name> in lower case.",
+      "x-ess-name": "thalamus.definition.SignalId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_."
+    },
+    "thalamus.dimension.DimensionValue": {
+      "title": "DimensionValue",
+      "description": "A value of one dimension key in one series.",
+      "x-ess-name": "thalamus.dimension.DimensionValue",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.evaluation.EvaluationId": {
+      "title": "EvaluationId",
+      "description": "An evaluation id, minted by the grader.",
+      "x-ess-name": "thalamus.evaluation.EvaluationId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "pattern": "^evl_"
+    },
+    "thalamus.evaluation.Verdict": {
+      "title": "Verdict",
+      "description": "The one verdict ladder. exit is the process exit code; rank orders an aggregate worst-first (CRIT > WARN > UNKNOWN > OK = N/A); scored says whether the verdict carries a score.",
+      "x-ess-name": "thalamus.evaluation.Verdict",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "OK",
+        "N/A",
+        "WARN",
+        "CRIT",
+        "UNKNOWN"
+      ],
+      "x-ess-attributes": [
+        {
+          "kind": "integer",
+          "name": "exit",
+          "type": "Integer",
+          "values": {
+            "CRIT": 2,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 3,
+            "WARN": 1
+          }
+        },
+        {
+          "kind": "integer",
+          "name": "rank",
+          "type": "Integer",
+          "values": {
+            "CRIT": 3,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 1,
+            "WARN": 2
+          }
+        },
+        {
+          "kind": "boolean",
+          "name": "scored",
+          "type": "Boolean",
+          "values": {
+            "CRIT": true,
+            "N/A": false,
+            "OK": true,
+            "UNKNOWN": false,
+            "WARN": true
+          }
+        }
+      ]
+    },
+    "thalamus.observation.SeriesKey": {
+      "title": "SeriesKey",
+      "description": "One series, a signal id together with its dims values.",
+      "x-ess-name": "thalamus.observation.SeriesKey",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.transition.Transition.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.transition.Transition.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Recorded"
+      ]
+    },
+    "thalamus.transition.TransitionId": {
+      "title": "TransitionId",
+      "description": "A transition id, minted by the service.",
+      "x-ess-name": "thalamus.transition.TransitionId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "pattern": "^trn_"
+    }
+  }
+}

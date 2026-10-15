@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DailyRollup",
+  "description": "One series over one UTC day; what remains once its samples leave raw retention (design § 4).",
+  "x-ess-name": "thalamus.rollup.DailyRollup",
+  "x-ess-kind": "entity",
+  "type": "object",
+  "properties": {
+    "rollup_id": {
+      "$ref": "#/$defs/thalamus.rollup.RollupId"
+    },
+    "signal": {
+      "$ref": "#/$defs/thalamus.definition.SignalId",
+      "x-ess-relation": {
+        "name": "definition",
+        "kind": "references",
+        "source": "thalamus.rollup.DailyRollup",
+        "target": "thalamus.definition.SignalDefinition",
+        "cardinality": "one",
+        "via": "signal"
+      }
+    },
+    "series": {
+      "$ref": "#/$defs/thalamus.observation.SeriesKey"
+    },
+    "day": {
+      "description": "The UTC midnight the day starts at.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "n": {
+      "description": "The samples of the day.",
+      "type": "integer"
+    },
+    "unknown": {
+      "description": "The samples of quality unknown.",
+      "type": "integer"
+    },
+    "partial": {
+      "description": "The samples of quality partial.",
+      "type": "integer"
+    },
+    "min": {
+      "description": "Over the day's ok readings; absent when the day has none, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "p50": {
+      "description": "Over the day's ok readings; absent when the day has none, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "max": {
+      "description": "Over the day's ok readings; absent when the day has none, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "last": {
+      "description": "The last ok reading of the day; absent when the day has none, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "worst_verdict": {
+      "$ref": "#/$defs/thalamus.evaluation.Verdict",
+      "description": "The worst verdict of the day by the ladder's rank; absent when the day has no evaluation."
+    },
+    "verdict_counts": {
+      "$ref": "#/$defs/thalamus.rollup.VerdictCounts"
+    },
+    "min_score": {
+      "description": "Over the day's scored evaluations; absent when none carries a score, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "max_score": {
+      "description": "Over the day's scored evaluations; absent when none carries a score, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "state": {
+      "$ref": "#/$defs/thalamus.rollup.DailyRollup.State"
+    }
+  },
+  "required": [
+    "rollup_id",
+    "signal",
+    "series",
+    "day",
+    "n",
+    "unknown",
+    "partial",
+    "verdict_counts",
+    "state"
+  ],
+  "additionalProperties": false,
+  "x-ess-provenance": {
+    "system": "thalamus",
+    "specification_version": "v1",
+    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
+    "contract_digest": "slice-sha256/2:28c85e04191360a6c705beb4796d4c747b5b2a23afe8b30eb0a77a753e5e9824",
+    "regenerate": "ess generate"
+  },
+  "$defs": {
+    "thalamus.definition.SignalId": {
+      "title": "SignalId",
+      "description": "Stable signal id, spelled <family>.<layer>.<name> in lower case.",
+      "x-ess-name": "thalamus.definition.SignalId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_."
+    },
+    "thalamus.evaluation.Verdict": {
+      "title": "Verdict",
+      "description": "The one verdict ladder. exit is the process exit code; rank orders an aggregate worst-first (CRIT > WARN > UNKNOWN > OK = N/A); scored says whether the verdict carries a score.",
+      "x-ess-name": "thalamus.evaluation.Verdict",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "OK",
+        "N/A",
+        "WARN",
+        "CRIT",
+        "UNKNOWN"
+      ],
+      "x-ess-attributes": [
+        {
+          "kind": "integer",
+          "name": "exit",
+          "type": "Integer",
+          "values": {
+            "CRIT": 2,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 3,
+            "WARN": 1
+          }
+        },
+        {
+          "kind": "integer",
+          "name": "rank",
+          "type": "Integer",
+          "values": {
+            "CRIT": 3,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 1,
+            "WARN": 2
+          }
+        },
+        {
+          "kind": "boolean",
+          "name": "scored",
+          "type": "Boolean",
+          "values": {
+            "CRIT": true,
+            "N/A": false,
+            "OK": true,
+            "UNKNOWN": false,
+            "WARN": true
+          }
+        }
+      ]
+    },
+    "thalamus.observation.SeriesKey": {
+      "title": "SeriesKey",
+      "description": "One series, a signal id together with its dims values.",
+      "x-ess-name": "thalamus.observation.SeriesKey",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.rollup.DailyRollup.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.rollup.DailyRollup.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Recorded"
+      ]
+    },
+    "thalamus.rollup.RollupId": {
+      "title": "RollupId",
+      "description": "A rollup id, spelled from the series key and the UTC day.",
+      "x-ess-name": "thalamus.rollup.RollupId",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.rollup.VerdictCounts": {
+      "title": "VerdictCounts",
+      "description": "One count per verdict of the ladder, over the day's evaluations.",
+      "x-ess-name": "thalamus.rollup.VerdictCounts",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "integer"
+        },
+        "na": {
+          "description": "The N/A verdicts.",
+          "type": "integer"
+        },
+        "warn": {
+          "type": "integer"
+        },
+        "crit": {
+          "type": "integer"
+        },
+        "unknown": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ok",
+        "na",
+        "warn",
+        "crit",
+        "unknown"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

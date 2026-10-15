@@ -10,6 +10,7 @@
 use std::collections::BTreeMap;
 
 use thalamus_core::conformance::{self, Ports, Report};
+use thalamus_core::registry::{Definition, Registry};
 use thalamus_model::assertion::obligations::AskAssertionBehavior;
 use thalamus_model::assertion::{AskAssertion, AskAssertionOutcome, Asker, AskerKind, Within};
 use thalamus_model::behaviour::Generated;
@@ -17,10 +18,10 @@ use thalamus_model::definition::obligations::{
     ActivateDefinitionBehavior, ProposeDefinitionBehavior, ReviseDefinitionBehavior,
 };
 use thalamus_model::definition::{
-    ActivateDefinition, ActivateDefinitionOutcome, AdapterId, Author, ConnectionId,
-    DenominatorSpec, EvaluationSpec, ExtractorId, Family, History, Links, Owner, ProposeDefinition,
-    ProposeDefinitionOutcome, QueryText, ReviseDefinition, ReviseDefinitionOutcome, RuleId,
-    SignalId, SignalKind, Source, Unit,
+    ActivateDefinition, ActivateDefinitionOutcome, AdapterId, Author, BaselineKind, ConnectionId,
+    DenominatorSpec, EvaluationSpec, ExtractorId, Family, History, Links, Owner, Persistence,
+    ProposeDefinition, ProposeDefinitionOutcome, QueryText, ReviseDefinition,
+    ReviseDefinitionOutcome, RollingWindowMissing, RuleId, SignalId, SignalKind, Source, Unit,
 };
 use thalamus_model::dimension::obligations::{DeclareRegistryBehavior, RegisterDimensionBehavior};
 use thalamus_model::dimension::{
@@ -37,7 +38,11 @@ use thalamus_model::observation::{
     SeriesKey, TimeWindow,
 };
 use thalamus_model::primitives::{Decimal, Duration, Timestamp};
+use thalamus_model::rollup::obligations::{RecordRollupBehavior, SeriesRollupsQuery};
+use thalamus_model::rollup::{RecordRollup, RecordRollupOutcome, RollupId, VerdictCounts};
 use thalamus_model::server::memory::MemoryPorts;
+use thalamus_model::transition::obligations::{RecordTransitionBehavior, SeriesTransitionsQuery};
+use thalamus_model::transition::{RecordTransition, RecordTransitionOutcome};
 
 fn suite() -> String {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../spec/suite.json");
@@ -104,6 +109,8 @@ fn evaluation_spec() -> EvaluationSpec {
         warn: None,
         crit: None,
         min_trend_window: None,
+        fixed: None,
+        rolling_n: None,
     }
 }
 
@@ -149,6 +156,11 @@ fn propose(signal: &str) -> ProposeDefinition {
         history: History::Source,
         denominator: Some(denominator()),
         evaluation: evaluation_spec(),
+        persistence: Some(Persistence {
+            k: 2,
+            k_crit: 1,
+            m: 3,
+        }),
         objective: None,
         owner: Some(text(Owner, "team")),
         links: links(),
@@ -172,6 +184,7 @@ fn revise(signal: &str) -> ReviseDefinition {
         history: History::Source,
         denominator: denominator(),
         evaluation: evaluation_spec(),
+        persistence: None,
         objective: None,
         owner: text(Owner, "team"),
         links: links(),
@@ -207,7 +220,7 @@ fn record_sample(signal: &str, series: &str) -> RecordSample {
     }
 }
 
-/// Each of the eight obligations of `generated/thalamus-model/PLAN.md`, called once through the
+/// Each of the eleven obligations of `generated/thalamus-model/PLAN.md`, called once through the
 /// ports the conformance harness runs over, in an order that reaches each accepting outcome. An
 /// obligation answering [`UnmetObligation`] fails the test, and every one is reported, not only
 /// the first.
@@ -319,6 +332,88 @@ fn every_obligation_is_met() {
                 && rows[0].verdict == Verdict::WARN
         }),
     );
+    let settled_by: Vec<_> = evaluation_id.iter().cloned().collect();
+    let transition = RecordTransitionBehavior::record_transition(
+        &mut generated,
+        RecordTransition {
+            signal: text(SignalId, "platform.ratio"),
+            series: text(SeriesKey, series),
+            dims: BTreeMap::from([("cluster".to_owned(), text(DimensionValue, "a"))]),
+            definition_rev: 2,
+            from_verdict: Some(Verdict::OK),
+            to_verdict: Verdict::WARN,
+            first_ts: text(Timestamp, "2025-12-31T23:00:00Z"),
+            settled_ts: text(Timestamp, "2026-01-01T00:00:00Z"),
+            settling_score: Some(text(Decimal, "1.3")),
+            evaluations: settled_by.clone(),
+        },
+    );
+    let transition_id = match &transition {
+        Ok(RecordTransitionOutcome::Recorded { response, .. }) => {
+            Some(response.transition_id.clone())
+        }
+        _ => None,
+    };
+    note(
+        "thalamus.transition.RecordTransition",
+        transition.map(|_| {
+            transition_id
+                .as_ref()
+                .is_some_and(|id| id.0.starts_with("trn_"))
+        }),
+    );
+    note(
+        "thalamus.transition.SeriesTransitions",
+        SeriesTransitionsQuery::series_transitions(&generated, text(SeriesKey, series)).map(
+            |rows| {
+                rows.len() == 1
+                    && transition_id.as_ref() == Some(&rows[0].transition_id)
+                    && rows[0].from_verdict == Some(Verdict::OK)
+                    && rows[0].to_verdict == Verdict::WARN
+                    && rows[0].evaluations == settled_by
+                    && !settled_by.is_empty()
+            },
+        ),
+    );
+    let rollup = RecordRollupBehavior::record_rollup(
+        &mut generated,
+        RecordRollup {
+            rollup_id: text(RollupId, &format!("{series}@2026-01-01")),
+            signal: text(SignalId, "platform.ratio"),
+            series: text(SeriesKey, series),
+            day: text(Timestamp, "2026-01-01T00:00:00Z"),
+            n: 1,
+            unknown: 0,
+            partial: 0,
+            min: Some(text(Decimal, "0.029")),
+            p50: Some(text(Decimal, "0.029")),
+            max: Some(text(Decimal, "0.029")),
+            last: Some(text(Decimal, "0.029")),
+            worst_verdict: Some(Verdict::WARN),
+            verdict_counts: VerdictCounts {
+                ok: 0,
+                na: 0,
+                warn: 1,
+                crit: 0,
+                unknown: 0,
+            },
+            min_score: Some(text(Decimal, "1.3")),
+            max_score: Some(text(Decimal, "1.3")),
+        },
+    )
+    .expect("the generated RecordRollup answers");
+    assert!(
+        matches!(rollup, RecordRollupOutcome::Recorded { .. }),
+        "the rollup was not recorded: {rollup:?}"
+    );
+    note(
+        "thalamus.rollup.SeriesRollups",
+        SeriesRollupsQuery::series_rollups(&generated, text(SeriesKey, series)).map(|rows| {
+            rows.len() == 1
+                && rows[0].rollup_id.0 == format!("{series}@2026-01-01")
+                && rows[0].worst_verdict == Some(Verdict::WARN)
+        }),
+    );
     note(
         "thalamus.assertion.AskAssertion",
         AskAssertionBehavior::ask_assertion(
@@ -348,6 +443,414 @@ fn every_obligation_is_met() {
         "these obligations met their contract but not with the accepting outcome or rows this \
          sequence reaches: {answered:?}"
     );
+}
+
+/// `story:m2-spec-history-records`: the scenarios its acceptance names are in the suite, and
+/// each of them holds. A scenario the suite stops naming fails here, not only in the count.
+#[test]
+fn the_history_record_scenarios_hold() {
+    let named = [
+        "thalamus.transition.RecordTransition/outcome/recorded",
+        "thalamus.rollup.RecordRollup/outcome/recorded",
+        "thalamus.rollup.RecordRollup/outcome/already-rolled-up",
+        "thalamus.definition.ProposeDefinition/outcome/rolling-n-missing",
+        "thalamus.definition.ReviseDefinition/outcome/rolling-n-missing",
+    ];
+    let suite = suite();
+    let ids = scenario_ids(&suite);
+    let missing: Vec<_> = named
+        .iter()
+        .filter(|id| !ids.iter().any(|held| held == *id))
+        .collect();
+    assert!(missing.is_empty(), "the suite does not name {missing:?}");
+
+    let report = conformance::run(&suite, &|id| named.contains(&id), MemoryPorts::default)
+        .expect("the suite runs");
+    let mut ran = report.ran.clone();
+    ran.sort();
+    let mut wanted = named.map(str::to_owned).to_vec();
+    wanted.sort();
+    assert_eq!(ran, wanted);
+    assert!(report.failed.is_empty(), "{}", failures(&report));
+}
+
+const REGISTRY: &str = include_str!("fixtures/instance/dimensions.yaml");
+
+/// A proposed gauge definition file whose `evaluation` block is `evaluation` (indented lines)
+/// and whose top level also carries `extra`.
+fn definition_file(evaluation: &str, extra: &str) -> String {
+    format!(
+        "id: service.queue.age\n\
+         title: Age of the oldest waiting message\n\
+         family: service\n\
+         kind: gauge\n\
+         unit: s\n\
+         dimensions: []\n\
+         source: {{ adapter: prometheus, connection: metrics-main }}\n\
+         extractor: promql.instant\n\
+         query: {{ value: max(queue_oldest_age_seconds) }}\n\
+         window: PT5M\n\
+         cadence: PT5M\n\
+         history: store\n\
+         denominator: {{ unit: \"{{message}}\", min_n: 0, since: 2026-01-01T00:00:00Z }}\n\
+         evaluation:\n\
+         \x20 rule: threshold\n\
+         {evaluation}\
+         \x20 warn: {{ x: 2 }}\n\
+         {extra}\
+         owner: team:service\n\
+         links: {{ components: [], issues: [] }}\n\
+         lifecycle: proposed\n\
+         rev: 1\n\
+         revised_at: 2026-10-02T00:00:00Z\n\
+         revised_by: operator\n"
+    )
+}
+
+/// The rules the definition loader broke for `text`, by name; empty when it loads.
+fn load_refusals(text: &str) -> Vec<String> {
+    let registry = Registry::parse("dimensions.yaml", REGISTRY).expect("the fixture registry");
+    match Definition::parse("definitions/case.yaml", text, &registry) {
+        Ok(_) => Vec::new(),
+        Err(errors) => errors
+            .iter()
+            .map(|error| error.rule.name().to_owned())
+            .collect(),
+    }
+}
+
+/// The `UNMAPPED:` rule on `rolling-n-missing` (`spec/domains/definition.yaml`, design § 11
+/// D25): a `rolling_median` whose N is below 1 is refused as `rolling-n-missing` by propose and
+/// revise, and by the definition loader. ESS 0.60.0 cannot state the guard.
+#[test]
+fn rolling_median_over_fewer_than_one_sample_is_refused() {
+    let mut generated = Generated::new(Ports::new(
+        MemoryPorts::default(),
+        Some(text(Timestamp, "2026-01-01T00:00:00Z")),
+    ));
+    let rolling = |rolling_n| EvaluationSpec {
+        baselines: vec![BaselineKind::RollingMedian],
+        rolling_n: Some(rolling_n),
+        ..evaluation_spec()
+    };
+    let mut held = propose("platform.rolling");
+    held.evaluation = rolling(1);
+    assert!(matches!(
+        ProposeDefinitionBehavior::propose_definition(&mut generated, held)
+            .expect("propose answers"),
+        ProposeDefinitionOutcome::Proposed { .. }
+    ));
+    for n in [0, -1, i64::MIN] {
+        let mut proposal = propose("platform.other");
+        proposal.evaluation = rolling(n);
+        assert_eq!(
+            ProposeDefinitionBehavior::propose_definition(&mut generated, proposal)
+                .expect("propose answers"),
+            ProposeDefinitionOutcome::RollingNMissing {
+                error: RollingWindowMissing {
+                    signal_id: text(SignalId, "platform.other"),
+                },
+            },
+            "rolling_n {n}"
+        );
+        let mut revision = revise("platform.rolling");
+        revision.evaluation = rolling(n);
+        assert_eq!(
+            ReviseDefinitionBehavior::revise_definition(&mut generated, revision)
+                .expect("revise answers"),
+            ReviseDefinitionOutcome::RollingNMissing {
+                error: RollingWindowMissing {
+                    signal_id: text(SignalId, "platform.rolling"),
+                },
+            },
+            "rolling_n {n}"
+        );
+
+        let file = definition_file(
+            &format!("  baselines: [rolling_median]\n  rolling_n: {n}\n"),
+            "",
+        );
+        assert_eq!(
+            load_refusals(&file),
+            ["thalamus.definition.RollingWindowMissing"],
+            "rolling_n {n}"
+        );
+    }
+    assert_eq!(
+        load_refusals(&definition_file(
+            "  baselines: [rolling_median]\n  rolling_n: 1\n",
+            ""
+        )),
+        Vec::<String>::new()
+    );
+}
+
+/// Design § 11 D25 and D29: the definition loader refuses exactly what propose and revise refuse
+/// in a definition's `evaluation.fixed`, `evaluation.rolling_n` and `persistence`, and reads each
+/// of them where it is admitted.
+#[test]
+fn the_definition_loader_refuses_what_propose_refuses() {
+    for (evaluation, extra, refused) in [
+        (
+            "  baselines: [rolling_median]\n",
+            "",
+            Some("thalamus.definition.RollingWindowMissing"),
+        ),
+        (
+            "  baselines: [offset_1d]\n  rolling_n: 12\n",
+            "",
+            Some("thalamus.definition.RollingWindowUnused"),
+        ),
+        (
+            "  baselines: [fixed]\n",
+            "",
+            Some("thalamus.definition.FixedNumberMissing"),
+        ),
+        (
+            "  baselines: [offset_1d]\n  fixed: \"3\"\n",
+            "",
+            Some("thalamus.definition.FixedNumberUnused"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"three\"\n",
+            "",
+            Some("decimal"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n",
+            "persistence: { k: 0, k_crit: 1, m: 3 }\n",
+            Some("thalamus.definition.PersistenceTooSmall"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n",
+            "persistence: { k: 2, k_crit: -1, m: 3 }\n",
+            Some("thalamus.definition.PersistenceTooSmall"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n",
+            "persistence: { k: 2, k_crit: 1, m: 0 }\n",
+            Some("thalamus.definition.PersistenceTooSmall"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n",
+            "persistence: { k: 2, k_crit: 1 }\n",
+            Some("document shape"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n",
+            "persistence: { k: 2, k_crit: 1, m: 3, n: 4 }\n",
+            Some("document shape"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n  fixed: \"4\"\n",
+            "",
+            Some("document shape"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n",
+            "persistence: { k: 2, k: 3, k_crit: 1, m: 3 }\n",
+            Some("document shape"),
+        ),
+        (
+            "  baselines: [fixed]\n  fixed: \"3\"\n",
+            "persistence: { k: 1, k_crit: 1, m: 1 }\n",
+            None,
+        ),
+    ] {
+        let file = definition_file(evaluation, extra);
+        let refusals = load_refusals(&file);
+        match refused {
+            Some(rule) => assert_eq!(refusals, [rule], "{file}"),
+            None => assert!(refusals.is_empty(), "{file}: {refusals:?}"),
+        }
+
+        // Propose and revise refuse the same inputs, by the same rule.
+        if refused.is_none_or(|rule| rule.starts_with("thalamus.")) {
+            let mut generated = Generated::new(Ports::new(
+                MemoryPorts::default(),
+                Some(text(Timestamp, "2026-01-01T00:00:00Z")),
+            ));
+            let mut proposal = propose("platform.case");
+            proposal.evaluation = spec_of(evaluation);
+            proposal.persistence = persistence_of(extra);
+            let answer = ProposeDefinitionBehavior::propose_definition(&mut generated, proposal)
+                .expect("propose answers");
+            assert_eq!(proposed_refusal(&answer), refused, "{file}: {answer:?}");
+
+            let mut revision = revise("platform.case");
+            revision.evaluation = spec_of(evaluation);
+            revision.persistence = persistence_of(extra);
+            if refused.is_none() {
+                let answer = ReviseDefinitionBehavior::revise_definition(&mut generated, revision)
+                    .expect("revise answers");
+                assert!(
+                    matches!(answer, ReviseDefinitionOutcome::Revised { .. }),
+                    "{file}: {answer:?}"
+                );
+            } else {
+                let answer = ReviseDefinitionBehavior::revise_definition(&mut generated, revision)
+                    .expect("revise answers");
+                assert_eq!(revised_refusal(&answer), refused, "{file}: {answer:?}");
+            }
+        }
+    }
+}
+
+/// The [`EvaluationSpec`] the `evaluation` lines of [`definition_file`] above declare.
+fn spec_of(evaluation: &str) -> EvaluationSpec {
+    let mut spec = evaluation_spec();
+    for line in evaluation.lines().map(str::trim) {
+        if let Some(kinds) = line
+            .strip_prefix("baselines: [")
+            .and_then(|rest| rest.strip_suffix(']'))
+        {
+            spec.baselines = kinds
+                .split(", ")
+                .map(|kind| match kind {
+                    "fixed" => BaselineKind::Fixed,
+                    "rolling_median" => BaselineKind::RollingMedian,
+                    "offset_1d" => BaselineKind::Offset1d,
+                    other => panic!("no baseline kind {other}"),
+                })
+                .collect();
+        } else if let Some(number) = line.strip_prefix("fixed: ") {
+            spec.fixed = Some(text(Decimal, number.trim_matches('"')));
+        } else if let Some(n) = line.strip_prefix("rolling_n: ") {
+            spec.rolling_n = Some(n.parse().expect("an integer N"));
+        }
+    }
+    spec
+}
+
+/// The [`Persistence`] a `persistence: { k: .., k_crit: .., m: .. }` line declares.
+fn persistence_of(extra: &str) -> Option<Persistence> {
+    let body = extra
+        .strip_prefix("persistence: { ")?
+        .trim_end()
+        .strip_suffix(" }")?;
+    let mut held = BTreeMap::new();
+    for pair in body.split(", ") {
+        let (key, value) = pair.split_once(": ")?;
+        held.insert(key, value.parse::<i64>().ok()?);
+    }
+    Some(Persistence {
+        k: *held.get("k")?,
+        k_crit: *held.get("k_crit")?,
+        m: *held.get("m")?,
+    })
+}
+
+/// The ESS error a `ProposeDefinition` answer refused with, `None` for `proposed`.
+fn proposed_refusal(answer: &ProposeDefinitionOutcome) -> Option<&'static str> {
+    match answer {
+        ProposeDefinitionOutcome::Proposed { .. } => None,
+        ProposeDefinitionOutcome::InstantNotFixed { .. } => {
+            Some("thalamus.definition.InstantNeedsFixedBaseline")
+        }
+        ProposeDefinitionOutcome::RollingNMissing { .. } => {
+            Some("thalamus.definition.RollingWindowMissing")
+        }
+        ProposeDefinitionOutcome::RollingNUnused { .. } => {
+            Some("thalamus.definition.RollingWindowUnused")
+        }
+        ProposeDefinitionOutcome::FixedNumberMissing { .. } => {
+            Some("thalamus.definition.FixedNumberMissing")
+        }
+        ProposeDefinitionOutcome::FixedNumberUnused { .. } => {
+            Some("thalamus.definition.FixedNumberUnused")
+        }
+        ProposeDefinitionOutcome::PersistenceBelowOne { .. } => {
+            Some("thalamus.definition.PersistenceTooSmall")
+        }
+        ProposeDefinitionOutcome::AlreadyDefined { .. } => {
+            Some("thalamus.definition.DefinitionExists")
+        }
+    }
+}
+
+/// The ESS error a `ReviseDefinition` answer refused with, `None` for `revised`.
+fn revised_refusal(answer: &ReviseDefinitionOutcome) -> Option<&'static str> {
+    match answer {
+        ReviseDefinitionOutcome::Revised { .. } => None,
+        ReviseDefinitionOutcome::InstantNotFixed { .. } => {
+            Some("thalamus.definition.InstantNeedsFixedBaseline")
+        }
+        ReviseDefinitionOutcome::RollingNMissing { .. } => {
+            Some("thalamus.definition.RollingWindowMissing")
+        }
+        ReviseDefinitionOutcome::RollingNUnused { .. } => {
+            Some("thalamus.definition.RollingWindowUnused")
+        }
+        ReviseDefinitionOutcome::FixedNumberMissing { .. } => {
+            Some("thalamus.definition.FixedNumberMissing")
+        }
+        ReviseDefinitionOutcome::FixedNumberUnused { .. } => {
+            Some("thalamus.definition.FixedNumberUnused")
+        }
+        ReviseDefinitionOutcome::PersistenceBelowOne { .. } => {
+            Some("thalamus.definition.PersistenceTooSmall")
+        }
+        ReviseDefinitionOutcome::Retired { .. } => Some("thalamus.definition.RetiredDefinition"),
+        ReviseDefinitionOutcome::NoSuchDefinition { .. } => {
+            Some("thalamus.definition.UnknownDefinition")
+        }
+    }
+}
+
+/// Design § 3.1: `rolling_median` is the median of the last N samples, and N is
+/// `evaluation.rolling_n`. Proposing or revising one without it is refused, and nothing changes;
+/// with it, the definition is proposed.
+#[test]
+fn rolling_median_without_rolling_n_is_refused() {
+    let mut generated = Generated::new(Ports::new(
+        MemoryPorts::default(),
+        Some(text(Timestamp, "2026-01-01T00:00:00Z")),
+    ));
+    let rolling = |rolling_n| EvaluationSpec {
+        baselines: vec![BaselineKind::RollingMedian],
+        rolling_n,
+        ..evaluation_spec()
+    };
+
+    let mut missing = propose("platform.rolling");
+    missing.evaluation = rolling(None);
+    assert_eq!(
+        ProposeDefinitionBehavior::propose_definition(&mut generated, missing)
+            .expect("propose answers"),
+        ProposeDefinitionOutcome::RollingNMissing {
+            error: RollingWindowMissing {
+                signal_id: text(SignalId, "platform.rolling"),
+            },
+        }
+    );
+
+    let mut held = propose("platform.rolling");
+    held.evaluation = rolling(Some(12));
+    assert!(matches!(
+        ProposeDefinitionBehavior::propose_definition(&mut generated, held)
+            .expect("propose answers"),
+        ProposeDefinitionOutcome::Proposed { .. }
+    ));
+
+    let mut revision = revise("platform.rolling");
+    revision.evaluation = rolling(None);
+    assert_eq!(
+        ReviseDefinitionBehavior::revise_definition(&mut generated, revision)
+            .expect("revise answers"),
+        ReviseDefinitionOutcome::RollingNMissing {
+            error: RollingWindowMissing {
+                signal_id: text(SignalId, "platform.rolling"),
+            },
+        }
+    );
+
+    let mut revision = revise("platform.rolling");
+    revision.evaluation = rolling(Some(24));
+    assert!(matches!(
+        ReviseDefinitionBehavior::revise_definition(&mut generated, revision)
+            .expect("revise answers"),
+        ReviseDefinitionOutcome::Revised { .. }
+    ));
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -460,6 +963,10 @@ fn the_harness_passes_a_scenario_whose_expectations_hold() {
         {"step": "expect_view", "view": "thalamus.dimension.Registries",
          "expectation": {"expect": "satisfies", "predicate": {"registry_id": {"any_of": ["r1", "r9"]}}}},
         {"step": "expect_view", "view": "thalamus.dimension.Registries",
+         "expectation": {"expect": "satisfies", "predicate": {"title": {"eq": {"fact": "title"}}}}},
+        {"step": "expect_view", "view": "thalamus.dimension.Registries",
+         "expectation": {"expect": "satisfies", "predicate": {"registry_id": {"ne": {"fact": "title"}}}}},
+        {"step": "expect_view", "view": "thalamus.dimension.Registries",
          "expectation": {"expect": "counts", "at_least": 1, "at_most": 1}}"#,
     ))
     .expect("the probe suite runs");
@@ -536,6 +1043,14 @@ fn the_harness_fails_every_expectation_that_does_not_hold() {
         (
             "a value outside an any_of a row must be in",
             r#",{"step": "query_view", "view": "thalamus.dimension.Registries"},{"step": "expect_view", "view": "thalamus.dimension.Registries", "expectation": {"expect": "satisfies", "predicate": {"registry_id": {"any_of": ["r2", "r3"]}}}}"#,
+        ),
+        (
+            "a field comparison a row breaks",
+            r#",{"step": "query_view", "view": "thalamus.dimension.Registries"},{"step": "expect_view", "view": "thalamus.dimension.Registries", "expectation": {"expect": "satisfies", "predicate": {"registry_id": {"eq": {"fact": "title"}}}}}"#,
+        ),
+        (
+            "a field comparison with a field the row does not hold",
+            r#",{"step": "query_view", "view": "thalamus.dimension.Registries"},{"step": "expect_view", "view": "thalamus.dimension.Registries", "expectation": {"expect": "satisfies", "predicate": {"registry_id": {"eq": {"fact": "parent"}}}}}"#,
         ),
         (
             "an any_of over a field the row does not hold",
@@ -646,6 +1161,10 @@ fn the_harness_refuses_what_it_does_not_know_rather_than_skipping_it() {
         (
             "an unknown predicate form",
             r#",{"step": "query_view", "view": "thalamus.dimension.Registries"},{"step": "expect_view", "view": "thalamus.dimension.Registries", "expectation": {"expect": "satisfies", "predicate": "title ~ t"}}"#,
+        ),
+        (
+            "a field comparison under an unknown keyword",
+            r#",{"step": "query_view", "view": "thalamus.dimension.Registries"},{"step": "expect_view", "view": "thalamus.dimension.Registries", "expectation": {"expect": "satisfies", "predicate": {"registry_id": {"near": {"fact": "title"}}}}}"#,
         ),
         (
             "an any_of that is not a list",
