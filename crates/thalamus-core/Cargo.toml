@@ -7,7 +7,7 @@ license.workspace = true
 publish.workspace = true
 
 [features]
-conformance = []
+conformance = ["thalamus-model/server"]
 
 [dependencies]
 thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
