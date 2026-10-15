@@ -191,3 +191,18 @@ fn harness_ports_draw_ids_from_the_store() {
         Some(43)
     );
 }
+
+use thalamus_model::behaviour::{DailyRollupStorage, TransitionStorage};
+
+delegate!(
+    TransitionStorage,
+    memory,
+    thalamus_model::transition::TransitionId,
+    thalamus_model::transition::TransitionSnapshot
+);
+delegate!(
+    DailyRollupStorage,
+    memory,
+    thalamus_model::rollup::RollupId,
+    thalamus_model::rollup::DailyRollupSnapshot
+);

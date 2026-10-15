@@ -300,8 +300,10 @@ impl<S: SignalSampleStorage, Q> observation::obligations::SeriesSamplesQuery for
     }
 }
 
-impl<S: SignalDefinitionStorage + TransitionStorage>
-    transition::obligations::RecordTransitionBehavior for Ports<S>
+impl<S: SignalDefinitionStorage + TransitionStorage, Q>
+    transition::obligations::RecordTransitionBehavior for Ports<S, Q>
+where
+    Self: IdSequence,
 {
     fn record_transition(
         &mut self,
@@ -311,7 +313,7 @@ impl<S: SignalDefinitionStorage + TransitionStorage>
     }
 }
 
-impl<S: TransitionStorage> transition::obligations::SeriesTransitionsQuery for Ports<S> {
+impl<S: TransitionStorage, Q> transition::obligations::SeriesTransitionsQuery for Ports<S, Q> {
     fn series_transitions(
         &self,
         series: observation::SeriesKey,
@@ -320,7 +322,7 @@ impl<S: TransitionStorage> transition::obligations::SeriesTransitionsQuery for P
     }
 }
 
-impl<S: DailyRollupStorage> rollup::obligations::SeriesRollupsQuery for Ports<S> {
+impl<S: DailyRollupStorage, Q> rollup::obligations::SeriesRollupsQuery for Ports<S, Q> {
     fn series_rollups(
         &self,
         series: observation::SeriesKey,
