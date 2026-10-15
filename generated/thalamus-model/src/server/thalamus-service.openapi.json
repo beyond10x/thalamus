@@ -8,8 +8,8 @@
     "x-ess-provenance": {
       "system": "thalamus",
       "specification_version": "v1",
-      "source_digest": "827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0",
-      "contract_digest": "slice-sha256/2:13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988"
+      "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
+      "contract_digest": "slice-sha256/2:743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb"
     },
     "x-ess-reached-by": "network"
   },
@@ -31,8 +31,16 @@
       "description": "One verdict over one sample, with the rule and the definition revision that decided it. Kept apart from the sample so a threshold change re-grades history without reading the source again."
     },
     {
+      "name": "rollups",
+      "description": "One row per series per UTC day, kept after the raw samples leave retention. It is what a source that cannot be re-queried (history store) leaves behind."
+    },
+    {
       "name": "samples",
       "description": "One reading of one signal for one series. Append-only; a sample has no lifecycle beyond being recorded."
+    },
+    {
+      "name": "transitions",
+      "description": "A settled change of a series' verdict, emitted by the hysteresis once k consecutive evaluations agree. It copies what a reader needs from the evaluations that settled it, so it outlives their raw retention."
     }
   ],
   "paths": {
@@ -642,11 +650,41 @@
             }
           },
           "422": {
-            "description": "Outcome `instant-not-fixed`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused` and `persistence-below-one`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.instant-not-fixed.Response"
+                  "discriminator": {
+                    "mapping": {
+                      "fixed-number-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-missing.Response",
+                      "fixed-number-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-unused.Response",
+                      "instant-not-fixed": "#/components/schemas/thalamus.definition.ProposeDefinition.instant-not-fixed.Response",
+                      "persistence-below-one": "#/components/schemas/thalamus.definition.ProposeDefinition.persistence-below-one.Response",
+                      "rolling-n-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.rolling-n-missing.Response",
+                      "rolling-n-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.rolling-n-unused.Response"
+                    },
+                    "propertyName": "outcome"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.instant-not-fixed.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.rolling-n-missing.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.rolling-n-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-missing.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.persistence-below-one.Response"
+                    }
+                  ]
                 }
               }
             }
@@ -876,11 +914,41 @@
             }
           },
           "422": {
-            "description": "Outcome `instant-not-fixed`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused` and `persistence-below-one`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.instant-not-fixed.Response"
+                  "discriminator": {
+                    "mapping": {
+                      "fixed-number-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-missing.Response",
+                      "fixed-number-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-unused.Response",
+                      "instant-not-fixed": "#/components/schemas/thalamus.definition.ReviseDefinition.instant-not-fixed.Response",
+                      "persistence-below-one": "#/components/schemas/thalamus.definition.ReviseDefinition.persistence-below-one.Response",
+                      "rolling-n-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.rolling-n-missing.Response",
+                      "rolling-n-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.rolling-n-unused.Response"
+                    },
+                    "propertyName": "outcome"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.instant-not-fixed.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.rolling-n-missing.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.rolling-n-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-missing.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.persistence-below-one.Response"
+                    }
+                  ]
                 }
               }
             }
@@ -922,7 +990,8 @@
           "definitions"
         ],
         "x-ess-may-invoke": [
-          "thalamus.definition.InstanceOperator"
+          "thalamus.definition.InstanceOperator",
+          "thalamus.definition.Service"
         ],
         "requestBody": {
           "description": "The input `thalamus.definition.UnmuteDefinition` declares.",
@@ -1541,6 +1610,179 @@
         }
       }
     },
+    "/rollups/commands/record": {
+      "post": {
+        "operationId": "thalamus.rollup.RecordRollup",
+        "summary": "Record a daily rollup",
+        "description": "Append the one row of a series for a closed UTC day.",
+        "tags": [
+          "rollups"
+        ],
+        "x-ess-may-invoke": [
+          "thalamus.rollup.Roller"
+        ],
+        "requestBody": {
+          "description": "The input `thalamus.rollup.RecordRollup` declares.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/thalamus.rollup.RecordRollup.Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Outcome `recorded`: the branch the specification declares for this input. Events this branch emits are published to consumers and listed under `published`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/thalamus.rollup.RecordRollup.recorded.Response"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No declared outcome: the standard refusal for an actor no grant admits: the request was authenticated as no actor, or as one `x-ess-may-invoke` does not list. It is checked before the command runs, so nothing was read, written or published, and the same request from a granted actor is decided by the command. Its body carries `refused` and `actor`, never the `outcome` and `error` a declared branch carries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The qualified name of the actor the request was authenticated as, or null where it was authenticated as none.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "refused": {
+                      "description": "The standard refusal for an actor no grant admits.",
+                      "enum": [
+                        "not granted"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "refused",
+                    "actor"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Outcomes `unknown-signal` and `already-rolled-up`: the input was acceptable and the subject is in a state this command does not act from. Resending the same request changes nothing until something else moves it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "discriminator": {
+                    "mapping": {
+                      "already-rolled-up": "#/components/schemas/thalamus.rollup.RecordRollup.already-rolled-up.Response",
+                      "unknown-signal": "#/components/schemas/thalamus.rollup.RecordRollup.unknown-signal.Response"
+                    },
+                    "propertyName": "outcome"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/thalamus.rollup.RecordRollup.unknown-signal.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.rollup.RecordRollup.already-rolled-up.Response"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "No declared outcome: the realization is unfinished. Either a port this command runs reported an unmet obligation, and nothing was written: `committed` is `false`. Or the command's effect was committed and delivering what this command published to a binding failed: `committed` is `true`, the effect and its events stand, and each binding whose delivery failed keeps its event and is attempted again on a later delivery, while no other binding receives it twice. Do not retry: after a failed delivery a retry performs the command a second time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "committed": {
+                      "description": "`true` when the command's effect and events were committed and delivering what it published failed; `false` when an unmet obligation stopped the command before anything was written.",
+                      "type": "boolean"
+                    },
+                    "refused": {
+                      "description": "What was left unfinished, in words.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "refused",
+                    "committed"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rollups/views/rollups": {
+      "get": {
+        "operationId": "thalamus.rollup.Rollups",
+        "summary": "Rollups",
+        "description": "Every daily row, by series and day; the numbers of one series are read from its series view.",
+        "tags": [
+          "rollups"
+        ],
+        "x-ess-consistency": "read_your_writes",
+        "responses": {
+          "200": {
+            "description": "Every row of `thalamus.rollup.Rollups`, a projection of `thalamus.rollup.DailyRollup`. Contains every instance. Read-your-writes: a caller that has just issued a command sees its effect here.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/thalamus.rollup.Rollups.Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rollups/views/series": {
+      "get": {
+        "operationId": "thalamus.rollup.SeriesRollups",
+        "summary": "Rollups of a series",
+        "description": "The daily rows of one series, oldest day first.",
+        "tags": [
+          "rollups"
+        ],
+        "x-ess-consistency": "read_your_writes",
+        "parameters": [
+          {
+            "name": "series",
+            "in": "query",
+            "description": "Read by the view's filter as `param.series`; it selects which rows the view holds.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every row of `thalamus.rollup.SeriesRollups`, a projection of `thalamus.rollup.DailyRollup`. Contains the instances where `series == param.series` holds. Read-your-writes: a caller that has just issued a command sees its effect here.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/thalamus.rollup.SeriesRollups.Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/samples/commands/record": {
       "post": {
         "operationId": "thalamus.observation.RecordSample",
@@ -1706,6 +1948,165 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/thalamus.observation.SeriesSamples.Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transitions/commands/record": {
+      "post": {
+        "operationId": "thalamus.transition.RecordTransition",
+        "summary": "Record a transition",
+        "description": "Append one settled verdict change of one series.",
+        "tags": [
+          "transitions"
+        ],
+        "x-ess-may-invoke": [
+          "thalamus.transition.Hysteresis"
+        ],
+        "requestBody": {
+          "description": "The input `thalamus.transition.RecordTransition` declares.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/thalamus.transition.RecordTransition.Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outcome `recorded`: the branch the specification declares for this input, carried out in this request: the body carries the command's response under `response`. Events this branch emits are published to consumers and listed under `published`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/thalamus.transition.RecordTransition.recorded.Response"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No declared outcome: the standard refusal for an actor no grant admits: the request was authenticated as no actor, or as one `x-ess-may-invoke` does not list. It is checked before the command runs, so nothing was read, written or published, and the same request from a granted actor is decided by the command. Its body carries `refused` and `actor`, never the `outcome` and `error` a declared branch carries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "actor": {
+                      "description": "The qualified name of the actor the request was authenticated as, or null where it was authenticated as none.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "refused": {
+                      "description": "The standard refusal for an actor no grant admits.",
+                      "enum": [
+                        "not granted"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "refused",
+                    "actor"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Outcome `unknown-signal`: the input was acceptable and the subject is in a state this command does not act from. Resending the same request changes nothing until something else moves it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/thalamus.transition.RecordTransition.unknown-signal.Response"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "No declared outcome: the realization is unfinished. Either a port this command runs reported an unmet obligation, and nothing was written: `committed` is `false`. Or the command's effect was committed and delivering what this command published to a binding failed: `committed` is `true`, the effect and its events stand, and each binding whose delivery failed keeps its event and is attempted again on a later delivery, while no other binding receives it twice. Do not retry: after a failed delivery a retry performs the command a second time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "committed": {
+                      "description": "`true` when the command's effect and events were committed and delivering what it published failed; `false` when an unmet obligation stopped the command before anything was written.",
+                      "type": "boolean"
+                    },
+                    "refused": {
+                      "description": "What was left unfinished, in words.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "refused",
+                    "committed"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transitions/views/series": {
+      "get": {
+        "operationId": "thalamus.transition.SeriesTransitions",
+        "summary": "Transitions of a series",
+        "description": "The settled transitions of one series in the order they settled.",
+        "tags": [
+          "transitions"
+        ],
+        "x-ess-consistency": "read_your_writes",
+        "parameters": [
+          {
+            "name": "series",
+            "in": "query",
+            "description": "Read by the view's filter as `param.series`; it selects which rows the view holds.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every row of `thalamus.transition.SeriesTransitions`, a projection of `thalamus.transition.Transition`. Contains the instances where `series == param.series` holds. Read-your-writes: a caller that has just issued a command sees its effect here.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/thalamus.transition.SeriesTransitions.Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transitions/views/transitions": {
+      "get": {
+        "operationId": "thalamus.transition.Transitions",
+        "summary": "Transitions",
+        "description": "Every settled transition, by series; the evidence of one series is read from its series view.",
+        "tags": [
+          "transitions"
+        ],
+        "x-ess-consistency": "read_your_writes",
+        "responses": {
+          "200": {
+            "description": "Every row of `thalamus.transition.Transitions`, a projection of `thalamus.transition.Transition`. Contains every instance. Read-your-writes: a caller that has just issued a command sees its effect here.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/thalamus.transition.Transitions.Response"
                 }
               }
             }
@@ -2938,6 +3339,16 @@
             "description": "For an instant signal, no delta and no trend below this window.",
             "type": "string",
             "format": "duration"
+          },
+          "fixed": {
+            "description": "The number a fixed baseline is (a hard zero, or no history yet). A fixed baseline without it is unknown, never 0.",
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "rolling_n": {
+            "description": "The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.",
+            "type": "integer"
           }
         },
         "required": [
@@ -2960,6 +3371,38 @@
         "x-ess-kind": "newtype",
         "type": "string",
         "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
+      },
+      "thalamus.definition.FixedNumberMissing.Error": {
+        "title": "FixedNumberMissing payload",
+        "description": "A fixed baseline is the definition's own number, and evaluation.fixed declares none; nothing changed.",
+        "x-ess-name": "thalamus.definition.FixedNumberMissing",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.definition.FixedNumberUnused.Error": {
+        "title": "FixedNumberUnused payload",
+        "description": "evaluation.fixed is declared, and no fixed baseline reads it; a threshold nothing reads is not kept, so nothing changed.",
+        "x-ess-name": "thalamus.definition.FixedNumberUnused",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
       },
       "thalamus.definition.History": {
         "title": "History",
@@ -3210,6 +3653,49 @@
         "x-ess-kind": "newtype",
         "type": "string"
       },
+      "thalamus.definition.Persistence": {
+        "title": "Persistence",
+        "description": "How many evaluations must agree before a verdict change is a transition (design § 3.2, § 11 D15). Absent on a definition, the service applies k 2, k_crit 1, m 3.",
+        "x-ess-name": "thalamus.definition.Persistence",
+        "x-ess-kind": "struct",
+        "type": "object",
+        "properties": {
+          "k": {
+            "description": "Consecutive agreeing evaluations before a change of verdict settles.",
+            "type": "integer"
+          },
+          "k_crit": {
+            "description": "Consecutive agreeing evaluations before a change to CRIT settles.",
+            "type": "integer"
+          },
+          "m": {
+            "description": "Consecutive OK evaluations before a WARN clears.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "k",
+          "k_crit",
+          "m"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.definition.PersistenceTooSmall.Error": {
+        "title": "PersistenceTooSmall payload",
+        "description": "persistence k, k_crit or m is below 1, which settles or clears a verdict on no evaluation; nothing changed.",
+        "x-ess-name": "thalamus.definition.PersistenceTooSmall",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
+      },
       "thalamus.definition.ProposeDefinition.Input": {
         "title": "Propose a definition input",
         "description": "Add a signal definition at revision 1, not yet sampled.",
@@ -3267,6 +3753,9 @@
           },
           "evaluation": {
             "$ref": "#/components/schemas/thalamus.definition.EvaluationSpec"
+          },
+          "persistence": {
+            "$ref": "#/components/schemas/thalamus.definition.Persistence"
           },
           "objective": {},
           "owner": {
@@ -3326,6 +3815,66 @@
         ],
         "type": "object"
       },
+      "thalamus.definition.ProposeDefinition.fixed-number-missing.Response": {
+        "additionalProperties": false,
+        "description": "A fixed baseline was declared without evaluation.fixed; nothing was proposed. Taken when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.FixedNumberMissing",
+            "description": "A fixed baseline is the definition's own number, and evaluation.fixed declares none; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "fixed-number-missing",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.FixedNumberMissing.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.fixed-number-unused.Response": {
+        "additionalProperties": false,
+        "description": "evaluation.fixed was declared without a fixed baseline to read it; nothing was proposed. Taken when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.FixedNumberUnused",
+            "description": "evaluation.fixed is declared, and no fixed baseline reads it; a threshold nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "fixed-number-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.FixedNumberUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
       "thalamus.definition.ProposeDefinition.instant-not-fixed.Response": {
         "additionalProperties": false,
         "description": "An instant signal declared a baseline other than fixed; nothing was proposed. Taken when `(kind == instant and exists b in evaluation.baselines: (b != fixed))` holds of the input.",
@@ -3341,6 +3890,36 @@
           },
           "payload": {
             "$ref": "#/components/schemas/thalamus.definition.InstantNeedsFixedBaseline.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.persistence-below-one.Response": {
+        "additionalProperties": false,
+        "description": "persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing was proposed. Taken when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.PersistenceTooSmall",
+            "description": "persistence k, k_crit or m is below 1, which settles or clears a verdict on no evaluation; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "persistence-below-one",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.PersistenceTooSmall.Error"
           },
           "published": {
             "description": "Every event this branch published, in publication order: its qualified name and its payload.",
@@ -3394,6 +3973,66 @@
         "required": [
           "outcome",
           "published"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.rolling-n-missing.Response": {
+        "additionalProperties": false,
+        "description": "A rolling_median baseline was declared without evaluation.rolling_n; nothing was proposed. Taken when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.RollingWindowMissing",
+            "description": "A rolling_median baseline is the median of the last N samples, and evaluation.rolling_n declares no N of at least 1; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "rolling-n-missing",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.RollingWindowMissing.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.rolling-n-unused.Response": {
+        "additionalProperties": false,
+        "description": "evaluation.rolling_n was declared without a rolling_median baseline to read it; nothing was proposed. Taken when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.RollingWindowUnused",
+            "description": "evaluation.rolling_n is declared, and no rolling_median baseline reads it; a threshold nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "rolling-n-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.RollingWindowUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
         ],
         "type": "object"
       },
@@ -3595,6 +4234,9 @@
           "evaluation": {
             "$ref": "#/components/schemas/thalamus.definition.EvaluationSpec"
           },
+          "persistence": {
+            "$ref": "#/components/schemas/thalamus.definition.Persistence"
+          },
           "objective": {},
           "owner": {
             "$ref": "#/components/schemas/thalamus.definition.Owner"
@@ -3626,6 +4268,66 @@
           "author"
         ],
         "additionalProperties": false
+      },
+      "thalamus.definition.ReviseDefinition.fixed-number-missing.Response": {
+        "additionalProperties": false,
+        "description": "A fixed baseline was declared without evaluation.fixed; nothing changed. Taken when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.FixedNumberMissing",
+            "description": "A fixed baseline is the definition's own number, and evaluation.fixed declares none; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "fixed-number-missing",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.FixedNumberMissing.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.fixed-number-unused.Response": {
+        "additionalProperties": false,
+        "description": "evaluation.fixed was declared without a fixed baseline to read it; nothing changed. Taken when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.FixedNumberUnused",
+            "description": "evaluation.fixed is declared, and no fixed baseline reads it; a threshold nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "fixed-number-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.FixedNumberUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
       },
       "thalamus.definition.ReviseDefinition.instant-not-fixed.Response": {
         "additionalProperties": false,
@@ -3672,6 +4374,36 @@
           },
           "payload": {
             "$ref": "#/components/schemas/thalamus.definition.UnknownDefinition.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.persistence-below-one.Response": {
+        "additionalProperties": false,
+        "description": "persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing changed. Taken when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.PersistenceTooSmall",
+            "description": "persistence k, k_crit or m is below 1, which settles or clears a verdict on no evaluation; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "persistence-below-one",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.PersistenceTooSmall.Error"
           },
           "published": {
             "description": "Every event this branch published, in publication order: its qualified name and its payload.",
@@ -3757,6 +4489,98 @@
           "published"
         ],
         "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.rolling-n-missing.Response": {
+        "additionalProperties": false,
+        "description": "A rolling_median baseline was declared without evaluation.rolling_n; nothing changed. Taken when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.RollingWindowMissing",
+            "description": "A rolling_median baseline is the median of the last N samples, and evaluation.rolling_n declares no N of at least 1; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "rolling-n-missing",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.RollingWindowMissing.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.rolling-n-unused.Response": {
+        "additionalProperties": false,
+        "description": "evaluation.rolling_n was declared without a rolling_median baseline to read it; nothing changed. Taken when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.RollingWindowUnused",
+            "description": "evaluation.rolling_n is declared, and no rolling_median baseline reads it; a threshold nothing reads is not kept, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "rolling-n-unused",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.RollingWindowUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.RollingWindowMissing.Error": {
+        "title": "RollingWindowMissing payload",
+        "description": "A rolling_median baseline is the median of the last N samples, and evaluation.rolling_n declares no N of at least 1; nothing changed.",
+        "x-ess-name": "thalamus.definition.RollingWindowMissing",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.definition.RollingWindowUnused.Error": {
+        "title": "RollingWindowUnused payload",
+        "description": "evaluation.rolling_n is declared, and no rolling_median baseline reads it; a threshold nothing reads is not kept, so nothing changed.",
+        "x-ess-name": "thalamus.definition.RollingWindowUnused",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
       },
       "thalamus.definition.RuleId": {
         "title": "RuleId",
@@ -5776,6 +6600,786 @@
           "reason"
         ],
         "additionalProperties": false
+      },
+      "thalamus.rollup.DailyRollup.State": {
+        "title": "State",
+        "x-ess-name": "thalamus.rollup.DailyRollup.State",
+        "x-ess-kind": "enum",
+        "type": "string",
+        "enum": [
+          "Recorded"
+        ]
+      },
+      "thalamus.rollup.RecordRollup.Input": {
+        "title": "Record a daily rollup input",
+        "description": "Append the one row of a series for a closed UTC day.",
+        "x-ess-name": "thalamus.rollup.RecordRollup",
+        "x-ess-kind": "command-input",
+        "type": "object",
+        "properties": {
+          "rollup_id": {
+            "$ref": "#/components/schemas/thalamus.rollup.RollupId"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "series": {
+            "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+          },
+          "day": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "n": {
+            "type": "integer"
+          },
+          "unknown": {
+            "type": "integer"
+          },
+          "partial": {
+            "type": "integer"
+          },
+          "min": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "p50": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "max": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "last": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "worst_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "verdict_counts": {
+            "$ref": "#/components/schemas/thalamus.rollup.VerdictCounts"
+          },
+          "min_score": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "max_score": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          }
+        },
+        "required": [
+          "rollup_id",
+          "signal",
+          "series",
+          "day",
+          "n",
+          "unknown",
+          "partial",
+          "verdict_counts"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.rollup.RecordRollup.already-rolled-up.Response": {
+        "additionalProperties": false,
+        "description": "The series already has a row for this day; nothing changed. Taken when a record already carries the identity the request would create, and no input-guarded refusal applies.",
+        "properties": {
+          "error": {
+            "const": "thalamus.rollup.RollupExists",
+            "description": "This series is already rolled up for this day; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "already-rolled-up",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.rollup.RollupExists.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.rollup.RecordRollup.recorded.Response": {
+        "additionalProperties": false,
+        "description": "The day's row is recorded. Taken when no other outcome's condition matched. A `thalamus.rollup.DailyRollup` now exists, in `Recorded`. Its identity is published as `rollup_id` on `thalamus.rollup.RollupRecorded`. Emits `RollupRecorded`, published to consumers and listed under `published`.",
+        "properties": {
+          "outcome": {
+            "const": "recorded",
+            "description": "Which declared outcome the command took."
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "items": false,
+            "maxItems": 1,
+            "minItems": 1,
+            "prefixItems": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "event": {
+                    "const": "thalamus.rollup.RollupRecorded",
+                    "type": "string"
+                  },
+                  "payload": {
+                    "$ref": "#/components/schemas/thalamus.rollup.RollupRecorded.Event"
+                  }
+                },
+                "required": [
+                  "event",
+                  "payload"
+                ],
+                "type": "object"
+              }
+            ],
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published"
+        ],
+        "type": "object"
+      },
+      "thalamus.rollup.RecordRollup.unknown-signal.Response": {
+        "additionalProperties": false,
+        "description": "No definition has this id; nothing was recorded. Taken when no `thalamus.definition.SignalDefinition` carries the identity `input.signal` names.",
+        "properties": {
+          "error": {
+            "const": "thalamus.rollup.UnknownSignal",
+            "description": "No definition has this signal id; nothing was recorded.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "unknown-signal",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.rollup.UnknownSignal.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.rollup.RollupExists.Error": {
+        "title": "RollupExists payload",
+        "description": "This series is already rolled up for this day; nothing changed.",
+        "x-ess-name": "thalamus.rollup.RollupExists",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "rollup_id": {
+            "$ref": "#/components/schemas/thalamus.rollup.RollupId"
+          }
+        },
+        "required": [
+          "rollup_id"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.rollup.RollupId": {
+        "title": "RollupId",
+        "description": "A rollup id, spelled from the series key and the UTC day.",
+        "x-ess-name": "thalamus.rollup.RollupId",
+        "x-ess-kind": "newtype",
+        "type": "string"
+      },
+      "thalamus.rollup.RollupRecorded.Event": {
+        "title": "RollupRecorded payload",
+        "x-ess-name": "thalamus.rollup.RollupRecorded",
+        "x-ess-kind": "event-payload",
+        "type": "object",
+        "properties": {
+          "rollup_id": {
+            "$ref": "#/components/schemas/thalamus.rollup.RollupId"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "series": {
+            "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+          },
+          "day": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "rollup_id",
+          "signal",
+          "series",
+          "day"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.rollup.Rollups.Response": {
+        "additionalProperties": false,
+        "description": "The rows of `thalamus.rollup.Rollups`.",
+        "properties": {
+          "rows": {
+            "description": "Every row the projection holds, in the order it holds them.",
+            "items": {
+              "$ref": "#/components/schemas/thalamus.rollup.Rollups.Row"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "type": "object"
+      },
+      "thalamus.rollup.Rollups.Row": {
+        "title": "Rollups row",
+        "description": "Every daily row, by series and day; the numbers of one series are read from its series view.",
+        "x-ess-name": "thalamus.rollup.Rollups",
+        "x-ess-kind": "view-row",
+        "type": "object",
+        "properties": {
+          "rollup_id": {
+            "$ref": "#/components/schemas/thalamus.rollup.RollupId"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "series": {
+            "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+          },
+          "day": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "n": {
+            "type": "integer"
+          },
+          "state": {
+            "$ref": "#/components/schemas/thalamus.rollup.DailyRollup.State"
+          }
+        },
+        "required": [
+          "rollup_id",
+          "signal",
+          "series",
+          "day",
+          "n",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.rollup.SeriesRollups.Response": {
+        "additionalProperties": false,
+        "description": "The rows of `thalamus.rollup.SeriesRollups`.",
+        "properties": {
+          "rows": {
+            "description": "Every row the projection holds, in the order it holds them.",
+            "items": {
+              "$ref": "#/components/schemas/thalamus.rollup.SeriesRollups.Row"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "type": "object"
+      },
+      "thalamus.rollup.SeriesRollups.Row": {
+        "title": "Rollups of a series row",
+        "description": "The daily rows of one series, oldest day first.",
+        "x-ess-name": "thalamus.rollup.SeriesRollups",
+        "x-ess-kind": "view-row",
+        "type": "object",
+        "properties": {
+          "rollup_id": {
+            "$ref": "#/components/schemas/thalamus.rollup.RollupId"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "day": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "n": {
+            "type": "integer"
+          },
+          "unknown": {
+            "type": "integer"
+          },
+          "partial": {
+            "type": "integer"
+          },
+          "min": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "p50": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "max": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "last": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "worst_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "verdict_counts": {
+            "$ref": "#/components/schemas/thalamus.rollup.VerdictCounts"
+          },
+          "min_score": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "max_score": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          }
+        },
+        "required": [
+          "rollup_id",
+          "signal",
+          "day",
+          "n",
+          "unknown",
+          "partial",
+          "verdict_counts"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.rollup.UnknownSignal.Error": {
+        "title": "UnknownSignal payload",
+        "description": "No definition has this signal id; nothing was recorded.",
+        "x-ess-name": "thalamus.rollup.UnknownSignal",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.rollup.VerdictCounts": {
+        "title": "VerdictCounts",
+        "description": "One count per verdict of the ladder, over the day's evaluations.",
+        "x-ess-name": "thalamus.rollup.VerdictCounts",
+        "x-ess-kind": "struct",
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "integer"
+          },
+          "na": {
+            "description": "The N/A verdicts.",
+            "type": "integer"
+          },
+          "warn": {
+            "type": "integer"
+          },
+          "crit": {
+            "type": "integer"
+          },
+          "unknown": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ok",
+          "na",
+          "warn",
+          "crit",
+          "unknown"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.transition.RecordTransition.Input": {
+        "title": "Record a transition input",
+        "description": "Append one settled verdict change of one series.",
+        "x-ess-name": "thalamus.transition.RecordTransition",
+        "x-ess-kind": "command-input",
+        "type": "object",
+        "properties": {
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "series": {
+            "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+          },
+          "dims": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/thalamus.dimension.DimensionValue"
+            },
+            "x-ess-map-key": "String"
+          },
+          "definition_rev": {
+            "type": "integer"
+          },
+          "from_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "to_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "first_ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settled_ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settling_score": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "evaluations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/thalamus.evaluation.EvaluationId"
+            }
+          }
+        },
+        "required": [
+          "signal",
+          "series",
+          "dims",
+          "definition_rev",
+          "to_verdict",
+          "first_ts",
+          "settled_ts",
+          "evaluations"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.transition.RecordTransition.Result": {
+        "title": "Record a transition response",
+        "description": "Append one settled verdict change of one series.",
+        "x-ess-name": "thalamus.transition.RecordTransition",
+        "x-ess-kind": "command-response",
+        "type": "object",
+        "properties": {
+          "transition_id": {
+            "$ref": "#/components/schemas/thalamus.transition.TransitionId"
+          }
+        },
+        "required": [
+          "transition_id"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.transition.RecordTransition.recorded.Response": {
+        "additionalProperties": false,
+        "description": "The transition is recorded and its id returned. Taken when no other outcome's condition matched. A `thalamus.transition.Transition` now exists, in `Recorded`. Its identity is published as `transition_id` on `thalamus.transition.TransitionRecorded`. Emits `TransitionRecorded`, published to consumers and listed under `published`.",
+        "properties": {
+          "outcome": {
+            "const": "recorded",
+            "description": "Which declared outcome the command took."
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "items": false,
+            "maxItems": 1,
+            "minItems": 1,
+            "prefixItems": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "event": {
+                    "const": "thalamus.transition.TransitionRecorded",
+                    "type": "string"
+                  },
+                  "payload": {
+                    "$ref": "#/components/schemas/thalamus.transition.TransitionRecorded.Event"
+                  }
+                },
+                "required": [
+                  "event",
+                  "payload"
+                ],
+                "type": "object"
+              }
+            ],
+            "type": "array"
+          },
+          "response": {
+            "$ref": "#/components/schemas/thalamus.transition.RecordTransition.Result"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "response"
+        ],
+        "type": "object"
+      },
+      "thalamus.transition.RecordTransition.unknown-signal.Response": {
+        "additionalProperties": false,
+        "description": "No definition has this id; nothing was recorded. Taken when no `thalamus.definition.SignalDefinition` carries the identity `input.signal` names.",
+        "properties": {
+          "error": {
+            "const": "thalamus.transition.UnknownSignal",
+            "description": "No definition has this signal id; nothing was recorded.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "unknown-signal",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.transition.UnknownSignal.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.transition.SeriesTransitions.Response": {
+        "additionalProperties": false,
+        "description": "The rows of `thalamus.transition.SeriesTransitions`.",
+        "properties": {
+          "rows": {
+            "description": "Every row the projection holds, in the order it holds them.",
+            "items": {
+              "$ref": "#/components/schemas/thalamus.transition.SeriesTransitions.Row"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "type": "object"
+      },
+      "thalamus.transition.SeriesTransitions.Row": {
+        "title": "Transitions of a series row",
+        "description": "The settled transitions of one series in the order they settled.",
+        "x-ess-name": "thalamus.transition.SeriesTransitions",
+        "x-ess-kind": "view-row",
+        "type": "object",
+        "properties": {
+          "transition_id": {
+            "$ref": "#/components/schemas/thalamus.transition.TransitionId"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "definition_rev": {
+            "type": "integer"
+          },
+          "from_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "to_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "first_ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settled_ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settling_score": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "evaluations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/thalamus.evaluation.EvaluationId"
+            }
+          }
+        },
+        "required": [
+          "transition_id",
+          "signal",
+          "definition_rev",
+          "to_verdict",
+          "first_ts",
+          "settled_ts",
+          "evaluations"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.transition.Transition.State": {
+        "title": "State",
+        "x-ess-name": "thalamus.transition.Transition.State",
+        "x-ess-kind": "enum",
+        "type": "string",
+        "enum": [
+          "Recorded"
+        ]
+      },
+      "thalamus.transition.TransitionId": {
+        "title": "TransitionId",
+        "description": "A transition id, minted by the service.",
+        "x-ess-name": "thalamus.transition.TransitionId",
+        "x-ess-kind": "newtype",
+        "type": "string",
+        "pattern": "^trn_"
+      },
+      "thalamus.transition.TransitionRecorded.Event": {
+        "title": "TransitionRecorded payload",
+        "x-ess-name": "thalamus.transition.TransitionRecorded",
+        "x-ess-kind": "event-payload",
+        "type": "object",
+        "properties": {
+          "transition_id": {
+            "$ref": "#/components/schemas/thalamus.transition.TransitionId"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "series": {
+            "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+          },
+          "from_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "to_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "settled_ts": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "transition_id",
+          "signal",
+          "series",
+          "to_verdict",
+          "settled_ts"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.transition.Transitions.Response": {
+        "additionalProperties": false,
+        "description": "The rows of `thalamus.transition.Transitions`.",
+        "properties": {
+          "rows": {
+            "description": "Every row the projection holds, in the order it holds them.",
+            "items": {
+              "$ref": "#/components/schemas/thalamus.transition.Transitions.Row"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "type": "object"
+      },
+      "thalamus.transition.Transitions.Row": {
+        "title": "Transitions row",
+        "description": "Every settled transition, by series; the evidence of one series is read from its series view.",
+        "x-ess-name": "thalamus.transition.Transitions",
+        "x-ess-kind": "view-row",
+        "type": "object",
+        "properties": {
+          "transition_id": {
+            "$ref": "#/components/schemas/thalamus.transition.TransitionId"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          },
+          "series": {
+            "$ref": "#/components/schemas/thalamus.observation.SeriesKey"
+          },
+          "from_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "to_verdict": {
+            "$ref": "#/components/schemas/thalamus.evaluation.Verdict"
+          },
+          "settled_ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "$ref": "#/components/schemas/thalamus.transition.Transition.State"
+          }
+        },
+        "required": [
+          "transition_id",
+          "signal",
+          "series",
+          "to_verdict",
+          "settled_ts",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.transition.UnknownSignal.Error": {
+        "title": "UnknownSignal payload",
+        "description": "No definition has this signal id; nothing was recorded.",
+        "x-ess-name": "thalamus.transition.UnknownSignal",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal"
+        ],
+        "additionalProperties": false
       }
     }
   },
@@ -6034,6 +7638,16 @@
           "description": "For an instant signal, no delta and no trend below this window.",
           "type": "string",
           "format": "duration"
+        },
+        "fixed": {
+          "description": "The number a fixed baseline is (a hard zero, or no history yet). A fixed baseline without it is unknown, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "rolling_n": {
+          "description": "The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.",
+          "type": "integer"
         }
       },
       "required": [
@@ -6100,6 +7714,33 @@
       "x-ess-name": "thalamus.definition.Owner",
       "x-ess-kind": "newtype",
       "type": "string"
+    },
+    "thalamus.definition.Persistence": {
+      "title": "Persistence",
+      "description": "How many evaluations must agree before a verdict change is a transition (design § 3.2, § 11 D15). Absent on a definition, the service applies k 2, k_crit 1, m 3.",
+      "x-ess-name": "thalamus.definition.Persistence",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "k": {
+          "description": "Consecutive agreeing evaluations before a change of verdict settles.",
+          "type": "integer"
+        },
+        "k_crit": {
+          "description": "Consecutive agreeing evaluations before a change to CRIT settles.",
+          "type": "integer"
+        },
+        "m": {
+          "description": "Consecutive OK evaluations before a WARN clears.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "k",
+        "k_crit",
+        "m"
+      ],
+      "additionalProperties": false
     },
     "thalamus.definition.QueryText": {
       "title": "QueryText",
@@ -6175,6 +7816,10 @@
         },
         "evaluation": {
           "$ref": "#/x-ess-entities/thalamus.definition.EvaluationSpec"
+        },
+        "persistence": {
+          "$ref": "#/x-ess-entities/thalamus.definition.Persistence",
+          "description": "The hysteresis of the signal's transitions; absent means the defaults k 2, k_crit 1, m 3."
         },
         "objective": {},
         "owner": {
@@ -7061,6 +8706,267 @@
         "reason"
       ],
       "additionalProperties": false
+    },
+    "thalamus.rollup.DailyRollup": {
+      "title": "DailyRollup",
+      "description": "One series over one UTC day; what remains once its samples leave raw retention (design § 4).",
+      "x-ess-name": "thalamus.rollup.DailyRollup",
+      "x-ess-kind": "entity",
+      "type": "object",
+      "properties": {
+        "rollup_id": {
+          "$ref": "#/x-ess-entities/thalamus.rollup.RollupId"
+        },
+        "signal": {
+          "$ref": "#/x-ess-entities/thalamus.definition.SignalId",
+          "x-ess-relation": {
+            "name": "definition",
+            "kind": "references",
+            "source": "thalamus.rollup.DailyRollup",
+            "target": "thalamus.definition.SignalDefinition",
+            "cardinality": "one",
+            "via": "signal",
+            "$ref": "#/x-ess-entities/thalamus.definition.SignalDefinition"
+          }
+        },
+        "series": {
+          "$ref": "#/x-ess-entities/thalamus.observation.SeriesKey"
+        },
+        "day": {
+          "description": "The UTC midnight the day starts at.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "n": {
+          "description": "The samples of the day.",
+          "type": "integer"
+        },
+        "unknown": {
+          "description": "The samples of quality unknown.",
+          "type": "integer"
+        },
+        "partial": {
+          "description": "The samples of quality partial.",
+          "type": "integer"
+        },
+        "min": {
+          "description": "Over the day's ok readings; absent when the day has none, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "p50": {
+          "description": "Over the day's ok readings; absent when the day has none, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "max": {
+          "description": "Over the day's ok readings; absent when the day has none, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "last": {
+          "description": "The last ok reading of the day; absent when the day has none, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "worst_verdict": {
+          "$ref": "#/x-ess-entities/thalamus.evaluation.Verdict",
+          "description": "The worst verdict of the day by the ladder's rank; absent when the day has no evaluation."
+        },
+        "verdict_counts": {
+          "$ref": "#/x-ess-entities/thalamus.rollup.VerdictCounts"
+        },
+        "min_score": {
+          "description": "Over the day's scored evaluations; absent when none carries a score, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "max_score": {
+          "description": "Over the day's scored evaluations; absent when none carries a score, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "state": {
+          "$ref": "#/x-ess-entities/thalamus.rollup.DailyRollup.State"
+        }
+      },
+      "required": [
+        "rollup_id",
+        "signal",
+        "series",
+        "day",
+        "n",
+        "unknown",
+        "partial",
+        "verdict_counts",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.rollup.DailyRollup.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.rollup.DailyRollup.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Recorded"
+      ]
+    },
+    "thalamus.rollup.RollupId": {
+      "title": "RollupId",
+      "description": "A rollup id, spelled from the series key and the UTC day.",
+      "x-ess-name": "thalamus.rollup.RollupId",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.rollup.VerdictCounts": {
+      "title": "VerdictCounts",
+      "description": "One count per verdict of the ladder, over the day's evaluations.",
+      "x-ess-name": "thalamus.rollup.VerdictCounts",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "integer"
+        },
+        "na": {
+          "description": "The N/A verdicts.",
+          "type": "integer"
+        },
+        "warn": {
+          "type": "integer"
+        },
+        "crit": {
+          "type": "integer"
+        },
+        "unknown": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ok",
+        "na",
+        "warn",
+        "crit",
+        "unknown"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.transition.Transition": {
+      "title": "Transition",
+      "description": "One settled verdict change of one series, with the evaluations that settled it (design § 11 D13).",
+      "x-ess-name": "thalamus.transition.Transition",
+      "x-ess-kind": "entity",
+      "type": "object",
+      "properties": {
+        "transition_id": {
+          "$ref": "#/x-ess-entities/thalamus.transition.TransitionId"
+        },
+        "signal": {
+          "$ref": "#/x-ess-entities/thalamus.definition.SignalId",
+          "x-ess-relation": {
+            "name": "definition",
+            "kind": "references",
+            "source": "thalamus.transition.Transition",
+            "target": "thalamus.definition.SignalDefinition",
+            "cardinality": "one",
+            "via": "signal",
+            "$ref": "#/x-ess-entities/thalamus.definition.SignalDefinition"
+          }
+        },
+        "series": {
+          "$ref": "#/x-ess-entities/thalamus.observation.SeriesKey"
+        },
+        "dims": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/x-ess-entities/thalamus.dimension.DimensionValue"
+          },
+          "x-ess-map-key": "String"
+        },
+        "definition_rev": {
+          "description": "The definition revision of the settling evaluation.",
+          "type": "integer"
+        },
+        "from_verdict": {
+          "$ref": "#/x-ess-entities/thalamus.evaluation.Verdict",
+          "description": "The series' previous settled verdict; absent on its first settled verdict."
+        },
+        "to_verdict": {
+          "$ref": "#/x-ess-entities/thalamus.evaluation.Verdict"
+        },
+        "first_ts": {
+          "description": "The ts of the first of the agreeing evaluations.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "settled_ts": {
+          "description": "The ts of the settling evaluation.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "settling_score": {
+          "description": "The settling evaluation's score; absent when its verdict carries none, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "evaluations": {
+          "description": "The k evaluations that settled the transition. One that has left raw retention reads as expired.",
+          "type": "array",
+          "items": {
+            "$ref": "#/x-ess-entities/thalamus.evaluation.EvaluationId"
+          },
+          "x-ess-relation": {
+            "name": "evaluations",
+            "kind": "references",
+            "source": "thalamus.transition.Transition",
+            "target": "thalamus.evaluation.SignalEvaluation",
+            "cardinality": "many",
+            "via": "evaluations",
+            "$ref": "#/x-ess-entities/thalamus.evaluation.SignalEvaluation"
+          }
+        },
+        "state": {
+          "$ref": "#/x-ess-entities/thalamus.transition.Transition.State"
+        }
+      },
+      "required": [
+        "transition_id",
+        "signal",
+        "series",
+        "dims",
+        "definition_rev",
+        "to_verdict",
+        "first_ts",
+        "settled_ts",
+        "evaluations",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.transition.Transition.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.transition.Transition.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Recorded"
+      ]
+    },
+    "thalamus.transition.TransitionId": {
+      "title": "TransitionId",
+      "description": "A transition id, minted by the service.",
+      "x-ess-name": "thalamus.transition.TransitionId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "pattern": "^trn_"
     }
   }
 }

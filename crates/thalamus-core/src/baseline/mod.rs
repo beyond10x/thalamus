@@ -228,8 +228,8 @@ pub fn plan(
 /// The baseline `sample` is graded against, from the readings of the windows [`plan`] named.
 ///
 /// `series_age_s` is the age of the series at the sample, in seconds (`denominator.age_s`, or what
-/// the caller resolved); `None` when it is not known. `fixed` is the definition's fixed number;
-/// `thalamus.definition.EvaluationSpec` declares no field for it yet, so the caller hands it in.
+/// the caller resolved); `None` when it is not known. A `fixed` baseline is the definition's own
+/// number, `evaluation.fixed` (design § 11 D25), and is unknown, never 0, when it declares none.
 ///
 /// The recorded kind and offsets follow design § 11 D4: a combined baseline over both offsets is
 /// recorded as, for example, `pooled` over `[1d, 7d]`.
@@ -244,11 +244,10 @@ pub fn fold(
     sample: &SignalSampleData,
     readings: &[OffsetReading],
     series_age_s: Option<i64>,
-    fixed: Option<&Decimal>,
 ) -> Result<Baseline, Refusal> {
     let shape = resolve(definition)?;
     let reading = match &shape {
-        Shape::Fixed => fixed_reading(fixed),
+        Shape::Fixed => fixed_reading(definition.evaluation.fixed.as_ref()),
         Shape::Offset(offset) => match series_rule(sample, &[*offset], series_age_s)? {
             Some(reason) => unknown(reason),
             None => match constituents(&[*offset], readings) {

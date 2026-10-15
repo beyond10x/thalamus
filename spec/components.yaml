@@ -8,6 +8,8 @@ components:
         - thalamus.observation
         - thalamus.evaluation
         - thalamus.assertion
+        - thalamus.transition
+        - thalamus.rollup
     accepts:
       commands:
         - thalamus.definition.ProposeDefinition
@@ -22,6 +24,8 @@ components:
         - thalamus.evaluation.RecordEvaluation
         - thalamus.assertion.AskAssertion
         - thalamus.assertion.AnswerAssertion
+        - thalamus.transition.RecordTransition
+        - thalamus.rollup.RecordRollup
     publishes:
       events:
         - thalamus.definition.DefinitionProposed
@@ -36,4 +40,6 @@ components:
         - thalamus.evaluation.EvaluationRecorded
         - thalamus.assertion.AssertionAsked
         - thalamus.assertion.AssertionAnswered
+        - thalamus.transition.TransitionRecorded
+        - thalamus.rollup.RollupRecorded
     reached_by: network

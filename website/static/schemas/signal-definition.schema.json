@@ -60,6 +60,10 @@
     "evaluation": {
       "$ref": "#/$defs/thalamus.definition.EvaluationSpec"
     },
+    "persistence": {
+      "$ref": "#/$defs/thalamus.definition.Persistence",
+      "description": "The hysteresis of the signal's transitions; absent means the defaults k 2, k_crit 1, m 3."
+    },
     "objective": {},
     "owner": {
       "$ref": "#/$defs/thalamus.definition.Owner"
@@ -111,8 +115,8 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0",
-    "contract_digest": "slice-sha256/2:78b8462976f41a5ce379effbd7f1494eec17be607d535347cb1d6231446a9af8",
+    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
+    "contract_digest": "slice-sha256/2:79c983aec3485c6e460561a251b4eeee0908a5e1180ae9ad0a100ebea8c0ddf5",
     "regenerate": "ess generate"
   },
   "$defs": {
@@ -208,6 +212,16 @@
           "description": "For an instant signal, no delta and no trend below this window.",
           "type": "string",
           "format": "duration"
+        },
+        "fixed": {
+          "description": "The number a fixed baseline is (a hard zero, or no history yet). A fixed baseline without it is unknown, never 0.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "rolling_n": {
+          "description": "The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.",
+          "type": "integer"
         }
       },
       "required": [
@@ -274,6 +288,33 @@
       "x-ess-name": "thalamus.definition.Owner",
       "x-ess-kind": "newtype",
       "type": "string"
+    },
+    "thalamus.definition.Persistence": {
+      "title": "Persistence",
+      "description": "How many evaluations must agree before a verdict change is a transition (design § 3.2, § 11 D15). Absent on a definition, the service applies k 2, k_crit 1, m 3.",
+      "x-ess-name": "thalamus.definition.Persistence",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "k": {
+          "description": "Consecutive agreeing evaluations before a change of verdict settles.",
+          "type": "integer"
+        },
+        "k_crit": {
+          "description": "Consecutive agreeing evaluations before a change to CRIT settles.",
+          "type": "integer"
+        },
+        "m": {
+          "description": "Consecutive OK evaluations before a WARN clears.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "k",
+        "k_crit",
+        "m"
+      ],
+      "additionalProperties": false
     },
     "thalamus.definition.QueryText": {
       "title": "QueryText",

@@ -421,7 +421,10 @@ fn propose(signal: &str) -> ProposeDefinition {
             warn: None,
             crit: None,
             min_trend_window: None,
+            fixed: None,
+            rolling_n: None,
         },
+        persistence: None,
         objective: None,
         owner: Some(wrap(Owner, "team")),
         links: Links {

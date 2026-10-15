@@ -57,7 +57,10 @@ fn definition(kind: SignalKind, baselines: &[BaselineKind]) -> SignalDefinitionD
             warn: None,
             crit: None,
             min_trend_window: None,
+            fixed: None,
+            rolling_n: None,
         },
+        persistence: None,
         objective: None,
         owner: Some(Owner("team:platform".into())),
         links: Links {
@@ -74,6 +77,12 @@ fn definition(kind: SignalKind, baselines: &[BaselineKind]) -> SignalDefinitionD
 
 fn ratio(baselines: &[BaselineKind]) -> SignalDefinitionData {
     definition(SignalKind::Ratio, baselines)
+}
+
+/// `definition` with `number` as its `evaluation.fixed`.
+fn with_fixed(mut definition: SignalDefinitionData, number: &str) -> SignalDefinitionData {
+    definition.evaluation.fixed = Some(Decimal(number.into()));
+    definition
 }
 
 fn sample_at(start: &str, end: &str) -> SignalSampleData {
@@ -139,7 +148,7 @@ fn fold(
     readings: &[OffsetReading],
     series_age_s: Option<i64>,
 ) -> Baseline {
-    baseline::fold(definition, &sample(), readings, series_age_s, None)
+    baseline::fold(definition, &sample(), readings, series_age_s)
         .expect("an M1 baseline kind folds")
 }
 
@@ -327,11 +336,10 @@ fn unknown_series_age_makes_offsets_unknown() {
 
     // A fixed baseline has no offset, so the series age does not matter to it.
     let fixed = baseline::fold(
-        &ratio(&[BaselineKind::Fixed]),
+        &with_fixed(ratio(&[BaselineKind::Fixed]), "0"),
         &sample(),
         &[],
         None,
-        Some(&Decimal("0".into())),
     )
     .expect("fixed folds");
     assert_eq!(value(&fixed), "0");
@@ -516,28 +524,37 @@ fn higher_of_and_lower_of_pick_the_bound() {
 
 #[test]
 fn fixed_is_the_definition_number() {
-    let fixed = ratio(&[BaselineKind::Fixed]);
-    let number = Decimal("0.05".into());
+    let fixed = with_fixed(ratio(&[BaselineKind::Fixed]), "0.05");
 
-    let folded = baseline::fold(&fixed, &sample(), &[], OLD, Some(&number)).expect("fixed folds");
+    let folded = baseline::fold(&fixed, &sample(), &[], OLD).expect("fixed folds");
     assert_eq!(value(&folded), "0.05");
     assert_eq!(folded.kind.0, "fixed");
     assert!(folded.offsets.is_empty());
 
     // Earlier readings handed in by mistake do not move a fixed baseline.
-    let ignored = baseline::fold(
-        &fixed,
-        &sample(),
-        &[at(Offset::OneDay, "7", 1)],
-        OLD,
-        Some(&number),
-    )
-    .expect("fixed folds");
+    let ignored =
+        baseline::fold(&fixed, &sample(), &[at(Offset::OneDay, "7", 1)], OLD).expect("fixed folds");
     assert_eq!(value(&ignored), "0.05");
 
     // A fixed baseline that declares no number is unknown, never 0.
-    let absent = baseline::fold(&fixed, &sample(), &[], OLD, None).expect("fixed folds");
+    let absent =
+        baseline::fold(&ratio(&[BaselineKind::Fixed]), &sample(), &[], OLD).expect("fixed folds");
     assert!(matches!(absent.reading, Reading::Unknown(_)));
+}
+
+/// Design § 11 D25: the number of a `fixed` baseline is `evaluation.fixed`, read from the
+/// definition, its one copy of every threshold. Without it the baseline is unknown, never 0.
+#[test]
+fn fixed_baseline_reads_the_definition_number() {
+    let mut fixed = ratio(&[BaselineKind::Fixed]);
+    fixed.evaluation.fixed = Some(Decimal("0.05".into()));
+    let folded = baseline::fold(&fixed, &sample(), &[], OLD).expect("fixed folds");
+    assert_eq!(value(&folded), "0.05");
+    assert_eq!(folded.kind.0, "fixed");
+
+    fixed.evaluation.fixed = None;
+    let absent = baseline::fold(&fixed, &sample(), &[], OLD).expect("fixed folds");
+    assert!(matches!(absent.reading, Reading::Unknown(_)), "{absent:?}");
 }
 
 #[test]
@@ -551,13 +568,13 @@ fn instant_refuses_non_fixed_baseline() {
         BaselineKind::SameSlotMedian4w,
         BaselineKind::RollingMedian,
     ] {
-        let definition = definition(SignalKind::Instant, &[kind]);
+        let definition = with_fixed(definition(SignalKind::Instant, &[kind]), "3");
         assert_eq!(
             baseline::plan(&definition, &sample()),
             Err(Refusal::InstantNeedsFixed { kind }),
         );
         assert_eq!(
-            baseline::fold(&definition, &sample(), &[], OLD, Some(&Decimal("3".into()))),
+            baseline::fold(&definition, &sample(), &[], OLD),
             Err(Refusal::InstantNeedsFixed { kind }),
         );
     }
@@ -574,9 +591,9 @@ fn instant_refuses_non_fixed_baseline() {
         }),
     );
 
-    let fixed = definition(SignalKind::Instant, &[BaselineKind::Fixed]);
+    let fixed = with_fixed(definition(SignalKind::Instant, &[BaselineKind::Fixed]), "3");
     assert!(baseline::plan(&fixed, &sample()).expect("plans").is_empty());
-    let folded = baseline::fold(&fixed, &sample(), &[], None, Some(&Decimal("3".into())))
+    let folded = baseline::fold(&fixed, &sample(), &[], None)
         .expect("an instant signal folds against fixed");
     assert_eq!(value(&folded), "3");
 }
@@ -589,7 +606,7 @@ fn store_baselines_answer_not_in_m1() {
         assert_eq!(refusal, Refusal::NotInM1 { kind });
         assert!(refusal.to_string().contains("not in M1"), "{refusal}");
         assert_eq!(
-            baseline::fold(&definition, &sample(), &[], OLD, None),
+            baseline::fold(&definition, &sample(), &[], OLD),
             Err(Refusal::NotInM1 { kind }),
         );
     }
@@ -608,7 +625,7 @@ fn a_definition_names_one_baseline() {
     ));
     let fixed_and_offset = ratio(&[BaselineKind::Fixed, BaselineKind::Offset1d]);
     assert!(matches!(
-        baseline::fold(&fixed_and_offset, &sample(), &[], OLD, None),
+        baseline::fold(&fixed_and_offset, &sample(), &[], OLD),
         Err(Refusal::Ambiguous { .. })
     ));
 }
@@ -642,7 +659,6 @@ fn pooled_is_refused_for_a_signal_that_is_not_a_ratio() {
                 &sample(),
                 &[at(Offset::OneDay, "3", 1), at(Offset::SevenDays, "4", 1)],
                 OLD,
-                None,
             )
             .expect_err("pooled is for ratios");
             assert_eq!(refusal, Refusal::PooledNeedsRatio { kind });
@@ -659,7 +675,6 @@ fn pooled_is_refused_for_a_signal_that_is_not_a_ratio() {
                 &sample(),
                 &[at(Offset::OneDay, "3", 1), at(Offset::SevenDays, "4", 1)],
                 OLD,
-                None,
             )
             .expect("higher_of and lower_of fold for any kind");
             assert!(matches!(folded.reading, Reading::Ok(_)));
@@ -726,11 +741,10 @@ fn wire_valid_decimals_of_any_length_fold() {
     assert_eq!(value(&cancelled), "0");
 
     let fixed = baseline::fold(
-        &ratio(&[BaselineKind::Fixed]),
+        &with_fixed(ratio(&[BaselineKind::Fixed]), long),
         &sample(),
         &[],
         OLD,
-        Some(&Decimal(long.into())),
     )
     .expect("fixed folds");
     assert_eq!(value(&fixed), long);

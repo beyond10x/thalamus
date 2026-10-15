@@ -118,7 +118,10 @@ fn definition(dimensions: &[&str], query: &[(&str, &str)]) -> SignalDefinitionDa
             warn: None,
             crit: None,
             min_trend_window: None,
+            fixed: None,
+            rolling_n: None,
         },
+        persistence: None,
         objective: None,
         owner: Some(Owner("team:platform".into())),
         links: Links {

@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0
-// contract digest 13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988
+// model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
+// contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! thalamus-service — the `thalamus-service` component of `thalamus` v1.
@@ -42,6 +42,10 @@ pub enum PublishedEvent {
     EvaluationRecorded(crate::evaluation::EvaluationRecorded),
     /// `thalamus.observation.SampleRecorded`.
     SampleRecorded(crate::observation::SampleRecorded),
+    /// `thalamus.rollup.RollupRecorded`.
+    RollupRecorded(crate::rollup::RollupRecorded),
+    /// `thalamus.transition.TransitionRecorded`.
+    TransitionRecorded(crate::transition::TransitionRecorded),
 }
 
 /// thalamus-service — the port over the component's obligations.
@@ -74,7 +78,7 @@ impl<B> ThalamusService<B> {
 
 impl<B> ThalamusService<B>
 where
-    B: crate::assertion::obligations::AnswerAssertionBehavior + crate::assertion::obligations::AskAssertionBehavior + crate::definition::obligations::ActivateDefinitionBehavior + crate::definition::obligations::MuteDefinitionBehavior + crate::definition::obligations::ProposeDefinitionBehavior + crate::definition::obligations::RetireDefinitionBehavior + crate::definition::obligations::ReviseDefinitionBehavior + crate::definition::obligations::UnmuteDefinitionBehavior + crate::dimension::obligations::DeclareRegistryBehavior + crate::dimension::obligations::RegisterDimensionBehavior + crate::evaluation::obligations::RecordEvaluationBehavior + crate::observation::obligations::RecordSampleBehavior + crate::assertion::obligations::AssertionsQuery + crate::assertion::obligations::OpenAssertionsQuery + crate::definition::obligations::ActiveDefinitionsQuery + crate::definition::obligations::DefinitionsQuery + crate::dimension::obligations::DimensionsQuery + crate::dimension::obligations::RegistriesQuery + crate::evaluation::obligations::EvaluationsQuery + crate::evaluation::obligations::SeriesVerdictsQuery + crate::evaluation::obligations::VerdictChangesQuery + crate::observation::obligations::SamplesQuery + crate::observation::obligations::SeriesSamplesQuery,
+    B: crate::assertion::obligations::AnswerAssertionBehavior + crate::assertion::obligations::AskAssertionBehavior + crate::definition::obligations::ActivateDefinitionBehavior + crate::definition::obligations::MuteDefinitionBehavior + crate::definition::obligations::ProposeDefinitionBehavior + crate::definition::obligations::RetireDefinitionBehavior + crate::definition::obligations::ReviseDefinitionBehavior + crate::definition::obligations::UnmuteDefinitionBehavior + crate::dimension::obligations::DeclareRegistryBehavior + crate::dimension::obligations::RegisterDimensionBehavior + crate::evaluation::obligations::RecordEvaluationBehavior + crate::observation::obligations::RecordSampleBehavior + crate::rollup::obligations::RecordRollupBehavior + crate::transition::obligations::RecordTransitionBehavior + crate::assertion::obligations::AssertionsQuery + crate::assertion::obligations::OpenAssertionsQuery + crate::definition::obligations::ActiveDefinitionsQuery + crate::definition::obligations::DefinitionsQuery + crate::dimension::obligations::DimensionsQuery + crate::dimension::obligations::RegistriesQuery + crate::evaluation::obligations::EvaluationsQuery + crate::evaluation::obligations::SeriesVerdictsQuery + crate::evaluation::obligations::VerdictChangesQuery + crate::observation::obligations::SamplesQuery + crate::observation::obligations::SeriesSamplesQuery + crate::rollup::obligations::RollupsQuery + crate::rollup::obligations::SeriesRollupsQuery + crate::transition::obligations::SeriesTransitionsQuery + crate::transition::obligations::TransitionsQuery,
 {
     /// Accepts `thalamus.assertion.AnswerAssertion`: runs the behaviour obligation, then publishes the declared events
     /// the outcome carries.
@@ -156,6 +160,11 @@ where
         let outcome = self.behaviors.propose_definition(input)?;
         match &outcome {
             crate::definition::ProposeDefinitionOutcome::InstantNotFixed { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::RollingNMissing { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::RollingNUnused { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::FixedNumberMissing { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::FixedNumberUnused { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::PersistenceBelowOne { .. } => {}
             crate::definition::ProposeDefinitionOutcome::Proposed { definition_proposed, .. } => {
                 self.outbox.push(PublishedEvent::DefinitionProposed(definition_proposed.clone()));
             }
@@ -191,6 +200,11 @@ where
         match &outcome {
             crate::definition::ReviseDefinitionOutcome::Retired { .. } => {}
             crate::definition::ReviseDefinitionOutcome::InstantNotFixed { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::RollingNMissing { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::RollingNUnused { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::FixedNumberMissing { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::FixedNumberUnused { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::PersistenceBelowOne { .. } => {}
             crate::definition::ReviseDefinitionOutcome::Revised { definition_revised, .. } => {
                 self.outbox.push(PublishedEvent::DefinitionRevised(definition_revised.clone()));
             }
@@ -285,6 +299,39 @@ where
         Ok(outcome)
     }
 
+    /// Accepts `thalamus.rollup.RecordRollup`: runs the behaviour obligation, then publishes the declared events
+    /// the outcome carries.
+    ///
+    /// `Err` is the typed refusal of an unmet obligation — never a domain outcome, which always
+    /// arrives as a variant of the outcome type, refusals included.
+    pub fn record_rollup(&mut self, input: crate::rollup::RecordRollup) -> Result<crate::rollup::RecordRollupOutcome, crate::obligation::UnmetObligation> {
+        let outcome = self.behaviors.record_rollup(input)?;
+        match &outcome {
+            crate::rollup::RecordRollupOutcome::UnknownSignal { .. } => {}
+            crate::rollup::RecordRollupOutcome::Recorded { rollup_recorded, .. } => {
+                self.outbox.push(PublishedEvent::RollupRecorded(rollup_recorded.clone()));
+            }
+            crate::rollup::RecordRollupOutcome::AlreadyRolledUp { .. } => {}
+        }
+        Ok(outcome)
+    }
+
+    /// Accepts `thalamus.transition.RecordTransition`: runs the behaviour obligation, then publishes the declared events
+    /// the outcome carries.
+    ///
+    /// `Err` is the typed refusal of an unmet obligation — never a domain outcome, which always
+    /// arrives as a variant of the outcome type, refusals included.
+    pub fn record_transition(&mut self, input: crate::transition::RecordTransition) -> Result<crate::transition::RecordTransitionOutcome, crate::obligation::UnmetObligation> {
+        let outcome = self.behaviors.record_transition(input)?;
+        match &outcome {
+            crate::transition::RecordTransitionOutcome::UnknownSignal { .. } => {}
+            crate::transition::RecordTransitionOutcome::Recorded { transition_recorded, .. } => {
+                self.outbox.push(PublishedEvent::TransitionRecorded(transition_recorded.clone()));
+            }
+        }
+        Ok(outcome)
+    }
+
     /// Serves `thalamus.assertion.Assertions` at `read_your_writes` consistency, from the owed projection.
     pub fn assertions(&self) -> Result<Vec<crate::assertion::Assertions>, crate::obligation::UnmetObligation> {
         self.behaviors.assertions()
@@ -338,5 +385,25 @@ where
     /// Serves `thalamus.observation.SeriesSamples` at `read_your_writes` consistency, from the owed projection.
     pub fn series_samples(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::observation::SeriesSamples>, crate::obligation::UnmetObligation> {
         self.behaviors.series_samples(series)
+    }
+
+    /// Serves `thalamus.rollup.Rollups` at `read_your_writes` consistency, from the owed projection.
+    pub fn rollups(&self) -> Result<Vec<crate::rollup::Rollups>, crate::obligation::UnmetObligation> {
+        self.behaviors.rollups()
+    }
+
+    /// Serves `thalamus.rollup.SeriesRollups` at `read_your_writes` consistency, from the owed projection.
+    pub fn series_rollups(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::rollup::SeriesRollups>, crate::obligation::UnmetObligation> {
+        self.behaviors.series_rollups(series)
+    }
+
+    /// Serves `thalamus.transition.SeriesTransitions` at `read_your_writes` consistency, from the owed projection.
+    pub fn series_transitions(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::transition::SeriesTransitions>, crate::obligation::UnmetObligation> {
+        self.behaviors.series_transitions(series)
+    }
+
+    /// Serves `thalamus.transition.Transitions` at `read_your_writes` consistency, from the owed projection.
+    pub fn transitions(&self) -> Result<Vec<crate::transition::Transitions>, crate::obligation::UnmetObligation> {
+        self.behaviors.transitions()
     }
 }

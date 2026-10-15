@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0
-// contract digest 13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988
+// model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
+// contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! Ephemeral stores for the generated network entry points; no durability.
@@ -25,9 +25,9 @@ fn list(&self) -> Vec<crate::assertion::AssertionSnapshot> { crate::behaviour::A
 #[derive(Clone, Default)]
 pub struct MemorySignalDefinitionStorage(std::rc::Rc<std::cell::RefCell<Vec<crate::definition::SignalDefinitionSnapshot>>>);
 impl crate::behaviour::SignalDefinitionStorage for MemorySignalDefinitionStorage {
-fn get(&self, identity: &crate::definition::SignalId) -> Option<crate::definition::SignalDefinitionSnapshot> { let key = memory_key_20(identity); self.0.borrow().iter().find(|row| memory_key_20(&row.data.signal_id) == key).cloned() }
-fn put(&mut self, snapshot: crate::definition::SignalDefinitionSnapshot) { self.delete(&snapshot.data.signal_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_20(&row.data.signal_id).cmp(&memory_key_20(&other.data.signal_id))); }
-fn delete(&mut self, identity: &crate::definition::SignalId) { let key = memory_key_20(identity); self.0.borrow_mut().retain(|row| memory_key_20(&row.data.signal_id) != key); }
+fn get(&self, identity: &crate::definition::SignalId) -> Option<crate::definition::SignalDefinitionSnapshot> { let key = memory_key_21(identity); self.0.borrow().iter().find(|row| memory_key_21(&row.data.signal_id) == key).cloned() }
+fn put(&mut self, snapshot: crate::definition::SignalDefinitionSnapshot) { self.delete(&snapshot.data.signal_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_21(&row.data.signal_id).cmp(&memory_key_21(&other.data.signal_id))); }
+fn delete(&mut self, identity: &crate::definition::SignalId) { let key = memory_key_21(identity); self.0.borrow_mut().retain(|row| memory_key_21(&row.data.signal_id) != key); }
 fn list(&self) -> Vec<crate::definition::SignalDefinitionSnapshot> { self.0.borrow().clone() }
 }
 impl crate::behaviour::SignalDefinitionStorage for MemoryPorts {
@@ -41,9 +41,9 @@ fn list(&self) -> Vec<crate::definition::SignalDefinitionSnapshot> { crate::beha
 #[derive(Clone, Default)]
 pub struct MemoryDimensionStorage(std::rc::Rc<std::cell::RefCell<Vec<crate::dimension::DimensionSnapshot>>>);
 impl crate::behaviour::DimensionStorage for MemoryDimensionStorage {
-fn get(&self, identity: &crate::dimension::DimensionKey) -> Option<crate::dimension::DimensionSnapshot> { let key = memory_key_26(identity); self.0.borrow().iter().find(|row| memory_key_26(&row.data.key) == key).cloned() }
-fn put(&mut self, snapshot: crate::dimension::DimensionSnapshot) { self.delete(&snapshot.data.key); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_26(&row.data.key).cmp(&memory_key_26(&other.data.key))); }
-fn delete(&mut self, identity: &crate::dimension::DimensionKey) { let key = memory_key_26(identity); self.0.borrow_mut().retain(|row| memory_key_26(&row.data.key) != key); }
+fn get(&self, identity: &crate::dimension::DimensionKey) -> Option<crate::dimension::DimensionSnapshot> { let key = memory_key_27(identity); self.0.borrow().iter().find(|row| memory_key_27(&row.data.key) == key).cloned() }
+fn put(&mut self, snapshot: crate::dimension::DimensionSnapshot) { self.delete(&snapshot.data.key); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_27(&row.data.key).cmp(&memory_key_27(&other.data.key))); }
+fn delete(&mut self, identity: &crate::dimension::DimensionKey) { let key = memory_key_27(identity); self.0.borrow_mut().retain(|row| memory_key_27(&row.data.key) != key); }
 fn list(&self) -> Vec<crate::dimension::DimensionSnapshot> { self.0.borrow().clone() }
 }
 impl crate::behaviour::DimensionStorage for MemoryPorts {
@@ -57,9 +57,9 @@ fn list(&self) -> Vec<crate::dimension::DimensionSnapshot> { crate::behaviour::D
 #[derive(Clone, Default)]
 pub struct MemoryDimensionRegistryStorage(std::rc::Rc<std::cell::RefCell<Vec<crate::dimension::DimensionRegistrySnapshot>>>);
 impl crate::behaviour::DimensionRegistryStorage for MemoryDimensionRegistryStorage {
-fn get(&self, identity: &crate::dimension::RegistryId) -> Option<crate::dimension::DimensionRegistrySnapshot> { let key = memory_key_31(identity); self.0.borrow().iter().find(|row| memory_key_31(&row.data.registry_id) == key).cloned() }
-fn put(&mut self, snapshot: crate::dimension::DimensionRegistrySnapshot) { self.delete(&snapshot.data.registry_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_31(&row.data.registry_id).cmp(&memory_key_31(&other.data.registry_id))); }
-fn delete(&mut self, identity: &crate::dimension::RegistryId) { let key = memory_key_31(identity); self.0.borrow_mut().retain(|row| memory_key_31(&row.data.registry_id) != key); }
+fn get(&self, identity: &crate::dimension::RegistryId) -> Option<crate::dimension::DimensionRegistrySnapshot> { let key = memory_key_32(identity); self.0.borrow().iter().find(|row| memory_key_32(&row.data.registry_id) == key).cloned() }
+fn put(&mut self, snapshot: crate::dimension::DimensionRegistrySnapshot) { self.delete(&snapshot.data.registry_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_32(&row.data.registry_id).cmp(&memory_key_32(&other.data.registry_id))); }
+fn delete(&mut self, identity: &crate::dimension::RegistryId) { let key = memory_key_32(identity); self.0.borrow_mut().retain(|row| memory_key_32(&row.data.registry_id) != key); }
 fn list(&self) -> Vec<crate::dimension::DimensionRegistrySnapshot> { self.0.borrow().clone() }
 }
 impl crate::behaviour::DimensionRegistryStorage for MemoryPorts {
@@ -73,9 +73,9 @@ fn list(&self) -> Vec<crate::dimension::DimensionRegistrySnapshot> { crate::beha
 #[derive(Clone, Default)]
 pub struct MemorySignalEvaluationStorage(std::rc::Rc<std::cell::RefCell<Vec<crate::evaluation::SignalEvaluationSnapshot>>>);
 impl crate::behaviour::SignalEvaluationStorage for MemorySignalEvaluationStorage {
-fn get(&self, identity: &crate::evaluation::EvaluationId) -> Option<crate::evaluation::SignalEvaluationSnapshot> { let key = memory_key_35(identity); self.0.borrow().iter().find(|row| memory_key_35(&row.data.evaluation_id) == key).cloned() }
-fn put(&mut self, snapshot: crate::evaluation::SignalEvaluationSnapshot) { self.delete(&snapshot.data.evaluation_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_35(&row.data.evaluation_id).cmp(&memory_key_35(&other.data.evaluation_id))); }
-fn delete(&mut self, identity: &crate::evaluation::EvaluationId) { let key = memory_key_35(identity); self.0.borrow_mut().retain(|row| memory_key_35(&row.data.evaluation_id) != key); }
+fn get(&self, identity: &crate::evaluation::EvaluationId) -> Option<crate::evaluation::SignalEvaluationSnapshot> { let key = memory_key_36(identity); self.0.borrow().iter().find(|row| memory_key_36(&row.data.evaluation_id) == key).cloned() }
+fn put(&mut self, snapshot: crate::evaluation::SignalEvaluationSnapshot) { self.delete(&snapshot.data.evaluation_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_36(&row.data.evaluation_id).cmp(&memory_key_36(&other.data.evaluation_id))); }
+fn delete(&mut self, identity: &crate::evaluation::EvaluationId) { let key = memory_key_36(identity); self.0.borrow_mut().retain(|row| memory_key_36(&row.data.evaluation_id) != key); }
 fn list(&self) -> Vec<crate::evaluation::SignalEvaluationSnapshot> { self.0.borrow().clone() }
 }
 impl crate::behaviour::SignalEvaluationStorage for MemoryPorts {
@@ -89,9 +89,9 @@ fn list(&self) -> Vec<crate::evaluation::SignalEvaluationSnapshot> { crate::beha
 #[derive(Clone, Default)]
 pub struct MemorySignalSampleStorage(std::rc::Rc<std::cell::RefCell<Vec<crate::observation::SignalSampleSnapshot>>>);
 impl crate::behaviour::SignalSampleStorage for MemorySignalSampleStorage {
-fn get(&self, identity: &crate::observation::SampleId) -> Option<crate::observation::SignalSampleSnapshot> { let key = memory_key_46(identity); self.0.borrow().iter().find(|row| memory_key_46(&row.data.sample_id) == key).cloned() }
-fn put(&mut self, snapshot: crate::observation::SignalSampleSnapshot) { self.delete(&snapshot.data.sample_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_46(&row.data.sample_id).cmp(&memory_key_46(&other.data.sample_id))); }
-fn delete(&mut self, identity: &crate::observation::SampleId) { let key = memory_key_46(identity); self.0.borrow_mut().retain(|row| memory_key_46(&row.data.sample_id) != key); }
+fn get(&self, identity: &crate::observation::SampleId) -> Option<crate::observation::SignalSampleSnapshot> { let key = memory_key_47(identity); self.0.borrow().iter().find(|row| memory_key_47(&row.data.sample_id) == key).cloned() }
+fn put(&mut self, snapshot: crate::observation::SignalSampleSnapshot) { self.delete(&snapshot.data.sample_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_47(&row.data.sample_id).cmp(&memory_key_47(&other.data.sample_id))); }
+fn delete(&mut self, identity: &crate::observation::SampleId) { let key = memory_key_47(identity); self.0.borrow_mut().retain(|row| memory_key_47(&row.data.sample_id) != key); }
 fn list(&self) -> Vec<crate::observation::SignalSampleSnapshot> { self.0.borrow().clone() }
 }
 impl crate::behaviour::SignalSampleStorage for MemoryPorts {
@@ -99,6 +99,38 @@ fn get(&self, identity: &crate::observation::SampleId) -> Option<crate::observat
 fn put(&mut self, snapshot: crate::observation::SignalSampleSnapshot) { crate::behaviour::SignalSampleStorage::put(&mut self.signal_sample_storage, snapshot); }
 fn delete(&mut self, identity: &crate::observation::SampleId) { crate::behaviour::SignalSampleStorage::delete(&mut self.signal_sample_storage, identity); }
 fn list(&self) -> Vec<crate::observation::SignalSampleSnapshot> { crate::behaviour::SignalSampleStorage::list(&self.signal_sample_storage) }
+}
+
+/// Ephemeral storage of `thalamus.rollup.DailyRollup`, shared by clones.
+#[derive(Clone, Default)]
+pub struct MemoryDailyRollupStorage(std::rc::Rc<std::cell::RefCell<Vec<crate::rollup::DailyRollupSnapshot>>>);
+impl crate::behaviour::DailyRollupStorage for MemoryDailyRollupStorage {
+fn get(&self, identity: &crate::rollup::RollupId) -> Option<crate::rollup::DailyRollupSnapshot> { let key = memory_key_53(identity); self.0.borrow().iter().find(|row| memory_key_53(&row.data.rollup_id) == key).cloned() }
+fn put(&mut self, snapshot: crate::rollup::DailyRollupSnapshot) { self.delete(&snapshot.data.rollup_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_53(&row.data.rollup_id).cmp(&memory_key_53(&other.data.rollup_id))); }
+fn delete(&mut self, identity: &crate::rollup::RollupId) { let key = memory_key_53(identity); self.0.borrow_mut().retain(|row| memory_key_53(&row.data.rollup_id) != key); }
+fn list(&self) -> Vec<crate::rollup::DailyRollupSnapshot> { self.0.borrow().clone() }
+}
+impl crate::behaviour::DailyRollupStorage for MemoryPorts {
+fn get(&self, identity: &crate::rollup::RollupId) -> Option<crate::rollup::DailyRollupSnapshot> { crate::behaviour::DailyRollupStorage::get(&self.daily_rollup_storage, identity) }
+fn put(&mut self, snapshot: crate::rollup::DailyRollupSnapshot) { crate::behaviour::DailyRollupStorage::put(&mut self.daily_rollup_storage, snapshot); }
+fn delete(&mut self, identity: &crate::rollup::RollupId) { crate::behaviour::DailyRollupStorage::delete(&mut self.daily_rollup_storage, identity); }
+fn list(&self) -> Vec<crate::rollup::DailyRollupSnapshot> { crate::behaviour::DailyRollupStorage::list(&self.daily_rollup_storage) }
+}
+
+/// Ephemeral storage of `thalamus.transition.Transition`, shared by clones.
+#[derive(Clone, Default)]
+pub struct MemoryTransitionStorage(std::rc::Rc<std::cell::RefCell<Vec<crate::transition::TransitionSnapshot>>>);
+impl crate::behaviour::TransitionStorage for MemoryTransitionStorage {
+fn get(&self, identity: &crate::transition::TransitionId) -> Option<crate::transition::TransitionSnapshot> { let key = memory_key_56(identity); self.0.borrow().iter().find(|row| memory_key_56(&row.data.transition_id) == key).cloned() }
+fn put(&mut self, snapshot: crate::transition::TransitionSnapshot) { self.delete(&snapshot.data.transition_id); let mut rows = self.0.borrow_mut(); rows.push(snapshot); rows.sort_by(|row, other| memory_key_56(&row.data.transition_id).cmp(&memory_key_56(&other.data.transition_id))); }
+fn delete(&mut self, identity: &crate::transition::TransitionId) { let key = memory_key_56(identity); self.0.borrow_mut().retain(|row| memory_key_56(&row.data.transition_id) != key); }
+fn list(&self) -> Vec<crate::transition::TransitionSnapshot> { self.0.borrow().clone() }
+}
+impl crate::behaviour::TransitionStorage for MemoryPorts {
+fn get(&self, identity: &crate::transition::TransitionId) -> Option<crate::transition::TransitionSnapshot> { crate::behaviour::TransitionStorage::get(&self.transition_storage, identity) }
+fn put(&mut self, snapshot: crate::transition::TransitionSnapshot) { crate::behaviour::TransitionStorage::put(&mut self.transition_storage, snapshot); }
+fn delete(&mut self, identity: &crate::transition::TransitionId) { crate::behaviour::TransitionStorage::delete(&mut self.transition_storage, identity); }
+fn list(&self) -> Vec<crate::transition::TransitionSnapshot> { crate::behaviour::TransitionStorage::list(&self.transition_storage) }
 }
 
 /// Ports shared by generated components. Values disappear when the process exits.
@@ -116,6 +148,10 @@ pub dimension_registry_storage: MemoryDimensionRegistryStorage,
 pub signal_evaluation_storage: MemorySignalEvaluationStorage,
 /// Storage of `thalamus.observation.SignalSample`.
 pub signal_sample_storage: MemorySignalSampleStorage,
+/// Storage of `thalamus.rollup.DailyRollup`.
+pub daily_rollup_storage: MemoryDailyRollupStorage,
+/// Storage of `thalamus.transition.Transition`.
+pub transition_storage: MemoryTransitionStorage,
 }
 
 impl crate::behaviour::TryContext for MemoryPorts {
@@ -125,15 +161,19 @@ fn try_command_clock(&mut self) -> Result<Option<crate::primitives::Timestamp>, 
 
 fn memory_key_3(value: &crate::assertion::AssertionId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
 
-fn memory_key_20(value: &crate::definition::SignalId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
+fn memory_key_21(value: &crate::definition::SignalId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
 
-fn memory_key_26(value: &crate::dimension::DimensionKey) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
+fn memory_key_27(value: &crate::dimension::DimensionKey) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
 
-fn memory_key_31(value: &crate::dimension::RegistryId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
+fn memory_key_32(value: &crate::dimension::RegistryId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
 
-fn memory_key_35(value: &crate::evaluation::EvaluationId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
+fn memory_key_36(value: &crate::evaluation::EvaluationId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
 
-fn memory_key_46(value: &crate::observation::SampleId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
+fn memory_key_47(value: &crate::observation::SampleId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
+
+fn memory_key_53(value: &crate::rollup::RollupId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
+
+fn memory_key_56(value: &crate::transition::TransitionId) -> MemoryKey { let _ = value; MemoryKey::Text((&value.0).clone()) }
 
 // A common structural order; individual specifications use only a subset of the variants.
 #[allow(dead_code)]
@@ -168,9 +208,18 @@ fn record_evaluation(&mut self, input: crate::evaluation::RecordEvaluation) -> R
 impl crate::observation::obligations::RecordSampleBehavior for MemoryPorts {
 fn record_sample(&mut self, input: crate::observation::RecordSample) -> Result<crate::observation::RecordSampleOutcome, crate::obligation::UnmetObligation> { crate::observation::obligations::RecordSampleBehavior::record_sample(&mut crate::observation::obligations::Unimplemented, input) }
 }
+impl crate::transition::obligations::RecordTransitionBehavior for MemoryPorts {
+fn record_transition(&mut self, input: crate::transition::RecordTransition) -> Result<crate::transition::RecordTransitionOutcome, crate::obligation::UnmetObligation> { crate::transition::obligations::RecordTransitionBehavior::record_transition(&mut crate::transition::obligations::Unimplemented, input) }
+}
 impl crate::evaluation::obligations::SeriesVerdictsQuery for MemoryPorts {
 fn series_verdicts(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::evaluation::SeriesVerdicts>, crate::obligation::UnmetObligation> { crate::evaluation::obligations::SeriesVerdictsQuery::series_verdicts(&crate::evaluation::obligations::Unimplemented, series) }
 }
 impl crate::observation::obligations::SeriesSamplesQuery for MemoryPorts {
 fn series_samples(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::observation::SeriesSamples>, crate::obligation::UnmetObligation> { crate::observation::obligations::SeriesSamplesQuery::series_samples(&crate::observation::obligations::Unimplemented, series) }
+}
+impl crate::rollup::obligations::SeriesRollupsQuery for MemoryPorts {
+fn series_rollups(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::rollup::SeriesRollups>, crate::obligation::UnmetObligation> { crate::rollup::obligations::SeriesRollupsQuery::series_rollups(&crate::rollup::obligations::Unimplemented, series) }
+}
+impl crate::transition::obligations::SeriesTransitionsQuery for MemoryPorts {
+fn series_transitions(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::transition::SeriesTransitions>, crate::obligation::UnmetObligation> { crate::transition::obligations::SeriesTransitionsQuery::series_transitions(&crate::transition::obligations::Unimplemented, series) }
 }

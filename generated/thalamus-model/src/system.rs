@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0
-// contract digest 13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988
+// model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
+// contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! The `thalamus` system, v1: its components assembled, its bindings wired, and its one transport.
@@ -43,6 +43,10 @@ pub enum SystemEvent {
     EvaluationRecorded(crate::evaluation::EvaluationRecorded),
     /// `thalamus.observation.SampleRecorded`.
     SampleRecorded(crate::observation::SampleRecorded),
+    /// `thalamus.rollup.RollupRecorded`.
+    RollupRecorded(crate::rollup::RollupRecorded),
+    /// `thalamus.transition.TransitionRecorded`.
+    TransitionRecorded(crate::transition::TransitionRecorded),
 }
 
 impl SystemEvent {
@@ -61,6 +65,8 @@ impl SystemEvent {
             Self::RegistryDeclared(_) => "thalamus.dimension.RegistryDeclared",
             Self::EvaluationRecorded(_) => "thalamus.evaluation.EvaluationRecorded",
             Self::SampleRecorded(_) => "thalamus.observation.SampleRecorded",
+            Self::RollupRecorded(_) => "thalamus.rollup.RollupRecorded",
+            Self::TransitionRecorded(_) => "thalamus.transition.TransitionRecorded",
         }
     }
 }
@@ -80,6 +86,8 @@ impl From<crate::ports::thalamus_service::PublishedEvent> for SystemEvent {
             crate::ports::thalamus_service::PublishedEvent::RegistryDeclared(event) => Self::RegistryDeclared(event),
             crate::ports::thalamus_service::PublishedEvent::EvaluationRecorded(event) => Self::EvaluationRecorded(event),
             crate::ports::thalamus_service::PublishedEvent::SampleRecorded(event) => Self::SampleRecorded(event),
+            crate::ports::thalamus_service::PublishedEvent::RollupRecorded(event) => Self::RollupRecorded(event),
+            crate::ports::thalamus_service::PublishedEvent::TransitionRecorded(event) => Self::TransitionRecorded(event),
         }
     }
 }
@@ -127,7 +135,7 @@ impl<ThalamusServiceBehaviors> System<ThalamusServiceBehaviors> {
 
 impl<ThalamusServiceBehaviors> System<ThalamusServiceBehaviors>
 where
-    ThalamusServiceBehaviors: crate::assertion::obligations::AnswerAssertionBehavior + crate::assertion::obligations::AskAssertionBehavior + crate::definition::obligations::ActivateDefinitionBehavior + crate::definition::obligations::MuteDefinitionBehavior + crate::definition::obligations::ProposeDefinitionBehavior + crate::definition::obligations::RetireDefinitionBehavior + crate::definition::obligations::ReviseDefinitionBehavior + crate::definition::obligations::UnmuteDefinitionBehavior + crate::dimension::obligations::DeclareRegistryBehavior + crate::dimension::obligations::RegisterDimensionBehavior + crate::evaluation::obligations::RecordEvaluationBehavior + crate::observation::obligations::RecordSampleBehavior + crate::assertion::obligations::AssertionsQuery + crate::assertion::obligations::OpenAssertionsQuery + crate::definition::obligations::ActiveDefinitionsQuery + crate::definition::obligations::DefinitionsQuery + crate::dimension::obligations::DimensionsQuery + crate::dimension::obligations::RegistriesQuery + crate::evaluation::obligations::EvaluationsQuery + crate::evaluation::obligations::SeriesVerdictsQuery + crate::evaluation::obligations::VerdictChangesQuery + crate::observation::obligations::SamplesQuery + crate::observation::obligations::SeriesSamplesQuery,
+    ThalamusServiceBehaviors: crate::assertion::obligations::AnswerAssertionBehavior + crate::assertion::obligations::AskAssertionBehavior + crate::definition::obligations::ActivateDefinitionBehavior + crate::definition::obligations::MuteDefinitionBehavior + crate::definition::obligations::ProposeDefinitionBehavior + crate::definition::obligations::RetireDefinitionBehavior + crate::definition::obligations::ReviseDefinitionBehavior + crate::definition::obligations::UnmuteDefinitionBehavior + crate::dimension::obligations::DeclareRegistryBehavior + crate::dimension::obligations::RegisterDimensionBehavior + crate::evaluation::obligations::RecordEvaluationBehavior + crate::observation::obligations::RecordSampleBehavior + crate::rollup::obligations::RecordRollupBehavior + crate::transition::obligations::RecordTransitionBehavior + crate::assertion::obligations::AssertionsQuery + crate::assertion::obligations::OpenAssertionsQuery + crate::definition::obligations::ActiveDefinitionsQuery + crate::definition::obligations::DefinitionsQuery + crate::dimension::obligations::DimensionsQuery + crate::dimension::obligations::RegistriesQuery + crate::evaluation::obligations::EvaluationsQuery + crate::evaluation::obligations::SeriesVerdictsQuery + crate::evaluation::obligations::VerdictChangesQuery + crate::observation::obligations::SamplesQuery + crate::observation::obligations::SeriesSamplesQuery + crate::rollup::obligations::RollupsQuery + crate::rollup::obligations::SeriesRollupsQuery + crate::transition::obligations::SeriesTransitionsQuery + crate::transition::obligations::TransitionsQuery,
 {
     /// Delivers until quiescent: collects every component's outbox onto the log. No binding
     /// reacts to anything this specification publishes, so collecting is the whole delivery.

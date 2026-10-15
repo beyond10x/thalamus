@@ -14,6 +14,7 @@ denominator: { unit: "{message}", min_n: 0, since: 2026-01-01T00:00:00Z }
 evaluation:
   rule: threshold
   baselines: [fixed]
+  fixed: "0"
   warn: { abs: "100" }
   crit: { abs: "1000" }
   min_trend_window: 1h

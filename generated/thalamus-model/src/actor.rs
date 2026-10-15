@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0
-// contract digest 13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988
+// model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
+// contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! Every actor the specification declares, and the commands each may invoke — as data.
@@ -19,12 +19,18 @@ pub enum Actor {
     AssertionCaller,
     /// `thalamus.definition.InstanceOperator`.
     DefinitionInstanceOperator,
+    /// `thalamus.definition.Service`.
+    DefinitionService,
     /// `thalamus.dimension.InstanceOperator`.
     DimensionInstanceOperator,
     /// `thalamus.evaluation.Grader`.
     EvaluationGrader,
     /// `thalamus.observation.Sampler`.
     ObservationSampler,
+    /// `thalamus.rollup.Roller`.
+    RollupRoller,
+    /// `thalamus.transition.Hysteresis`.
+    TransitionHysteresis,
 }
 
 impl Actor {
@@ -33,9 +39,12 @@ impl Actor {
         Actor::AssertionAnswerer,
         Actor::AssertionCaller,
         Actor::DefinitionInstanceOperator,
+        Actor::DefinitionService,
         Actor::DimensionInstanceOperator,
         Actor::EvaluationGrader,
         Actor::ObservationSampler,
+        Actor::RollupRoller,
+        Actor::TransitionHysteresis,
     ];
 
     /// The actor's qualified name, as the specification spells it.
@@ -44,9 +53,12 @@ impl Actor {
             Actor::AssertionAnswerer => "thalamus.assertion.Answerer",
             Actor::AssertionCaller => "thalamus.assertion.Caller",
             Actor::DefinitionInstanceOperator => "thalamus.definition.InstanceOperator",
+            Actor::DefinitionService => "thalamus.definition.Service",
             Actor::DimensionInstanceOperator => "thalamus.dimension.InstanceOperator",
             Actor::EvaluationGrader => "thalamus.evaluation.Grader",
             Actor::ObservationSampler => "thalamus.observation.Sampler",
+            Actor::RollupRoller => "thalamus.rollup.Roller",
+            Actor::TransitionHysteresis => "thalamus.transition.Hysteresis",
         }
     }
 }
@@ -69,6 +81,9 @@ pub fn may(actor: Actor) -> &'static [&'static str] {
             "thalamus.definition.ReviseDefinition",
             "thalamus.definition.UnmuteDefinition",
         ],
+        Actor::DefinitionService => &[
+            "thalamus.definition.UnmuteDefinition",
+        ],
         Actor::DimensionInstanceOperator => &[
             "thalamus.dimension.DeclareRegistry",
             "thalamus.dimension.RegisterDimension",
@@ -78,6 +93,12 @@ pub fn may(actor: Actor) -> &'static [&'static str] {
         ],
         Actor::ObservationSampler => &[
             "thalamus.observation.RecordSample",
+        ],
+        Actor::RollupRoller => &[
+            "thalamus.rollup.RecordRollup",
+        ],
+        Actor::TransitionHysteresis => &[
+            "thalamus.transition.RecordTransition",
         ],
     }
 }

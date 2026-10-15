@@ -7,8 +7,8 @@
 use thalamus_core::conformance::{self, Report};
 use thalamus_model::assertion::{AssertionId, AssertionSnapshot};
 use thalamus_model::behaviour::{
-    AssertionStorage, DimensionRegistryStorage, DimensionStorage, SignalDefinitionStorage,
-    SignalEvaluationStorage, SignalSampleStorage,
+    AssertionStorage, DailyRollupStorage, DimensionRegistryStorage, DimensionStorage,
+    SignalDefinitionStorage, SignalEvaluationStorage, SignalSampleStorage, TransitionStorage,
 };
 use thalamus_model::definition::{SignalDefinitionSnapshot, SignalId};
 use thalamus_model::dimension::{
@@ -16,7 +16,9 @@ use thalamus_model::dimension::{
 };
 use thalamus_model::evaluation::{EvaluationId, SignalEvaluationSnapshot};
 use thalamus_model::observation::{SampleId, SignalSampleSnapshot};
+use thalamus_model::rollup::{DailyRollupSnapshot, RollupId};
 use thalamus_model::server::memory::MemoryPorts;
+use thalamus_model::transition::{TransitionId, TransitionSnapshot};
 
 /// The `thalamus.dimension.Dimensions` subject shape of the suite.
 const DIMENSION_SHAPE: &str = r#"{"identity_field":"key","fields":[{"name":"key","type":"thalamus.dimension.DimensionKey"},{"name":"registry_id","type":"thalamus.dimension.RegistryId"},{"name":"values","type":"thalamus.dimension.ValueSource"},{"name":"rule","type":"thalamus.dimension.DimensionRule"},{"name":"parent","type":"Optional<thalamus.dimension.DimensionKey>"},{"name":"otel_attribute","type":"Optional<String>"},{"name":"state","type":"thalamus.dimension.Dimension.State"}],"declarations":{"thalamus.dimension.Dimension.State":{"kind":"enum","variants":["Registered"]},"thalamus.dimension.DimensionKey":{"kind":"newtype","of":"String"},"thalamus.dimension.DimensionRule":{"kind":"enum","variants":["source_only","derived"]},"thalamus.dimension.Locator":{"kind":"newtype","of":"String"},"thalamus.dimension.RegistryId":{"kind":"newtype","of":"String"},"thalamus.dimension.ValueSource":{"kind":"union","tag":"registry","variants":{"connectors":"thalamus.dimension.Locator","file":"thalamus.dimension.Locator","open":null}}}}"#;
@@ -372,6 +374,8 @@ plain!(
     SignalEvaluationSnapshot
 );
 plain!(SignalSampleStorage, SampleId, SignalSampleSnapshot);
+plain!(TransitionStorage, TransitionId, TransitionSnapshot);
+plain!(DailyRollupStorage, RollupId, DailyRollupSnapshot);
 doubled!(SignalDefinitionStorage, SignalId, SignalDefinitionSnapshot);
 doubled!(DimensionStorage, DimensionKey, DimensionSnapshot);
 
