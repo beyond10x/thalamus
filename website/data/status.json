@@ -53,10 +53,10 @@
     },
     {
       "area": "Grading",
-      "detail": "thalamus-core grades a reading against a baseline onto the ladder; an unknown reading is never OK. Planned in story:m1-verdict-grading.",
+      "detail": "thalamus-core grades a reading against a baseline onto the ladder; an unknown reading is never OK.",
       "href": "/docs/concepts/verdicts",
       "label": "One verdict, score and reason per reading",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Grading",

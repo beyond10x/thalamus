@@ -13,8 +13,8 @@ is one verdict over one sample, with the rule and the definition revision that d
 
 :::caution[Planned]
 
-The ladder is specified: the generated `Verdict` type carries each verdict's exit code, rank and
-whether it is scored. Grading samples into evaluations is planned; see the
+`thalamus-core` grades a reading against its baseline onto this ladder and computes a pass's exit
+code. Recording evaluations from a sampling pass (`thalamus eval`) is planned; see the
 [status page](/docs/status).
 
 :::
@@ -44,10 +44,10 @@ order in which signals were read.
  "series": "platform.namespace.request_failure_ratio{cluster=\"prod-a\",namespace=\"shared-1\"}",
  "dims": {"cluster": "prod-a", "namespace": "shared-1"},
  "ts": "2026-10-14T22:57:03Z", "definition_rev": 1,
- "verdict": "WARN", "prev": "OK", "score": "1.3",
+ "verdict": "WARN", "prev": "OK", "score": "1.158",
  "baseline": {"kind": "pooled", "offsets": ["1d", "7d"],
               "reading": {"quality": "ok", "value": {"value": "0.013"}}},
- "reason": "0.029 >= 2 x 0.013 and >= 0.02, 15 failures of 556"}
+ "reason": "0.029 >= 2 x 0.013 and >= 0.02, 16 events of 556 >= min_events 10"}
 ```
 
 | field | rule |
@@ -66,10 +66,23 @@ In this order:
 2. An `unknown` reading is `UNKNOWN`, with the reading's reason.
 3. A baseline that could not be read, or that predates its series, is `UNKNOWN`.
 4. A `partial` reading may escalate but never clear: a lower bound already over the CRIT line is
-   `CRIT`; anything else is `UNKNOWN` with reason `partial read`.
+   `CRIT` (an upper bound already under it, for a rule where lower is worse); anything else is
+   `UNKNOWN` with reason `partial read`.
 5. Otherwise the definition's rule compares the value with the baseline and the WARN and CRIT
    lines. A line is crossed when every part it declares holds: at least `x` times the baseline, at
-   least `abs`, and at least `min_events` events.
+   least `abs`, and at least `min_events` events at stake.
+
+The rules are `ratio_vs_pooled_baseline` (higher is worse; its events are the value times the
+population `n`, rounded to the nearest whole event, so 10 of 30 counts 10), `higher_is_worse` (its
+events are the value) and `lower_is_worse` (a drop: a line is crossed at most `x` times the
+baseline and at most `abs`, and the events at stake are the baseline's, so a count that drops from
+100 to 0 crosses a line with `min_events: 10` and a drop from 3 to 0 does not). A definition naming
+any other rule is refused. Both `warn` and `crit` must be declared.
+
+An `x` part is decided only over a baseline above 0. Over a baseline of 0 or below, a line that
+also declares `abs` is decided by `abs` (and `min_events`) alone, and a line that declares only `x`
+grades `UNKNOWN`, with a reason naming the baseline: the instrument cannot decide, and unknown is
+never `OK`.
 
 ## Persistence
 

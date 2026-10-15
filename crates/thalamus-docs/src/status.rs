@@ -134,11 +134,13 @@ pub const CAPABILITIES: &[Capability] = &[
         Evidence::Task("check"),
         "/docs/getting-started",
     ),
-    planned(
+    shipped(
         "Grading",
         "One verdict, score and reason per reading",
         "thalamus-core grades a reading against a baseline onto the ladder; an unknown reading is never OK.",
-        "story:m1-verdict-grading",
+        Evidence::Test(
+            "crates/thalamus-core/tests/grading.rs::unknown_reading_is_unknown_never_ok",
+        ),
         "/docs/concepts/verdicts",
     ),
     shipped(
