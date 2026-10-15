@@ -13,8 +13,8 @@ baseline and its thresholds.
 
 :::caution[Planned]
 
-`score` is specified on `SignalEvaluation`, and the generated `Verdict` says which verdicts are
-scored. Computing it is planned; see the [status page](/docs/status).
+`thalamus-core` computes the score when it grades a reading. Recording evaluations from a
+sampling pass (`thalamus eval`) is planned; see the [status page](/docs/status).
 
 :::
 
@@ -27,8 +27,15 @@ scored. Computing it is planned; see the [status page](/docs/status).
 | above 2 | beyond the CRIT line |
 
 Between the marks the score is linear for an absolute line (`abs`) and log-linear for a multiplier
-line (`x`). A line is the stricter of its `x` and `abs` parts, the same line that decides the
-verdict, so the colour a view draws and the verdict cannot disagree.
+line (`x`); on the better side of the baseline it is linear, and so is the stretch past the CRIT
+line of a rule where lower is worse, so a drop to 0 never scores better than a drop to 1. The
+score never improves as the value gets worse. A line is the stricter of its `x` and
+`abs` parts, the same line that decides the verdict, so the colour a view draws and the verdict
+cannot disagree.
+
+The score is rounded to three fractional digits and held inside its verdict's band: below 1 for
+`OK`, from 1 to under 2 for `WARN`, 2 and over for `CRIT`. A value past a line whose `min_events`
+is not met is not over the line, so its score stops just under it (0.999 under the WARN line).
 
 ## Why one scale
 
