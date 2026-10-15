@@ -89,39 +89,51 @@ date and an author, so an evaluation names the `rev` it was graded against.
 
 ### 2.2 `SignalSample`
 
+The record the store writes, one event body per sample, in the generated wire form (numbers that
+are `Decimal` are decimal strings, D11; an absent optional is an absent member):
+
 ```json
 {"schema": "thalamus.sample/1",
- "id": "smp_01JA…",
+ "sample_id": "smp_000000000042",
  "signal": "platform.namespace.request_failure_ratio",
+ "series": "platform.namespace.request_failure_ratio{cluster=\"prod-a\",namespace=\"shared-1\"}",
  "dims": {"cluster": "prod-a", "namespace": "shared-1"},
  "ts": "2026-10-14T22:57:03Z",
  "window": {"start": "2026-10-14T16:57:03Z", "end": "2026-10-14T22:57:03Z"},
  "reading": {"quality": "ok", "value": {"value": "0.029"}}, "unit": "1",
- "reason": null,
  "denominator": {"n": 556, "unit": "{request}", "since": "2025-03-02T00:00:00Z", "age_s": 51403023},
  "provenance": {"producer": "thalamus-service", "version": "0.1.0", "definition_rev": 1,
                 "adapter": "sql", "connection": "platform-replica",
-                "query_sha256": "…", "run_id": "run_01JA…"}}
+                "query_sha256": "…", "run_id": "run_000000000042"}}
 ```
 
 | field | rule |
 |---|---|
-| `reading` | a tagged union on `quality` (spec `thalamus.observation.Reading`): `ok` carries a number, `partial` a number and its `bound`, `unknown` no value at all. Never a formatted string (L4) |
-| `quality` | `ok`: read completely. `partial`: read but cut (a full page, a paged read that could not finish); `value` is then a bound and `bound` says `lower` or `upper`. `unknown`: not read; there is no `value` and `reason` says why |
+| `reading` | a tagged union on `quality` (spec `thalamus.observation.Reading`): `ok` carries a decimal, `partial` a decimal and its `bound`, `unknown` no value at all. Never a formatted string (L4) |
+| `quality` | `ok`: read completely. `partial`: read but cut (a full page, a paged read that could not finish); `value` is then a bound and `bound` says `lower` or `upper`. `unknown`: not read; the reading carries only its `reason` (`{"quality": "unknown", "value": {"reason": "timeout"}}`) |
 | unknown is not 0 | `quality: unknown` carries no value. In Rust this is an enum, so the illegal pair cannot be built (L5) |
 | `denominator.since`, `age_s` | the earliest moment the population could contain anything: the dimension's creation time, the source's retention start, the first sample of the series. A baseline whose shifted window starts before the series began (offset plus window span greater than `age_s`) is `UNKNOWN` (§ 3.1) |
 | `provenance` | enough to re-run the read: producer and version, definition revision, adapter and connection, the SHA-256 of the query map's canonical JSON, and the run id grouping one sampling pass |
 | ids | `dims` keys come from the dimension registry and every value must resolve in it (§ 2.4) |
 
+Sample, evaluation and assertion ids (`smp_`, `evl_`, `asr_` and twelve digits) are store-local,
+from a never-decreasing per-prefix sequence the store resumes on open.
+
 ### 2.3 `SignalEvaluation`
 
+The record the store writes for the evaluation of that sample, in the same wire form:
+
 ```json
-{"schema": "thalamus.evaluation/1", "sample": "smp_01JA…",
- "signal": "platform.namespace.request_failure_ratio", "dims": {"cluster": "prod-a", "namespace": "shared-1"},
+{"schema": "thalamus.evaluation/1",
+ "evaluation_id": "evl_000000000042", "sample_id": "smp_000000000042",
+ "signal": "platform.namespace.request_failure_ratio",
+ "series": "platform.namespace.request_failure_ratio{cluster=\"prod-a\",namespace=\"shared-1\"}",
+ "dims": {"cluster": "prod-a", "namespace": "shared-1"},
  "ts": "2026-10-14T22:57:03Z", "definition_rev": 1,
- "verdict": "WARN", "prev": "OK", "score": 1.3,
- "baseline": {"kind": "pooled", "offsets": ["1d", "7d"], "value": 0.013, "quality": "ok"},
- "reason": "0.029 >= 2 x 0.013 and >= 0.02, 15 failures of 556"}
+ "verdict": "WARN", "prev": "OK", "score": "1.158",
+ "baseline": {"kind": "pooled", "offsets": ["1d", "7d"],
+              "reading": {"quality": "ok", "value": {"value": "0.013"}}},
+ "reason": "0.029 >= 2 x 0.013 and >= 0.02, 16 events of 556 >= min_events 10"}
 ```
 
 One verdict ladder (L1):
@@ -238,7 +250,7 @@ measured one.
 | `thalamus-model` | library, generated | the types and behaviours ESS synthesises from `spec/` into `generated/thalamus-model`; never edited by hand. ESS names the package `thalamus`; the workspace depends on it renamed `thalamus-model` |
 | `thalamus-spec-types` | library, generated | the serde types of every model type and event (`generated/spec-types`); never edited by hand |
 | `thalamus-core` | library | definition registry and validation, baselines, the verdict ladder, hysteresis, score, rollups. No I/O, no clock: time and samples are passed in |
-| `thalamus-store` | library | the append-only sample stream and rollups behind one trait. First provider: Eventlog (File, SQLite, PostgreSQL) |
+| `thalamus-store` | library | the append-only sample stream and rollups behind one trait. First provider: Eventlog (SQLite, PostgreSQL) |
 | `thalamus-sources` | library | adapters that turn a Connectors operation into samples: Prometheus/PromQL, Loki/LogQL, SQL, Kubernetes, Git, HTTP probe, test-run events |
 | `thalamus-pipeline` | library | the read → sample → grade → evaluate pass the CLI and the service share |
 | `thalamus-service` | binary | the scheduler that samples each definition on its cadence, the HTTP API (current verdicts, series, assertions), a server-sent-events stream of evaluations, and the CloudEvents emitter |
@@ -436,3 +448,4 @@ immediate view, which costs 15 conformance scenarios
 | D19 | M1 decomposer: where a definition's lifecycle state lives once the service runs | the definition file is the only copy of a definition, its lifecycle field included. The service never rewrites it: a `Muted` definition whose expiry has passed is sampled as `Active`, and the service records an `UnmuteDefinition` event in the store (D9) so the change is visible. The file keeps its stale mute until someone edits it, and the service logs a warning naming it on each pass |
 | D20 | adversary passes on the Loki, SQL and Prometheus adapters (wave 20261015c) | in a ratio, a series the complete denominator answer carries and the complete numerator answer lacks reads numerator 0, but only when every numerator series has a denominator twin (numerator keys a subset of denominator keys); otherwise the whole pass reads unknown naming the unmatched numerator series (the Prometheus adapter narrows this to the passes where a 0 would be inferred; an unmatched numerator series alone reads unknown with no population). Counting queries (LogQL `count_over_time`, SQL `GROUP BY`, a Prometheus counter child never incremented) emit nothing for zero. A cut or incomplete answer on either side reads unknown; a series missing from the denominator reads unknown with no population; a complete numerator answer with no series at all over a non-empty denominator reads unknown (a renamed metric or a broken matcher looks the same as zero everywhere) |
 | D21 | `story:m3-http-probe-adapter` implementor (wave 20261015c), from the Connectors v0.45.0 source, not observed at runtime | `http_probe.up` reads 0 only when the probe's own invoke is refused at `dispatch` with service code `not_found` or with `timeout`; every other refusal reads unknown. Connectors folds a provider 5xx into its own `unavailable` at `readiness`, the same envelope as its own outage, so a 5xx reads unknown until Connectors tells the two apart. 401 and 403 read unknown: the target answered and the credential was refused, an instrument failure. A probe invokes only a catalog operation whose id ends in `.get` or `.list` (every such operation in the v0.45.0 catalog is `effect: read`); any other id reads unknown and nothing runs. The operation is invoked only when its `operations describe` answer names profile `generic-http`, which the catalog gives exactly its reads (a catalog write is `mutation`; every other adapter names its own operation profile, such as `kubernetes-get` or `promql-range`, never `generic-http`); otherwise it reads unknown and is described, never invoked. A non-catalog 404 (a kubernetes resource that does not exist) says nothing about availability |
+| D24 | operator, 2026-10-15 | no File provider: an instance stores samples and evaluations in Eventlog on SQLite for a local instance and on PostgreSQL for a shared one (`sqlite:<path>` or a PostgreSQL URL). PostgreSQL in M1 is a loopback or Unix-socket server that authenticates the connection itself; the locator carries no password, because no credential enters thalamus. The hosted composition (verified TLS, a separate migration role, a connection budget) waits for the in-cluster deployment (§ 10 question 2). Amended after the second adversary pass (wave 20261015d): ids stay `smp_`/`evl_` and twelve digits (§ 2.2), and writers sharing a store never mint one twice. Before a number is answered, it is reserved on the instance's id stream (`thalamus.ids`, beside the instance stream), at the version the handle last read. A writer that meets another writer's reservation reads the id stream again and takes the next number. The instance stream keeps only the § 2.2 and § 2.3 records, and the open does not read the id stream. An append that meets another writer's append takes that writer's records in and retries, up to 64 attempts, and then answers an error naming the count. An id already stored with another body is refused `thalamus.record.id-taken` from every handle, including a stale one. An open that waits on another opener's schema lock retries for up to 30 s. TLS, Eventlog's `verified` connection, is not wired yet, so a locator whose `sslmode` is anything but absent or `disable` (or that asks for direct TLS negotiation) is refused `thalamus.store.postgres-tls`; it is not silently answered in plaintext |

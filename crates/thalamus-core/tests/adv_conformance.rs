@@ -558,10 +558,7 @@ fn wire_body(title: &str, author: &str) -> json::Value {
 fn a_revision_is_stamped_with_its_own_instant() {
     let first = Timestamp("2026-01-01T00:00:00Z".to_owned());
     let later = Timestamp("2026-01-02T00:00:00Z".to_owned());
-    let mut ports = Ports {
-        storage: MemoryPorts::default(),
-        clock: Some(first.clone()),
-    };
+    let mut ports = Ports::new(MemoryPorts::default(), Some(first.clone()));
     let proposal = wire::decode_command_thalamus_definition_propose_definition(
         &wire_body("first", "a"),
         "body",

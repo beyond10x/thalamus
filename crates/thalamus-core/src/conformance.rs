@@ -16,6 +16,7 @@
 //! field shape or initial state fails the scenario or the run.
 
 use std::collections::BTreeMap;
+use std::marker::PhantomData;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::{Mutex, PoisonError};
 
@@ -66,17 +67,43 @@ impl<S> Storage for S where
 
 /// The ports a scenario runs over: the caller's storage, the forced command clock, and the
 /// behaviours the synthesis plan owes, met by `crate::behaviour`.
-pub struct Ports<S> {
+///
+/// `Q` says where an identity's number comes from: [`SharedSequence`], the process-wide sequence
+/// of the in-memory stores ([`Ports::new`]), or [`StoreSequence`], the storage's own
+/// [`IdSequence`] ([`Ports::sequenced`]), which a durable store resumes on open.
+pub struct Ports<S, Q = SharedSequence> {
     /// Where every entity is stored.
     pub storage: S,
     /// The instant each command decides at; `None` is a context with no clock.
     pub clock: Option<Timestamp>,
+    sequence: PhantomData<Q>,
 }
 
+/// Identities from the process-wide sequence every in-memory store shares (`SEQUENCES`).
+pub struct SharedSequence;
+
+/// Identities from the storage's own [`IdSequence`].
+pub struct StoreSequence;
+
 impl<S> Ports<S> {
-    /// `storage` and `clock`.
+    /// `storage` and `clock`, drawing identities from the process-wide sequence.
     pub fn new(storage: S, clock: Option<Timestamp>) -> Self {
-        Self { storage, clock }
+        Self {
+            storage,
+            clock,
+            sequence: PhantomData,
+        }
+    }
+}
+
+impl<S: IdSequence> Ports<S, StoreSequence> {
+    /// `storage` and `clock`, drawing identities from the storage's own sequence.
+    pub fn sequenced(storage: S, clock: Option<Timestamp>) -> Self {
+        Self {
+            storage,
+            clock,
+            sequence: PhantomData,
+        }
     }
 }
 
@@ -88,10 +115,12 @@ impl<S> Ports<S> {
 /// once per process, shared by every in-memory store: a number once answered is never answered
 /// again, to any `Ports` over any store, whatever a store deletes. The numbers one store sees
 /// are increasing but not consecutive; minted at a fixed width, they still sort in the order
-/// they were issued. A durable store mints its own identities (design § 2.2).
+/// they were issued. It starts again in every process, which an in-memory store, gone with its
+/// process, never sees; a durable store keeps its own sequence and resumes it on open
+/// ([`StoreSequence`], design § 2.2).
 static SEQUENCES: Mutex<BTreeMap<&str, u64>> = Mutex::new(BTreeMap::new());
 
-impl<S> IdSequence for Ports<S> {
+impl<S> IdSequence for Ports<S, SharedSequence> {
     fn next_number(&mut self, prefix: &'static str) -> Option<u64> {
         let mut sequences = SEQUENCES.lock().unwrap_or_else(PoisonError::into_inner);
         let last = sequences.entry(prefix).or_insert(0);
@@ -99,9 +128,16 @@ impl<S> IdSequence for Ports<S> {
         Some(*last)
     }
 }
+
+impl<S: IdSequence> IdSequence for Ports<S, StoreSequence> {
+    fn next_number(&mut self, prefix: &'static str) -> Option<u64> {
+        self.storage.next_number(prefix)
+    }
+}
+
 macro_rules! delegate_storage {
     ($port:ident, $identity:ty, $snapshot:ty) => {
-        impl<S: $port> $port for Ports<S> {
+        impl<S: $port, Q> $port for Ports<S, Q> {
             fn get(&self, identity: &$identity) -> Option<$snapshot> {
                 $port::get(&self.storage, identity)
             }
@@ -152,13 +188,15 @@ delegate_storage!(
     observation::SignalSampleSnapshot
 );
 
-impl<S> Context for Ports<S> {
+impl<S, Q> Context for Ports<S, Q> {
     fn command_clock(&mut self) -> Option<Timestamp> {
         self.clock.clone()
     }
 }
 
-impl<S: SignalDefinitionStorage> definition::obligations::ProposeDefinitionBehavior for Ports<S> {
+impl<S: SignalDefinitionStorage, Q> definition::obligations::ProposeDefinitionBehavior
+    for Ports<S, Q>
+{
     fn propose_definition(
         &mut self,
         input: definition::ProposeDefinition,
@@ -167,7 +205,9 @@ impl<S: SignalDefinitionStorage> definition::obligations::ProposeDefinitionBehav
     }
 }
 
-impl<S: SignalDefinitionStorage> definition::obligations::ReviseDefinitionBehavior for Ports<S> {
+impl<S: SignalDefinitionStorage, Q> definition::obligations::ReviseDefinitionBehavior
+    for Ports<S, Q>
+{
     fn revise_definition(
         &mut self,
         input: definition::ReviseDefinition,
@@ -176,8 +216,8 @@ impl<S: SignalDefinitionStorage> definition::obligations::ReviseDefinitionBehavi
     }
 }
 
-impl<S: DimensionStorage + DimensionRegistryStorage>
-    dimension::obligations::RegisterDimensionBehavior for Ports<S>
+impl<S: DimensionStorage + DimensionRegistryStorage, Q>
+    dimension::obligations::RegisterDimensionBehavior for Ports<S, Q>
 {
     fn register_dimension(
         &mut self,
@@ -187,7 +227,10 @@ impl<S: DimensionStorage + DimensionRegistryStorage>
     }
 }
 
-impl<S: AssertionStorage> assertion::obligations::AskAssertionBehavior for Ports<S> {
+impl<S: AssertionStorage, Q> assertion::obligations::AskAssertionBehavior for Ports<S, Q>
+where
+    Self: IdSequence,
+{
     fn ask_assertion(
         &mut self,
         input: assertion::AskAssertion,
@@ -196,8 +239,10 @@ impl<S: AssertionStorage> assertion::obligations::AskAssertionBehavior for Ports
     }
 }
 
-impl<S: SignalSampleStorage + SignalEvaluationStorage>
-    evaluation::obligations::RecordEvaluationBehavior for Ports<S>
+impl<S: SignalSampleStorage + SignalEvaluationStorage, Q>
+    evaluation::obligations::RecordEvaluationBehavior for Ports<S, Q>
+where
+    Self: IdSequence,
 {
     fn record_evaluation(
         &mut self,
@@ -207,8 +252,10 @@ impl<S: SignalSampleStorage + SignalEvaluationStorage>
     }
 }
 
-impl<S: SignalDefinitionStorage + SignalSampleStorage>
-    observation::obligations::RecordSampleBehavior for Ports<S>
+impl<S: SignalDefinitionStorage + SignalSampleStorage, Q>
+    observation::obligations::RecordSampleBehavior for Ports<S, Q>
+where
+    Self: IdSequence,
 {
     fn record_sample(
         &mut self,
@@ -218,7 +265,7 @@ impl<S: SignalDefinitionStorage + SignalSampleStorage>
     }
 }
 
-impl<S: SignalEvaluationStorage> evaluation::obligations::SeriesVerdictsQuery for Ports<S> {
+impl<S: SignalEvaluationStorage, Q> evaluation::obligations::SeriesVerdictsQuery for Ports<S, Q> {
     fn series_verdicts(
         &self,
         series: observation::SeriesKey,
@@ -227,7 +274,7 @@ impl<S: SignalEvaluationStorage> evaluation::obligations::SeriesVerdictsQuery fo
     }
 }
 
-impl<S: SignalSampleStorage> observation::obligations::SeriesSamplesQuery for Ports<S> {
+impl<S: SignalSampleStorage, Q> observation::obligations::SeriesSamplesQuery for Ports<S, Q> {
     fn series_samples(
         &self,
         series: observation::SeriesKey,
@@ -255,7 +302,8 @@ pub struct Failure {
 }
 
 /// Runs every scenario of `suite` (the text of `spec/suite.json`) whose id `select` admits, each
-/// over fresh storage from `storage`.
+/// over fresh storage from `storage`, with identities from the process-wide sequence of the
+/// in-memory stores ([`Ports::new`]).
 ///
 /// # Errors
 ///
@@ -269,6 +317,41 @@ pub fn run<S, F>(
 where
     S: Storage,
     F: FnMut() -> S,
+{
+    run_over(suite, select, || {
+        Ports::new(storage(), Some(Timestamp(timestamp(CLOCK))))
+    })
+}
+
+/// [`run`], with identities from each storage's own sequence ([`Ports::sequenced`]), as a durable
+/// store mints them.
+///
+/// # Errors
+///
+/// As [`run`].
+pub fn run_sequenced<S, F>(
+    suite: &str,
+    select: &dyn Fn(&str) -> bool,
+    mut storage: F,
+) -> Result<Report, String>
+where
+    S: Storage + IdSequence,
+    F: FnMut() -> S,
+{
+    run_over(suite, select, || {
+        Ports::sequenced(storage(), Some(Timestamp(timestamp(CLOCK))))
+    })
+}
+
+fn run_over<S, Q, F>(
+    suite: &str,
+    select: &dyn Fn(&str) -> bool,
+    mut ports: F,
+) -> Result<Report, String>
+where
+    S: Storage,
+    Ports<S, Q>: IdSequence,
+    F: FnMut() -> Ports<S, Q>,
 {
     let suite = json::parse(suite).map_err(|error| format!("the suite is not JSON: {error}"))?;
     let schemas = Schemas::load()?;
@@ -294,7 +377,7 @@ where
             continue;
         }
         report.ran.push(id.clone());
-        let ports = Ports::new(storage(), Some(Timestamp(timestamp(CLOCK))));
+        let ports = ports();
         let outcome = catch_unwind(AssertUnwindSafe(|| {
             Scenario::new(ports, &schemas).play(scenario)
         }));
@@ -376,8 +459,8 @@ struct Snapshot {
     row: Value,
 }
 
-struct Scenario<'a, S: Storage> {
-    system: System<Generated<Ports<S>>>,
+struct Scenario<'a, S: Storage, Q> {
+    system: System<Generated<Ports<S, Q>>>,
     schemas: &'a Schemas,
     captured: BTreeMap<String, Value>,
     observed: Vec<(String, Value)>,
@@ -388,8 +471,11 @@ struct Scenario<'a, S: Storage> {
     snapshots: BTreeMap<String, Snapshot>,
 }
 
-impl<'a, S: Storage> Scenario<'a, S> {
-    fn new(ports: Ports<S>, schemas: &'a Schemas) -> Self {
+impl<'a, S: Storage, Q> Scenario<'a, S, Q>
+where
+    Ports<S, Q>: IdSequence,
+{
+    fn new(ports: Ports<S, Q>, schemas: &'a Schemas) -> Self {
         Self {
             system: System::new(ThalamusService::new(Generated::new(ports))),
             schemas,

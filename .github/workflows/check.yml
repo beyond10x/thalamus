@@ -23,6 +23,17 @@ jobs:
     name: task check
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --cpus 2 --memory 1g --pids-limit 256
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 12
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -84,4 +95,6 @@ jobs:
         run: aep plan artifact validate
 
       - name: task check
+        env:
+          THALAMUS_TEST_POSTGRES_URL: postgresql://postgres@127.0.0.1:5432/postgres
         run: task check
