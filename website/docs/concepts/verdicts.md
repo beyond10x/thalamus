@@ -39,7 +39,7 @@ order in which signals were read.
 ## An evaluation
 
 ```json
-{"evaluation_id": "evl_01JA…", "sample_id": "smp_01JA…",
+{"evaluation_id": "evl_000000000042", "sample_id": "smp_000000000042",
  "signal": "platform.namespace.request_failure_ratio",
  "series": "platform.namespace.request_failure_ratio{cluster=\"prod-a\",namespace=\"shared-1\"}",
  "dims": {"cluster": "prod-a", "namespace": "shared-1"},

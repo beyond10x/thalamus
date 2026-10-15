@@ -7,9 +7,21 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+eventlog-core = { git = "https://github.com/beyond10x/eventlog", tag = "0.9.0" }
+eventlog-postgres = { git = "https://github.com/beyond10x/eventlog", tag = "0.9.0" }
+eventlog-sqlite = { git = "https://github.com/beyond10x/eventlog", tag = "0.9.0" }
+serde_json = "1"
 thalamus-core = { path = "../thalamus-core" }
-thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
+thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model", features = ["server"] }
 thalamus-spec-types = { path = "../../generated/spec-types" }
+time = "=0.3.45"
+tokio = { version = "1", default-features = false, features = ["rt", "net", "time"] }
+tokio-postgres = "0.7"
+
+[dev-dependencies]
+rusqlite = "=0.40.2"
+tempfile = "3"
+thalamus-core = { path = "../thalamus-core", features = ["conformance"] }
 
 [lints]
 workspace = true
