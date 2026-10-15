@@ -22,7 +22,7 @@ use thalamus_model::behaviour::{
 };
 use thalamus_model::definition::{
     AdapterId, Author, BaselineKind, ConnectionId, DenominatorSpec, EvaluationSpec, ExtractorId,
-    Family, History, Links, Owner, QueryText, RuleId, SignalDefinitionData,
+    Family, History, Links, Owner, Persistence, QueryText, RuleId, SignalDefinitionData,
     SignalDefinitionSnapshot, SignalDefinitionState, SignalId, SignalKind, Source, Threshold, Unit,
 };
 use thalamus_model::dimension::{
@@ -38,6 +38,7 @@ use thalamus_model::observation::{
 use thalamus_model::primitives::{Decimal, Duration, Timestamp};
 
 use crate::baseline::{self, Refusal};
+use crate::behaviour::definition::{InputRefusal, input_refusals};
 use crate::behaviour::observation::Instant;
 use crate::since::{Since, SinceRefusal, parse_since};
 use crate::unit::parse_ucum;
@@ -128,6 +129,15 @@ pub enum Rule {
     InstantNeedsFixed {
         /// The definition.
         signal_id: String,
+    },
+    /// An input-guarded refusal `ProposeDefinition` and `ReviseDefinition` share, other than
+    /// `instant-not-fixed` ([`Rule::InstantNeedsFixed`]): an N or a fixed number missing, below 1
+    /// or unread, or a persistence below 1 (design § 11 D25, D29).
+    Input {
+        /// The definition.
+        signal_id: String,
+        /// Which refusal.
+        refusal: InputRefusal,
     },
     /// `crate::baseline::plan` refuses the definition's baseline.
     Baseline {
@@ -247,6 +257,14 @@ impl Rule {
             Rule::NotUcum { .. } => "UCUM unit",
             Rule::RatioUnit { .. } => "ratio unit",
             Rule::InstantNeedsFixed { .. } => "thalamus.definition.InstantNeedsFixedBaseline",
+            Rule::Input { refusal, .. } => match refusal {
+                InputRefusal::InstantNotFixed => "thalamus.definition.InstantNeedsFixedBaseline",
+                InputRefusal::RollingNMissing => "thalamus.definition.RollingWindowMissing",
+                InputRefusal::RollingNUnused => "thalamus.definition.RollingWindowUnused",
+                InputRefusal::FixedNumberMissing => "thalamus.definition.FixedNumberMissing",
+                InputRefusal::FixedNumberUnused => "thalamus.definition.FixedNumberUnused",
+                InputRefusal::PersistenceBelowOne => "thalamus.definition.PersistenceTooSmall",
+            },
             Rule::Baseline { .. } => "baseline plan",
             Rule::UnregisteredDimension { .. } => "registered dimension",
             Rule::DuplicateDimension { .. } => "distinct dimensions",
@@ -306,6 +324,34 @@ impl fmt::Display for Rule {
                 "`{signal_id}` is of kind instant and is graded against fixed only; it declares \
                  another baseline"
             ),
+            Rule::Input { signal_id, refusal } => match refusal {
+                InputRefusal::InstantNotFixed => write!(
+                    f,
+                    "`{signal_id}` is of kind instant and is graded against fixed only"
+                ),
+                InputRefusal::RollingNMissing => write!(
+                    f,
+                    "`{signal_id}` names rolling_median without an evaluation.rolling_n of at \
+                     least 1"
+                ),
+                InputRefusal::RollingNUnused => write!(
+                    f,
+                    "`{signal_id}` declares evaluation.rolling_n and no rolling_median baseline \
+                     reads it"
+                ),
+                InputRefusal::FixedNumberMissing => write!(
+                    f,
+                    "`{signal_id}` names a fixed baseline without evaluation.fixed"
+                ),
+                InputRefusal::FixedNumberUnused => write!(
+                    f,
+                    "`{signal_id}` declares evaluation.fixed and no fixed baseline reads it"
+                ),
+                InputRefusal::PersistenceBelowOne => write!(
+                    f,
+                    "`{signal_id}` declares a persistence k, k_crit or m below 1"
+                ),
+            },
             Rule::Baseline { refusal } => write!(f, "the baseline is refused: {refusal}"),
             Rule::UnregisteredDimension { key } => write!(
                 f,
@@ -462,7 +508,9 @@ fn in_alphabet(value: &str, alphabet: &str) -> bool {
     !value.is_empty() && value.chars().all(|character| alphabet.contains(character))
 }
 
-/// `-?digits(.digits)?`.
+/// The wire contract's decimal (`generated/thalamus-model/src/json.rs`, `decimal_at`):
+/// `-?digits(.digits)?`, the whole part without a leading zero. `fixed` and every threshold are
+/// read by this one rule, so a file admits no number the wire or `baseline::fold` refuses.
 fn is_decimal(text: &str) -> bool {
     let unsigned = text.strip_prefix('-').unwrap_or(text);
     let (whole, fraction) = match unsigned.split_once('.') {
@@ -470,7 +518,7 @@ fn is_decimal(text: &str) -> bool {
         None => (unsigned, None),
     };
     let digits = |part: &str| !part.is_empty() && part.bytes().all(|byte| byte.is_ascii_digit());
-    digits(whole) && fraction.is_none_or(digits)
+    digits(whole) && !(whole.len() > 1 && whole.starts_with('0')) && fraction.is_none_or(digits)
 }
 
 /// The components of one admitted duration: weeks, days, hours, minutes, seconds, each as
@@ -774,6 +822,8 @@ struct DefinitionDoc {
     denominator: Option<DenominatorDoc>,
     evaluation: EvaluationDoc,
     #[serde(default)]
+    persistence: Option<PersistenceDoc>,
+    #[serde(default)]
     objective: Option<serde_yaml_ng::Value>,
     #[serde(default)]
     owner: Option<String>,
@@ -841,6 +891,18 @@ struct EvaluationDoc {
     crit: Option<ThresholdDoc>,
     #[serde(default)]
     min_trend_window: Option<String>,
+    #[serde(default)]
+    fixed: Option<String>,
+    #[serde(default)]
+    rolling_n: Option<i64>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PersistenceDoc {
+    k: i64,
+    k_crit: i64,
+    m: i64,
 }
 
 #[derive(Deserialize, Clone, Copy)]
@@ -1219,6 +1281,13 @@ impl Definition {
             .evaluation
             .min_trend_window
             .map(|window| errors.duration("evaluation.min_trend_window", &window));
+        let fixed = errors.decimal("evaluation.fixed", doc.evaluation.fixed);
+        let rolling_n = doc.evaluation.rolling_n;
+        let persistence = doc.persistence.map(|held| Persistence {
+            k: held.k,
+            k_crit: held.k_crit,
+            m: held.m,
+        });
         let window = errors.duration("window", &doc.window);
         let cadence = errors.duration("cadence", &doc.cadence);
         let revised_at = errors.timestamp("revised_at", &doc.revised_at);
@@ -1265,7 +1334,10 @@ impl Definition {
                 warn,
                 crit,
                 min_trend_window,
+                fixed,
+                rolling_n,
             },
+            persistence,
             objective,
             owner: doc.owner.map(Owner),
             links: Links {
@@ -1278,6 +1350,15 @@ impl Definition {
             mute_reason: doc.mute_reason,
             mute_until,
         };
+
+        for refusal in input_refusals(kind, &data.evaluation, data.persistence.as_ref()) {
+            if refusal != InputRefusal::InstantNotFixed {
+                errors.push(Rule::Input {
+                    signal_id: data.signal_id.0.clone(),
+                    refusal,
+                });
+            }
+        }
 
         if sampled
             && !instant_not_fixed

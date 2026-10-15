@@ -11,8 +11,8 @@
 use thalamus_core::conformance::{self, Ports, Report};
 use thalamus_model::assertion::{AssertionId, AssertionSnapshot};
 use thalamus_model::behaviour::{
-    AssertionStorage, DimensionRegistryStorage, DimensionStorage, SignalDefinitionStorage,
-    SignalEvaluationStorage, SignalSampleStorage,
+    AssertionStorage, DailyRollupStorage, DimensionRegistryStorage, DimensionStorage,
+    SignalDefinitionStorage, SignalEvaluationStorage, SignalSampleStorage, TransitionStorage,
 };
 use thalamus_model::definition::{SignalDefinitionSnapshot, SignalDefinitionState, SignalId};
 use thalamus_model::dimension::{
@@ -22,8 +22,10 @@ use thalamus_model::evaluation::{EvaluationId, SignalEvaluationSnapshot};
 use thalamus_model::json;
 use thalamus_model::observation::{SampleId, SignalSampleSnapshot};
 use thalamus_model::primitives::Timestamp;
+use thalamus_model::rollup::{DailyRollupSnapshot, RollupId};
 use thalamus_model::server::memory::MemoryPorts;
 use thalamus_model::server::wire;
+use thalamus_model::transition::{TransitionId, TransitionSnapshot};
 
 fn suite() -> String {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../spec/suite.json");
@@ -199,6 +201,8 @@ plain!(
     SignalEvaluationSnapshot
 );
 plain!(SignalSampleStorage, SampleId, SignalSampleSnapshot);
+plain!(TransitionStorage, TransitionId, TransitionSnapshot);
+plain!(DailyRollupStorage, RollupId, DailyRollupSnapshot);
 
 impl SignalDefinitionStorage for Planted {
     fn get(&self, identity: &SignalId) -> Option<SignalDefinitionSnapshot> {

@@ -1,0 +1,277 @@
+domain: thalamus.rollup
+
+summary: One row per series per UTC day, kept after the raw samples leave retention. It is what a source that cannot be re-queried (history store) leaves behind.
+
+naming:
+  wire: rollups
+  display: Daily rollups
+
+types:
+  # UNMAPPED: a rollup id is spelled from the series key and the UTC day, and ESS cannot derive a
+  # field from two others. Held by a Rust test in story:m2-rollup until it can.
+  - name: thalamus.rollup.RollupId
+    kind: newtype
+    of: String
+    naming:
+      summary: A rollup id, spelled from the series key and the UTC day.
+
+  - name: thalamus.rollup.VerdictCounts
+    kind: struct
+    fields:
+      - name: ok
+        type: Integer
+      - name: na
+        type: Integer
+        summary: The N/A verdicts.
+      - name: warn
+        type: Integer
+      - name: crit
+        type: Integer
+      - name: unknown
+        type: Integer
+    naming:
+      summary: One count per verdict of the ladder, over the day's evaluations.
+
+entities:
+  - name: thalamus.rollup.DailyRollup
+    naming:
+      summary: One series over one UTC day; what remains once its samples leave raw retention (design § 4).
+    identity:
+      name: rollup_id
+      type: thalamus.rollup.RollupId
+    fields:
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: day
+        type: Timestamp
+        summary: The UTC midnight the day starts at.
+      - name: n
+        type: Integer
+        summary: The samples of the day.
+      - name: unknown
+        type: Integer
+        summary: The samples of quality unknown.
+      - name: partial
+        type: Integer
+        summary: The samples of quality partial.
+      - name: min
+        type: Optional<Decimal>
+        summary: Over the day's ok readings; absent when the day has none, never 0.
+      - name: p50
+        type: Optional<Decimal>
+        summary: Over the day's ok readings; absent when the day has none, never 0.
+      - name: max
+        type: Optional<Decimal>
+        summary: Over the day's ok readings; absent when the day has none, never 0.
+      - name: last
+        type: Optional<Decimal>
+        summary: The last ok reading of the day; absent when the day has none, never 0.
+      # UNMAPPED: which evaluation of a sample is counted (design § 11 D14: the one at the highest
+      # definition_rev present when the rollup is built) reads a run of evaluations, which no ESS
+      # construct selects. Held by a Rust test in story:m2-rollup.
+      - name: worst_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+        summary: The worst verdict of the day by the ladder's rank; absent when the day has no evaluation.
+      - name: verdict_counts
+        type: thalamus.rollup.VerdictCounts
+      - name: min_score
+        type: Optional<Decimal>
+        summary: Over the day's scored evaluations; absent when none carries a score, never 0.
+      - name: max_score
+        type: Optional<Decimal>
+        summary: Over the day's scored evaluations; absent when none carries a score, never 0.
+    # UNMAPPED: the invariant is unknown + partial <= n (a sample is unknown, partial or ok, never
+    # two), and an ESS predicate compares a fact with a fact or a literal, never a sum. Each part
+    # is held here; the sum is held by a Rust test in story:m2-rollup (design § 11 D27).
+    invariants:
+      - unknown <= n
+      - partial <= n
+    relations:
+      - name: definition
+        kind: references
+        target: thalamus.definition.SignalDefinition
+        cardinality: one
+        via: signal
+    lifecycle:
+      initial: Recorded
+      states: [Recorded]
+      terminal: [Recorded]
+
+actors:
+  - name: thalamus.rollup.Roller
+    naming:
+      summary: The service's daily pass, which folds each series' samples and evaluations of a closed UTC day into one row.
+    may:
+      - thalamus.rollup.RecordRollup
+
+errors:
+  - name: thalamus.rollup.UnknownSignal
+    summary: No definition has this signal id; nothing was recorded.
+    fields:
+      - name: signal
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.rollup.RollupExists
+    summary: This series is already rolled up for this day; nothing changed.
+    fields:
+      - name: rollup_id
+        type: thalamus.rollup.RollupId
+
+events:
+  - name: thalamus.rollup.RollupRecorded
+    fields:
+      - name: rollup_id
+        type: thalamus.rollup.RollupId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: day
+        type: Timestamp
+
+commands:
+  - name: thalamus.rollup.RecordRollup
+    naming:
+      wire: record
+      display: Record a daily rollup
+      summary: Append the one row of a series for a closed UTC day.
+    input:
+      - name: rollup_id
+        type: thalamus.rollup.RollupId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: day
+        type: Timestamp
+      - name: n
+        type: Integer
+      - name: unknown
+        type: Integer
+      - name: partial
+        type: Integer
+      - name: min
+        type: Optional<Decimal>
+      - name: p50
+        type: Optional<Decimal>
+      - name: max
+        type: Optional<Decimal>
+      - name: last
+        type: Optional<Decimal>
+      - name: worst_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: verdict_counts
+        type: thalamus.rollup.VerdictCounts
+      - name: min_score
+        type: Optional<Decimal>
+      - name: max_score
+        type: Optional<Decimal>
+    outcomes:
+      - name: unknown-signal
+        when_related:
+          via: input.signal
+          exists: false
+        error: thalamus.rollup.UnknownSignal
+        payload:
+          thalamus.rollup.UnknownSignal:
+            signal: input.signal
+        summary: No definition has this id; nothing was recorded.
+      - name: recorded
+        creates: thalamus.rollup.DailyRollup
+        instance: rollup_id
+        sets:
+          signal: input.signal
+          series: input.series
+          day: input.day
+          n: input.n
+          unknown: input.unknown
+          partial: input.partial
+          min: input.min
+          p50: input.p50
+          max: input.max
+          last: input.last
+          worst_verdict: input.worst_verdict
+          verdict_counts: input.verdict_counts
+          min_score: input.min_score
+          max_score: input.max_score
+        emits: [thalamus.rollup.RollupRecorded]
+        payload:
+          thalamus.rollup.RollupRecorded:
+            rollup_id: input.rollup_id
+            signal: input.signal
+            series: input.series
+            day: input.day
+        summary: The day's row is recorded.
+      - name: already-rolled-up
+        existing_instance: true
+        error: thalamus.rollup.RollupExists
+        payload:
+          thalamus.rollup.RollupExists:
+            rollup_id: input.rollup_id
+        summary: The series already has a row for this day; nothing changed.
+
+views:
+  - name: thalamus.rollup.Rollups
+    source: thalamus.rollup.DailyRollup
+    consistency: read_your_writes
+    fields:
+      - name: rollup_id
+        type: thalamus.rollup.RollupId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: series
+        type: thalamus.observation.SeriesKey
+      - name: day
+        type: Timestamp
+      - name: n
+        type: Integer
+      - name: state
+        type: thalamus.rollup.DailyRollup.State
+    naming:
+      wire: rollups
+      display: Rollups
+      summary: Every daily row, by series and day; the numbers of one series are read from its series view.
+
+  - name: thalamus.rollup.SeriesRollups
+    source: thalamus.rollup.DailyRollup
+    consistency: read_your_writes
+    params:
+      - name: series
+        type: thalamus.observation.SeriesKey
+    filter: series == param.series
+    order_by: [day asc]
+    fields:
+      - name: rollup_id
+        type: thalamus.rollup.RollupId
+      - name: signal
+        type: thalamus.definition.SignalId
+      - name: day
+        type: Timestamp
+      - name: n
+        type: Integer
+      - name: unknown
+        type: Integer
+      - name: partial
+        type: Integer
+      - name: min
+        type: Optional<Decimal>
+      - name: p50
+        type: Optional<Decimal>
+      - name: max
+        type: Optional<Decimal>
+      - name: last
+        type: Optional<Decimal>
+      - name: worst_verdict
+        type: Optional<thalamus.evaluation.Verdict>
+      - name: verdict_counts
+        type: thalamus.rollup.VerdictCounts
+      - name: min_score
+        type: Optional<Decimal>
+      - name: max_score
+        type: Optional<Decimal>
+    naming:
+      wire: series
+      display: Rollups of a series
+      summary: The daily rows of one series, oldest day first.

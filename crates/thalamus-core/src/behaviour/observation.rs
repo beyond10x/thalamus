@@ -114,7 +114,7 @@ where
 /// three such texts can form a cycle. So the rows are not sorted with it directly. The instants
 /// are sorted by instant and the rest by bytes, and the two runs are merged by
 /// [`timestamp_order`], which puts every adjacent pair in order whatever the texts are.
-fn in_time_order<T>(rows: Vec<T>, ts: impl Fn(&T) -> &str) -> Vec<T> {
+pub(crate) fn in_time_order<T>(rows: Vec<T>, ts: impl Fn(&T) -> &str) -> Vec<T> {
     let (mut instants, mut texts): (Vec<T>, Vec<T>) = rows
         .into_iter()
         .partition(|row| Instant::parse(ts(row)).is_some());

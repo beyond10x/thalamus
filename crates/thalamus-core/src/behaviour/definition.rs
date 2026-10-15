@@ -9,9 +9,10 @@
 use thalamus_model::behaviour::{SignalDefinitionStorage, TryContext};
 use thalamus_model::definition::{
     AnySignalDefinition, BaselineKind, DefinitionExists, DefinitionProposed, DefinitionRevised,
-    EvaluationSpec, InstantNeedsFixedBaseline, ProposeDefinition, ProposeDefinitionOutcome,
-    RetiredDefinition, ReviseDefinition, ReviseDefinitionOutcome, SignalDefinition,
-    SignalDefinitionData, SignalDefinitionState, SignalKind, UnknownDefinition,
+    EvaluationSpec, FixedNumberMissing, FixedNumberUnused, InstantNeedsFixedBaseline, Persistence,
+    PersistenceTooSmall, ProposeDefinition, ProposeDefinitionOutcome, RetiredDefinition,
+    ReviseDefinition, ReviseDefinitionOutcome, RollingWindowMissing, RollingWindowUnused,
+    SignalDefinition, SignalDefinitionData, SignalDefinitionState, SignalKind, UnknownDefinition,
 };
 use thalamus_model::obligation::UnmetObligation;
 use thalamus_model::primitives::Timestamp;
@@ -19,8 +20,9 @@ use thalamus_model::primitives::Timestamp;
 const PROPOSE: &str = "thalamus.definition.ProposeDefinition";
 const REVISE: &str = "thalamus.definition.ReviseDefinition";
 
-/// `thalamus.definition.ProposeDefinition`: `instant-not-fixed`, then `already-defined`, then
-/// `proposed` at revision 1, stamped with the command clock and the input's author.
+/// `thalamus.definition.ProposeDefinition`: the input-guarded refusals of [`input_refusal`], then
+/// `already-defined`, then `proposed` at revision 1, stamped with the command clock and the
+/// input's author.
 ///
 /// # Errors
 ///
@@ -35,10 +37,27 @@ where
     P: SignalDefinitionStorage + TryContext + ?Sized,
 {
     let now = ports.try_command_clock();
-    if instant_not_fixed(input.kind, &input.evaluation) {
-        return Ok(ProposeDefinitionOutcome::InstantNotFixed {
-            error: InstantNeedsFixedBaseline {
-                signal_id: input.signal_id,
+    if let Some(refused) = input_refusal(input.kind, &input.evaluation, input.persistence.as_ref())
+    {
+        let signal_id = input.signal_id;
+        return Ok(match refused {
+            InputRefusal::InstantNotFixed => ProposeDefinitionOutcome::InstantNotFixed {
+                error: InstantNeedsFixedBaseline { signal_id },
+            },
+            InputRefusal::RollingNMissing => ProposeDefinitionOutcome::RollingNMissing {
+                error: RollingWindowMissing { signal_id },
+            },
+            InputRefusal::RollingNUnused => ProposeDefinitionOutcome::RollingNUnused {
+                error: RollingWindowUnused { signal_id },
+            },
+            InputRefusal::FixedNumberMissing => ProposeDefinitionOutcome::FixedNumberMissing {
+                error: FixedNumberMissing { signal_id },
+            },
+            InputRefusal::FixedNumberUnused => ProposeDefinitionOutcome::FixedNumberUnused {
+                error: FixedNumberUnused { signal_id },
+            },
+            InputRefusal::PersistenceBelowOne => ProposeDefinitionOutcome::PersistenceBelowOne {
+                error: PersistenceTooSmall { signal_id },
             },
         });
     }
@@ -71,6 +90,7 @@ where
         history: input.history,
         denominator: input.denominator,
         evaluation: input.evaluation,
+        persistence: input.persistence,
         objective: input.objective,
         owner: input.owner,
         links: input.links,
@@ -91,9 +111,10 @@ where
     Ok(answer)
 }
 
-/// `thalamus.definition.ReviseDefinition`: `instant-not-fixed`, then `no-such-definition`, then
-/// `retired`, then `revised`: the body replaced, `rev` one higher, stamped with the command clock
-/// and the input's author. The lifecycle state, and a mute with it, is kept.
+/// `thalamus.definition.ReviseDefinition`: the input-guarded refusals of [`input_refusal`], then
+/// `no-such-definition`, then `retired`, then `revised`: the body replaced, `rev` one higher,
+/// stamped with the command clock and the input's author. The lifecycle state, and a mute with
+/// it, is kept.
 ///
 /// # Errors
 ///
@@ -108,10 +129,27 @@ where
     P: SignalDefinitionStorage + TryContext + ?Sized,
 {
     let now = ports.try_command_clock();
-    if instant_not_fixed(input.kind, &input.evaluation) {
-        return Ok(ReviseDefinitionOutcome::InstantNotFixed {
-            error: InstantNeedsFixedBaseline {
-                signal_id: input.signal_id,
+    if let Some(refused) = input_refusal(input.kind, &input.evaluation, input.persistence.as_ref())
+    {
+        let signal_id = input.signal_id;
+        return Ok(match refused {
+            InputRefusal::InstantNotFixed => ReviseDefinitionOutcome::InstantNotFixed {
+                error: InstantNeedsFixedBaseline { signal_id },
+            },
+            InputRefusal::RollingNMissing => ReviseDefinitionOutcome::RollingNMissing {
+                error: RollingWindowMissing { signal_id },
+            },
+            InputRefusal::RollingNUnused => ReviseDefinitionOutcome::RollingNUnused {
+                error: RollingWindowUnused { signal_id },
+            },
+            InputRefusal::FixedNumberMissing => ReviseDefinitionOutcome::FixedNumberMissing {
+                error: FixedNumberMissing { signal_id },
+            },
+            InputRefusal::FixedNumberUnused => ReviseDefinitionOutcome::FixedNumberUnused {
+                error: FixedNumberUnused { signal_id },
+            },
+            InputRefusal::PersistenceBelowOne => ReviseDefinitionOutcome::PersistenceBelowOne {
+                error: PersistenceTooSmall { signal_id },
             },
         });
     }
@@ -160,6 +198,7 @@ where
         history: input.history,
         denominator: Some(input.denominator),
         evaluation: input.evaluation,
+        persistence: input.persistence,
         objective: input.objective,
         owner: Some(input.owner),
         links: input.links,
@@ -179,14 +218,89 @@ where
     Ok(answer)
 }
 
-/// The guard of `instant-not-fixed`: `kind == instant and exists b in evaluation.baselines:
-/// b != fixed`.
-fn instant_not_fixed(kind: SignalKind, evaluation: &EvaluationSpec) -> bool {
-    kind == SignalKind::Instant
-        && evaluation
-            .baselines
-            .iter()
-            .any(|baseline| *baseline != BaselineKind::Fixed)
+/// An input-guarded refusal `ProposeDefinition` and `ReviseDefinition` share, named after its
+/// outcome. The definition loader (`crate::registry`) refuses the same.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InputRefusal {
+    /// `instant-not-fixed`.
+    InstantNotFixed,
+    /// `rolling-n-missing`: also an N below 1 (`UNMAPPED:` in `spec/domains/definition.yaml`).
+    RollingNMissing,
+    /// `rolling-n-unused`.
+    RollingNUnused,
+    /// `fixed-number-missing`.
+    FixedNumberMissing,
+    /// `fixed-number-unused`.
+    FixedNumberUnused,
+    /// `persistence-below-one`.
+    PersistenceBelowOne,
+}
+
+/// The first input-guarded refusal of `ProposeDefinition` and `ReviseDefinition` whose guard
+/// holds, in their declaration order, or `None`. See [`input_refusals`] for the guards.
+#[must_use]
+pub fn input_refusal(
+    kind: SignalKind,
+    evaluation: &EvaluationSpec,
+    persistence: Option<&Persistence>,
+) -> Option<InputRefusal> {
+    input_refusals(kind, evaluation, persistence)
+        .into_iter()
+        .next()
+}
+
+/// Every input-guarded refusal of `ProposeDefinition` and `ReviseDefinition` whose guard holds,
+/// in their declaration order:
+///
+/// - `instant-not-fixed`: `kind == instant and exists b in evaluation.baselines: b != fixed`;
+/// - `rolling-n-missing`: `exists b: b == rolling_median and not defined(evaluation.rolling_n)`,
+///   and, beyond what ESS 0.60.0 can state, `rolling_median` with an N below 1 (design § 11 D25);
+/// - `rolling-n-unused`: `defined(evaluation.rolling_n) and forall b: b != rolling_median`;
+/// - `fixed-number-missing`: `exists b: b == fixed and not defined(evaluation.fixed)`;
+/// - `fixed-number-unused`: `defined(evaluation.fixed) and forall b: b != fixed`;
+/// - `persistence-below-one`: `persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1`.
+#[must_use]
+pub fn input_refusals(
+    kind: SignalKind,
+    evaluation: &EvaluationSpec,
+    persistence: Option<&Persistence>,
+) -> Vec<InputRefusal> {
+    let names = |wanted: BaselineKind| evaluation.baselines.contains(&wanted);
+    let rolling = names(BaselineKind::RollingMedian);
+    let fixed = names(BaselineKind::Fixed);
+    [
+        (
+            kind == SignalKind::Instant
+                && evaluation
+                    .baselines
+                    .iter()
+                    .any(|baseline| *baseline != BaselineKind::Fixed),
+            InputRefusal::InstantNotFixed,
+        ),
+        (
+            rolling && evaluation.rolling_n.is_none_or(|n| n < 1),
+            InputRefusal::RollingNMissing,
+        ),
+        (
+            evaluation.rolling_n.is_some() && !rolling,
+            InputRefusal::RollingNUnused,
+        ),
+        (
+            fixed && evaluation.fixed.is_none(),
+            InputRefusal::FixedNumberMissing,
+        ),
+        (
+            evaluation.fixed.is_some() && !fixed,
+            InputRefusal::FixedNumberUnused,
+        ),
+        (
+            persistence.is_some_and(|held| held.k < 1 || held.k_crit < 1 || held.m < 1),
+            InputRefusal::PersistenceBelowOne,
+        ),
+    ]
+    .into_iter()
+    .filter_map(|(holds, refusal)| holds.then_some(refusal))
+    .collect()
 }
 
 /// The decision's one instant, which the accepting branch records as `revised_at`: the context's

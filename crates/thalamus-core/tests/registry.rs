@@ -1209,7 +1209,7 @@ fn every_duration_field_is_a_placeable_length() {
             MUTED,
             "evaluation",
             &format!(
-                "evaluation: {{ rule: threshold, baselines: [fixed], min_trend_window: \"{window}\" }}"
+                "evaluation: {{ rule: threshold, baselines: [fixed], fixed: \"0\", min_trend_window: \"{window}\" }}"
             ),
         )
     };

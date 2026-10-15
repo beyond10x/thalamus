@@ -49,7 +49,10 @@ fn ratio(baselines: &[BaselineKind]) -> SignalDefinitionData {
             warn: None,
             crit: None,
             min_trend_window: None,
+            fixed: None,
+            rolling_n: None,
         },
+        persistence: None,
         objective: None,
         owner: Some(Owner("team:platform".into())),
         links: Links {
@@ -108,7 +111,7 @@ fn at(offset: Offset, value: &str, n: i64) -> OffsetReading {
 }
 
 fn fold(kind: BaselineKind, readings: &[OffsetReading]) -> Baseline {
-    baseline::fold(&ratio(&[kind]), &sample(), readings, OLD, None).expect("an M1 baseline folds")
+    baseline::fold(&ratio(&[kind]), &sample(), readings, OLD).expect("an M1 baseline folds")
 }
 
 fn value(baseline: &Baseline) -> String {

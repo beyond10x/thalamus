@@ -3,7 +3,7 @@ title: Signals
 sidebar_position: 1
 description: A signal definition says what is measured, from which source, in which unit and over which dimensions, and holds the only copy of its thresholds.
 lede: A signal definition is the one place that says what is measured and how it is graded; every sample and every evaluation names the definition revision it came from.
-source: spec/domains/definition.yaml, spec/domains/dimension.yaml, docs/design/thalamus.md § 2.1, § 2.4, § 5.2, § 11 (D8, D9, D10, D17, D18, D19), crates/thalamus-core/src/registry.rs
+source: spec/domains/definition.yaml, spec/domains/dimension.yaml, docs/design/thalamus.md § 2.1, § 2.4, § 5.2, § 11 (D8, D9, D10, D17, D18, D19, D25, D29), crates/thalamus-core/src/registry.rs
 ---
 
 # Signals
@@ -39,6 +39,7 @@ evaluation:
   baselines: [offset_1d, offset_7d]
   warn: {x: 2, abs: 0.02, min_events: 10}
   crit: {x: 4, abs: 0.05}
+persistence: {k: 2, k_crit: 1, m: 3}   # optional; these are the defaults
 owner: team:platform
 links: {components: [api], issues: []}
 lifecycle: active               # proposed | active | muted | retired
@@ -58,6 +59,9 @@ revised_by: someone
 | `history` | `source` when the source can be re-queried at an offset, `store` when only thalamus remembers past values. It decides which [baselines](./baselines.md) are possible. |
 | `denominator` | the population a ratio or count is taken over, and `min_n`, below which the sample is graded `N/A`. `since` is `first_sample`, a fixed RFC 3339 timestamp, or `<key>.created`: the `created` of the sample's value in the `file` registry of a declared dimension (`dimension.created` when exactly one declared dimension has a `file` registry). The origin is never earlier than the source's retention start. |
 | `evaluation` | the rule, the baselines and the WARN and CRIT lines. This is the only copy of every threshold. An `Active` or `Muted` definition whose baselines name no single baseline thalamus computes is refused at load. |
+| `evaluation.fixed` | the number a `fixed` baseline is, as a decimal (`fixed: "0"`). Required when `baselines` names `fixed`, and refused when it does not. |
+| `evaluation.rolling_n` | the N of a `rolling_median` baseline, the median of the last N samples of the series: an integer of at least 1. Required when `baselines` names `rolling_median`, and refused when it does not. The `rolling_median` baseline itself is planned for M2. |
+| `persistence` | `{k, k_crit, m}`, each an integer of at least 1: a verdict change settles into a transition after `k` agreeing evaluations (`k_crit` for a change to `CRIT`), and a `WARN` clears after `m` `OK` evaluations. Optional; absent, the service applies `k` 2, `k_crit` 1, `m` 3. The loader reads and checks it now; the hysteresis that applies it is planned for M2. |
 | `rev` | a definition change is a new revision with a date and an author, so an evaluation names the revision it was graded against. |
 
 The full type, with every field, is

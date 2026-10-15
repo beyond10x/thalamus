@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0
-// contract digest 13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988
+// model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
+// contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
 // do not edit: regenerate with `ess synthesize --layout crate`
 //! Every generated declaration, as JSON, in the renderings the published wire contracts fix.
 //!
@@ -280,6 +280,14 @@ pub fn encode_thalamus_definition_evaluation_spec(value: &crate::definition::Eva
         json::member(out, "min_trend_window");
         json::push_text(out, &(*held0).0);
     }
+    if let Some(held0) = &value.fixed {
+        json::member(out, "fixed");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.rolling_n {
+        json::member(out, "rolling_n");
+        json::push_integer(out, *held0);
+    }
     out.push('}');
 }
 
@@ -326,6 +334,20 @@ pub fn decode_thalamus_definition_evaluation_spec(value: &json::Value, at: &str)
             Some(member4) => {
                 let at4 = json::nested(at, "min_trend_window");
                 Some(crate::primitives::Duration(json::text_at(member4, &at4, "an ISO 8601 duration")?.to_owned()))
+            }
+        },
+        fixed: match value.member("fixed") {
+            None | Some(json::Value::Null) => None,
+            Some(member5) => {
+                let at5 = json::nested(at, "fixed");
+                Some(crate::primitives::Decimal(json::decimal_at(member5, &at5, "a decimal string")?.to_owned()))
+            }
+        },
+        rolling_n: match value.member("rolling_n") {
+            None | Some(json::Value::Null) => None,
+            Some(member6) => {
+                let at6 = json::nested(at, "rolling_n");
+                Some(json::integer_at(member6, &at6, "an integer")?)
             }
         },
     })
@@ -450,6 +472,43 @@ pub fn encode_thalamus_definition_owner(value: &crate::definition::Owner, out: &
 /// [`json::DecodeError`] naming the path and what the declaration says belongs there.
 pub fn decode_thalamus_definition_owner(value: &json::Value, at: &str) -> Result<crate::definition::Owner, json::DecodeError> {
     Ok(crate::definition::Owner(json::text_at(value, at, "a string")?.to_owned()))
+}
+
+/// Writes `thalamus.definition.Persistence` as JSON.
+pub fn encode_thalamus_definition_persistence(value: &crate::definition::Persistence, out: &mut String) {
+    out.push('{');
+    json::member(out, "k");
+    json::push_integer(out, value.k);
+    json::member(out, "k_crit");
+    json::push_integer(out, value.k_crit);
+    json::member(out, "m");
+    json::push_integer(out, value.m);
+    out.push('}');
+}
+
+/// Reads `thalamus.definition.Persistence` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_thalamus_definition_persistence(value: &json::Value, at: &str) -> Result<crate::definition::Persistence, json::DecodeError> {
+    Ok(crate::definition::Persistence {
+        k: {
+            let at0 = json::nested(at, "k");
+            let member0 = json::member_at(value, at, "k")?;
+            json::integer_at(member0, &at0, "an integer")?
+        },
+        k_crit: {
+            let at1 = json::nested(at, "k_crit");
+            let member1 = json::member_at(value, at, "k_crit")?;
+            json::integer_at(member1, &at1, "an integer")?
+        },
+        m: {
+            let at2 = json::nested(at, "m");
+            let member2 = json::member_at(value, at, "m")?;
+            json::integer_at(member2, &at2, "an integer")?
+        },
+    })
 }
 
 /// Writes `thalamus.definition.QueryText` as JSON.
@@ -1305,6 +1364,123 @@ pub fn decode_thalamus_observation_unread_reading(value: &json::Value, at: &str)
     })
 }
 
+/// Writes `thalamus.rollup.DailyRollup.State` as JSON.
+pub fn encode_thalamus_rollup_daily_rollup_state(value: &crate::rollup::DailyRollupState, out: &mut String) {
+    match value {
+        crate::rollup::DailyRollupState::Recorded => json::push_text(out, "Recorded"),
+    }
+}
+
+/// Reads `thalamus.rollup.DailyRollup.State` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_thalamus_rollup_daily_rollup_state(value: &json::Value, at: &str) -> Result<crate::rollup::DailyRollupState, json::DecodeError> {
+    Ok(match json::text_at(value, at, "one of `Recorded`")? {
+        "Recorded" => crate::rollup::DailyRollupState::Recorded,
+        other => return Err(json::DecodeError { at: at.to_owned(), expected: "one of `Recorded`".to_owned(), found: format!("`{other}`") }),
+    })
+}
+
+/// Writes `thalamus.rollup.RollupId` as JSON.
+pub fn encode_thalamus_rollup_rollup_id(value: &crate::rollup::RollupId, out: &mut String) {
+    json::push_text(out, &value.0);
+}
+
+/// Reads `thalamus.rollup.RollupId` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_thalamus_rollup_rollup_id(value: &json::Value, at: &str) -> Result<crate::rollup::RollupId, json::DecodeError> {
+    Ok(crate::rollup::RollupId(json::text_at(value, at, "a string")?.to_owned()))
+}
+
+/// Writes `thalamus.rollup.VerdictCounts` as JSON.
+pub fn encode_thalamus_rollup_verdict_counts(value: &crate::rollup::VerdictCounts, out: &mut String) {
+    out.push('{');
+    json::member(out, "ok");
+    json::push_integer(out, value.ok);
+    json::member(out, "na");
+    json::push_integer(out, value.na);
+    json::member(out, "warn");
+    json::push_integer(out, value.warn);
+    json::member(out, "crit");
+    json::push_integer(out, value.crit);
+    json::member(out, "unknown");
+    json::push_integer(out, value.unknown);
+    out.push('}');
+}
+
+/// Reads `thalamus.rollup.VerdictCounts` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_thalamus_rollup_verdict_counts(value: &json::Value, at: &str) -> Result<crate::rollup::VerdictCounts, json::DecodeError> {
+    Ok(crate::rollup::VerdictCounts {
+        ok: {
+            let at0 = json::nested(at, "ok");
+            let member0 = json::member_at(value, at, "ok")?;
+            json::integer_at(member0, &at0, "an integer")?
+        },
+        na: {
+            let at1 = json::nested(at, "na");
+            let member1 = json::member_at(value, at, "na")?;
+            json::integer_at(member1, &at1, "an integer")?
+        },
+        warn: {
+            let at2 = json::nested(at, "warn");
+            let member2 = json::member_at(value, at, "warn")?;
+            json::integer_at(member2, &at2, "an integer")?
+        },
+        crit: {
+            let at3 = json::nested(at, "crit");
+            let member3 = json::member_at(value, at, "crit")?;
+            json::integer_at(member3, &at3, "an integer")?
+        },
+        unknown: {
+            let at4 = json::nested(at, "unknown");
+            let member4 = json::member_at(value, at, "unknown")?;
+            json::integer_at(member4, &at4, "an integer")?
+        },
+    })
+}
+
+/// Writes `thalamus.transition.Transition.State` as JSON.
+pub fn encode_thalamus_transition_transition_state(value: &crate::transition::TransitionState, out: &mut String) {
+    match value {
+        crate::transition::TransitionState::Recorded => json::push_text(out, "Recorded"),
+    }
+}
+
+/// Reads `thalamus.transition.Transition.State` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_thalamus_transition_transition_state(value: &json::Value, at: &str) -> Result<crate::transition::TransitionState, json::DecodeError> {
+    Ok(match json::text_at(value, at, "one of `Recorded`")? {
+        "Recorded" => crate::transition::TransitionState::Recorded,
+        other => return Err(json::DecodeError { at: at.to_owned(), expected: "one of `Recorded`".to_owned(), found: format!("`{other}`") }),
+    })
+}
+
+/// Writes `thalamus.transition.TransitionId` as JSON.
+pub fn encode_thalamus_transition_transition_id(value: &crate::transition::TransitionId, out: &mut String) {
+    json::push_text(out, &value.0);
+}
+
+/// Reads `thalamus.transition.TransitionId` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_thalamus_transition_transition_id(value: &json::Value, at: &str) -> Result<crate::transition::TransitionId, json::DecodeError> {
+    Ok(crate::transition::TransitionId(json::text_at(value, at, "a string")?.to_owned()))
+}
+
 /// Writes the event `thalamus.assertion.AssertionAnswered` as JSON.
 pub fn encode_event_thalamus_assertion_assertion_answered(value: &crate::assertion::AssertionAnswered, out: &mut String) {
     out.push('{');
@@ -1443,6 +1619,40 @@ pub fn encode_event_thalamus_observation_sample_recorded(value: &crate::observat
     out.push('}');
 }
 
+/// Writes the event `thalamus.rollup.RollupRecorded` as JSON.
+pub fn encode_event_thalamus_rollup_rollup_recorded(value: &crate::rollup::RollupRecorded, out: &mut String) {
+    out.push('{');
+    json::member(out, "rollup_id");
+    encode_thalamus_rollup_rollup_id(&value.rollup_id, out);
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "series");
+    encode_thalamus_observation_series_key(&value.series, out);
+    json::member(out, "day");
+    json::push_text(out, &value.day.0);
+    out.push('}');
+}
+
+/// Writes the event `thalamus.transition.TransitionRecorded` as JSON.
+pub fn encode_event_thalamus_transition_transition_recorded(value: &crate::transition::TransitionRecorded, out: &mut String) {
+    out.push('{');
+    json::member(out, "transition_id");
+    encode_thalamus_transition_transition_id(&value.transition_id, out);
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "series");
+    encode_thalamus_observation_series_key(&value.series, out);
+    if let Some(held0) = &value.from_verdict {
+        json::member(out, "from_verdict");
+        encode_thalamus_evaluation_verdict(&*held0, out);
+    }
+    json::member(out, "to_verdict");
+    encode_thalamus_evaluation_verdict(&value.to_verdict, out);
+    json::member(out, "settled_ts");
+    json::push_text(out, &value.settled_ts.0);
+    out.push('}');
+}
+
 /// Writes the declared error `thalamus.assertion.AssertionStateConflict` as JSON.
 pub fn encode_error_thalamus_assertion_assertion_state_conflict(value: &crate::assertion::AssertionStateConflict, out: &mut String) {
     out.push('{');
@@ -1499,6 +1709,22 @@ pub fn encode_error_thalamus_definition_definition_state_conflict(value: &crate:
     out.push('}');
 }
 
+/// Writes the declared error `thalamus.definition.FixedNumberMissing` as JSON.
+pub fn encode_error_thalamus_definition_fixed_number_missing(value: &crate::definition::FixedNumberMissing, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.definition.FixedNumberUnused` as JSON.
+pub fn encode_error_thalamus_definition_fixed_number_unused(value: &crate::definition::FixedNumberUnused, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
 /// Writes the declared error `thalamus.definition.IncompleteDefinition` as JSON.
 pub fn encode_error_thalamus_definition_incomplete_definition(value: &crate::definition::IncompleteDefinition, out: &mut String) {
     out.push('{');
@@ -1523,8 +1749,32 @@ pub fn encode_error_thalamus_definition_mute_expiry_passed(value: &crate::defini
     out.push('}');
 }
 
+/// Writes the declared error `thalamus.definition.PersistenceTooSmall` as JSON.
+pub fn encode_error_thalamus_definition_persistence_too_small(value: &crate::definition::PersistenceTooSmall, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
 /// Writes the declared error `thalamus.definition.RetiredDefinition` as JSON.
 pub fn encode_error_thalamus_definition_retired_definition(value: &crate::definition::RetiredDefinition, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.definition.RollingWindowMissing` as JSON.
+pub fn encode_error_thalamus_definition_rolling_window_missing(value: &crate::definition::RollingWindowMissing, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.definition.RollingWindowUnused` as JSON.
+pub fn encode_error_thalamus_definition_rolling_window_unused(value: &crate::definition::RollingWindowUnused, out: &mut String) {
     out.push('{');
     json::member(out, "signal_id");
     encode_thalamus_definition_signal_id(&value.signal_id, out);
@@ -1607,6 +1857,30 @@ pub fn encode_error_thalamus_observation_signal_not_active(value: &crate::observ
 
 /// Writes the declared error `thalamus.observation.UnknownSignal` as JSON.
 pub fn encode_error_thalamus_observation_unknown_signal(value: &crate::observation::UnknownSignal, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.rollup.RollupExists` as JSON.
+pub fn encode_error_thalamus_rollup_rollup_exists(value: &crate::rollup::RollupExists, out: &mut String) {
+    out.push('{');
+    json::member(out, "rollup_id");
+    encode_thalamus_rollup_rollup_id(&value.rollup_id, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.rollup.UnknownSignal` as JSON.
+pub fn encode_error_thalamus_rollup_unknown_signal(value: &crate::rollup::UnknownSignal, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.transition.UnknownSignal` as JSON.
+pub fn encode_error_thalamus_transition_unknown_signal(value: &crate::transition::UnknownSignal, out: &mut String) {
     out.push('{');
     json::member(out, "signal");
     encode_thalamus_definition_signal_id(&value.signal, out);
@@ -2025,6 +2299,159 @@ pub fn decode_params_thalamus_observation_series_samples(value: &json::Value, at
             decode_thalamus_observation_series_key(member0, &at0)?
         },
     ))
+}
+
+/// Writes one row of the view `thalamus.rollup.Rollups` as JSON.
+pub fn encode_view_thalamus_rollup_rollups(value: &crate::rollup::Rollups, out: &mut String) {
+    out.push('{');
+    json::member(out, "rollup_id");
+    encode_thalamus_rollup_rollup_id(&value.rollup_id, out);
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "series");
+    encode_thalamus_observation_series_key(&value.series, out);
+    json::member(out, "day");
+    json::push_text(out, &value.day.0);
+    json::member(out, "n");
+    json::push_integer(out, value.n);
+    json::member(out, "state");
+    encode_thalamus_rollup_daily_rollup_state(&value.state, out);
+    out.push('}');
+}
+
+/// Writes one row of the view `thalamus.rollup.SeriesRollups` as JSON.
+pub fn encode_view_thalamus_rollup_series_rollups(value: &crate::rollup::SeriesRollups, out: &mut String) {
+    out.push('{');
+    json::member(out, "rollup_id");
+    encode_thalamus_rollup_rollup_id(&value.rollup_id, out);
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "day");
+    json::push_text(out, &value.day.0);
+    json::member(out, "n");
+    json::push_integer(out, value.n);
+    json::member(out, "unknown");
+    json::push_integer(out, value.unknown);
+    json::member(out, "partial");
+    json::push_integer(out, value.partial);
+    if let Some(held0) = &value.min {
+        json::member(out, "min");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.p50 {
+        json::member(out, "p50");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.max {
+        json::member(out, "max");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.last {
+        json::member(out, "last");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.worst_verdict {
+        json::member(out, "worst_verdict");
+        encode_thalamus_evaluation_verdict(&*held0, out);
+    }
+    json::member(out, "verdict_counts");
+    encode_thalamus_rollup_verdict_counts(&value.verdict_counts, out);
+    if let Some(held0) = &value.min_score {
+        json::member(out, "min_score");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.max_score {
+        json::member(out, "max_score");
+        json::push_text(out, &(*held0).0);
+    }
+    out.push('}');
+}
+
+/// Reads the parameters of `thalamus.rollup.SeriesRollups` from an object keyed by their wire names.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the parameter and what the declaration says belongs there.
+pub fn decode_params_thalamus_rollup_series_rollups(value: &json::Value, at: &str) -> Result<(crate::observation::SeriesKey,), json::DecodeError> {
+    Ok((
+        {
+            let at0 = json::nested(at, "series");
+            let member0 = json::member_at(value, at, "series")?;
+            decode_thalamus_observation_series_key(member0, &at0)?
+        },
+    ))
+}
+
+/// Writes one row of the view `thalamus.transition.SeriesTransitions` as JSON.
+pub fn encode_view_thalamus_transition_series_transitions(value: &crate::transition::SeriesTransitions, out: &mut String) {
+    out.push('{');
+    json::member(out, "transition_id");
+    encode_thalamus_transition_transition_id(&value.transition_id, out);
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "definition_rev");
+    json::push_integer(out, value.definition_rev);
+    if let Some(held0) = &value.from_verdict {
+        json::member(out, "from_verdict");
+        encode_thalamus_evaluation_verdict(&*held0, out);
+    }
+    json::member(out, "to_verdict");
+    encode_thalamus_evaluation_verdict(&value.to_verdict, out);
+    json::member(out, "first_ts");
+    json::push_text(out, &value.first_ts.0);
+    json::member(out, "settled_ts");
+    json::push_text(out, &value.settled_ts.0);
+    if let Some(held0) = &value.settling_score {
+        json::member(out, "settling_score");
+        json::push_text(out, &(*held0).0);
+    }
+    json::member(out, "evaluations");
+    out.push('[');
+    for (index0, item0) in value.evaluations.iter().enumerate() {
+        if index0 > 0 {
+            out.push(',');
+        }
+        encode_thalamus_evaluation_evaluation_id(&*item0, out);
+    }
+    out.push(']');
+    out.push('}');
+}
+
+/// Reads the parameters of `thalamus.transition.SeriesTransitions` from an object keyed by their wire names.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the parameter and what the declaration says belongs there.
+pub fn decode_params_thalamus_transition_series_transitions(value: &json::Value, at: &str) -> Result<(crate::observation::SeriesKey,), json::DecodeError> {
+    Ok((
+        {
+            let at0 = json::nested(at, "series");
+            let member0 = json::member_at(value, at, "series")?;
+            decode_thalamus_observation_series_key(member0, &at0)?
+        },
+    ))
+}
+
+/// Writes one row of the view `thalamus.transition.Transitions` as JSON.
+pub fn encode_view_thalamus_transition_transitions(value: &crate::transition::Transitions, out: &mut String) {
+    out.push('{');
+    json::member(out, "transition_id");
+    encode_thalamus_transition_transition_id(&value.transition_id, out);
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "series");
+    encode_thalamus_observation_series_key(&value.series, out);
+    if let Some(held0) = &value.from_verdict {
+        json::member(out, "from_verdict");
+        encode_thalamus_evaluation_verdict(&*held0, out);
+    }
+    json::member(out, "to_verdict");
+    encode_thalamus_evaluation_verdict(&value.to_verdict, out);
+    json::member(out, "settled_ts");
+    json::push_text(out, &value.settled_ts.0);
+    json::member(out, "state");
+    encode_thalamus_transition_transition_state(&value.state, out);
+    out.push('}');
 }
 
 /// Writes the input of `thalamus.assertion.AnswerAssertion` as JSON.
@@ -2526,6 +2953,10 @@ pub fn encode_command_thalamus_definition_propose_definition(value: &crate::defi
     }
     json::member(out, "evaluation");
     encode_thalamus_definition_evaluation_spec(&value.evaluation, out);
+    if let Some(held0) = &value.persistence {
+        json::member(out, "persistence");
+        encode_thalamus_definition_persistence(&*held0, out);
+    }
     if let Some(held0) = &value.objective {
         json::member(out, "objective");
         json::push_value(out, &*held0);
@@ -2638,29 +3069,36 @@ pub fn decode_command_thalamus_definition_propose_definition(value: &json::Value
             let member13 = json::member_at(value, at, "evaluation")?;
             decode_thalamus_definition_evaluation_spec(member13, &at13)?
         },
-        objective: match value.member("objective") {
+        persistence: match value.member("persistence") {
             None | Some(json::Value::Null) => None,
             Some(member14) => {
-                let at14 = json::nested(at, "objective");
-                Some(json::value_at(member14, &at14))
+                let at14 = json::nested(at, "persistence");
+                Some(decode_thalamus_definition_persistence(member14, &at14)?)
+            }
+        },
+        objective: match value.member("objective") {
+            None | Some(json::Value::Null) => None,
+            Some(member15) => {
+                let at15 = json::nested(at, "objective");
+                Some(json::value_at(member15, &at15))
             }
         },
         owner: match value.member("owner") {
             None | Some(json::Value::Null) => None,
-            Some(member15) => {
-                let at15 = json::nested(at, "owner");
-                Some(decode_thalamus_definition_owner(member15, &at15)?)
+            Some(member16) => {
+                let at16 = json::nested(at, "owner");
+                Some(decode_thalamus_definition_owner(member16, &at16)?)
             }
         },
         links: {
-            let at16 = json::nested(at, "links");
-            let member16 = json::member_at(value, at, "links")?;
-            decode_thalamus_definition_links(member16, &at16)?
+            let at17 = json::nested(at, "links");
+            let member17 = json::member_at(value, at, "links")?;
+            decode_thalamus_definition_links(member17, &at17)?
         },
         author: {
-            let at17 = json::nested(at, "author");
-            let member17 = json::member_at(value, at, "author")?;
-            decode_thalamus_definition_author(member17, &at17)?
+            let at18 = json::nested(at, "author");
+            let member18 = json::member_at(value, at, "author")?;
+            decode_thalamus_definition_author(member18, &at18)?
         },
     })
 }
@@ -2682,6 +3120,76 @@ pub fn encode_outcome_thalamus_definition_propose_definition(value: &crate::defi
             json::push_text(out, "thalamus.definition.InstantNeedsFixedBaseline");
             json::member(out, "payload");
             encode_error_thalamus_definition_instant_needs_fixed_baseline(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::RollingNMissing { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "rolling-n-missing");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.RollingWindowMissing");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_rolling_window_missing(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::RollingNUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "rolling-n-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.RollingWindowUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_rolling_window_unused(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::FixedNumberMissing { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "fixed-number-missing");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.FixedNumberMissing");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_fixed_number_missing(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::FixedNumberUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "fixed-number-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.FixedNumberUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_fixed_number_unused(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::PersistenceBelowOne { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "persistence-below-one");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.PersistenceTooSmall");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_persistence_too_small(error, out);
             out.push('}');
         }
         crate::definition::ProposeDefinitionOutcome::Proposed { definition_proposed } => {
@@ -2835,6 +3343,10 @@ pub fn encode_command_thalamus_definition_revise_definition(value: &crate::defin
     encode_thalamus_definition_denominator_spec(&value.denominator, out);
     json::member(out, "evaluation");
     encode_thalamus_definition_evaluation_spec(&value.evaluation, out);
+    if let Some(held0) = &value.persistence {
+        json::member(out, "persistence");
+        encode_thalamus_definition_persistence(&*held0, out);
+    }
     if let Some(held0) = &value.objective {
         json::member(out, "objective");
         json::push_value(out, &*held0);
@@ -2939,27 +3451,34 @@ pub fn decode_command_thalamus_definition_revise_definition(value: &json::Value,
             let member13 = json::member_at(value, at, "evaluation")?;
             decode_thalamus_definition_evaluation_spec(member13, &at13)?
         },
-        objective: match value.member("objective") {
+        persistence: match value.member("persistence") {
             None | Some(json::Value::Null) => None,
             Some(member14) => {
-                let at14 = json::nested(at, "objective");
-                Some(json::value_at(member14, &at14))
+                let at14 = json::nested(at, "persistence");
+                Some(decode_thalamus_definition_persistence(member14, &at14)?)
+            }
+        },
+        objective: match value.member("objective") {
+            None | Some(json::Value::Null) => None,
+            Some(member15) => {
+                let at15 = json::nested(at, "objective");
+                Some(json::value_at(member15, &at15))
             }
         },
         owner: {
-            let at15 = json::nested(at, "owner");
-            let member15 = json::member_at(value, at, "owner")?;
-            decode_thalamus_definition_owner(member15, &at15)?
+            let at16 = json::nested(at, "owner");
+            let member16 = json::member_at(value, at, "owner")?;
+            decode_thalamus_definition_owner(member16, &at16)?
         },
         links: {
-            let at16 = json::nested(at, "links");
-            let member16 = json::member_at(value, at, "links")?;
-            decode_thalamus_definition_links(member16, &at16)?
+            let at17 = json::nested(at, "links");
+            let member17 = json::member_at(value, at, "links")?;
+            decode_thalamus_definition_links(member17, &at17)?
         },
         author: {
-            let at17 = json::nested(at, "author");
-            let member17 = json::member_at(value, at, "author")?;
-            decode_thalamus_definition_author(member17, &at17)?
+            let at18 = json::nested(at, "author");
+            let member18 = json::member_at(value, at, "author")?;
+            decode_thalamus_definition_author(member18, &at18)?
         },
     })
 }
@@ -2995,6 +3514,76 @@ pub fn encode_outcome_thalamus_definition_revise_definition(value: &crate::defin
             json::push_text(out, "thalamus.definition.InstantNeedsFixedBaseline");
             json::member(out, "payload");
             encode_error_thalamus_definition_instant_needs_fixed_baseline(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::RollingNMissing { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "rolling-n-missing");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.RollingWindowMissing");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_rolling_window_missing(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::RollingNUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "rolling-n-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.RollingWindowUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_rolling_window_unused(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::FixedNumberMissing { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "fixed-number-missing");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.FixedNumberMissing");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_fixed_number_missing(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::FixedNumberUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "fixed-number-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.FixedNumberUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_fixed_number_unused(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::PersistenceBelowOne { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "persistence-below-one");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.PersistenceTooSmall");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_persistence_too_small(error, out);
             out.push('}');
         }
         crate::definition::ReviseDefinitionOutcome::Revised { definition_revised } => {
@@ -3607,6 +4196,373 @@ pub fn encode_outcome_thalamus_observation_record_sample(value: &crate::observat
     out.push('}');
 }
 
+/// Writes the input of `thalamus.rollup.RecordRollup` as JSON.
+pub fn encode_command_thalamus_rollup_record_rollup(value: &crate::rollup::RecordRollup, out: &mut String) {
+    out.push('{');
+    json::member(out, "rollup_id");
+    encode_thalamus_rollup_rollup_id(&value.rollup_id, out);
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "series");
+    encode_thalamus_observation_series_key(&value.series, out);
+    json::member(out, "day");
+    json::push_text(out, &value.day.0);
+    json::member(out, "n");
+    json::push_integer(out, value.n);
+    json::member(out, "unknown");
+    json::push_integer(out, value.unknown);
+    json::member(out, "partial");
+    json::push_integer(out, value.partial);
+    if let Some(held0) = &value.min {
+        json::member(out, "min");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.p50 {
+        json::member(out, "p50");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.max {
+        json::member(out, "max");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.last {
+        json::member(out, "last");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.worst_verdict {
+        json::member(out, "worst_verdict");
+        encode_thalamus_evaluation_verdict(&*held0, out);
+    }
+    json::member(out, "verdict_counts");
+    encode_thalamus_rollup_verdict_counts(&value.verdict_counts, out);
+    if let Some(held0) = &value.min_score {
+        json::member(out, "min_score");
+        json::push_text(out, &(*held0).0);
+    }
+    if let Some(held0) = &value.max_score {
+        json::member(out, "max_score");
+        json::push_text(out, &(*held0).0);
+    }
+    out.push('}');
+}
+
+/// Reads the input of `thalamus.rollup.RecordRollup` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_command_thalamus_rollup_record_rollup(value: &json::Value, at: &str) -> Result<crate::rollup::RecordRollup, json::DecodeError> {
+    Ok(crate::rollup::RecordRollup {
+        rollup_id: {
+            let at0 = json::nested(at, "rollup_id");
+            let member0 = json::member_at(value, at, "rollup_id")?;
+            decode_thalamus_rollup_rollup_id(member0, &at0)?
+        },
+        signal: {
+            let at1 = json::nested(at, "signal");
+            let member1 = json::member_at(value, at, "signal")?;
+            decode_thalamus_definition_signal_id(member1, &at1)?
+        },
+        series: {
+            let at2 = json::nested(at, "series");
+            let member2 = json::member_at(value, at, "series")?;
+            decode_thalamus_observation_series_key(member2, &at2)?
+        },
+        day: {
+            let at3 = json::nested(at, "day");
+            let member3 = json::member_at(value, at, "day")?;
+            crate::primitives::Timestamp(json::text_at(member3, &at3, "an RFC 3339 instant")?.to_owned())
+        },
+        n: {
+            let at4 = json::nested(at, "n");
+            let member4 = json::member_at(value, at, "n")?;
+            json::integer_at(member4, &at4, "an integer")?
+        },
+        unknown: {
+            let at5 = json::nested(at, "unknown");
+            let member5 = json::member_at(value, at, "unknown")?;
+            json::integer_at(member5, &at5, "an integer")?
+        },
+        partial: {
+            let at6 = json::nested(at, "partial");
+            let member6 = json::member_at(value, at, "partial")?;
+            json::integer_at(member6, &at6, "an integer")?
+        },
+        min: match value.member("min") {
+            None | Some(json::Value::Null) => None,
+            Some(member7) => {
+                let at7 = json::nested(at, "min");
+                Some(crate::primitives::Decimal(json::decimal_at(member7, &at7, "a decimal string")?.to_owned()))
+            }
+        },
+        p50: match value.member("p50") {
+            None | Some(json::Value::Null) => None,
+            Some(member8) => {
+                let at8 = json::nested(at, "p50");
+                Some(crate::primitives::Decimal(json::decimal_at(member8, &at8, "a decimal string")?.to_owned()))
+            }
+        },
+        max: match value.member("max") {
+            None | Some(json::Value::Null) => None,
+            Some(member9) => {
+                let at9 = json::nested(at, "max");
+                Some(crate::primitives::Decimal(json::decimal_at(member9, &at9, "a decimal string")?.to_owned()))
+            }
+        },
+        last: match value.member("last") {
+            None | Some(json::Value::Null) => None,
+            Some(member10) => {
+                let at10 = json::nested(at, "last");
+                Some(crate::primitives::Decimal(json::decimal_at(member10, &at10, "a decimal string")?.to_owned()))
+            }
+        },
+        worst_verdict: match value.member("worst_verdict") {
+            None | Some(json::Value::Null) => None,
+            Some(member11) => {
+                let at11 = json::nested(at, "worst_verdict");
+                Some(decode_thalamus_evaluation_verdict(member11, &at11)?)
+            }
+        },
+        verdict_counts: {
+            let at12 = json::nested(at, "verdict_counts");
+            let member12 = json::member_at(value, at, "verdict_counts")?;
+            decode_thalamus_rollup_verdict_counts(member12, &at12)?
+        },
+        min_score: match value.member("min_score") {
+            None | Some(json::Value::Null) => None,
+            Some(member13) => {
+                let at13 = json::nested(at, "min_score");
+                Some(crate::primitives::Decimal(json::decimal_at(member13, &at13, "a decimal string")?.to_owned()))
+            }
+        },
+        max_score: match value.member("max_score") {
+            None | Some(json::Value::Null) => None,
+            Some(member14) => {
+                let at14 = json::nested(at, "max_score");
+                Some(crate::primitives::Decimal(json::decimal_at(member14, &at14, "a decimal string")?.to_owned()))
+            }
+        },
+    })
+}
+
+/// Writes the outcome of `thalamus.rollup.RecordRollup` as JSON: the branch taken, what it published, and the declared
+/// refusal it carries where it carries one.
+pub fn encode_outcome_thalamus_rollup_record_rollup(value: &crate::rollup::RecordRollupOutcome, out: &mut String) {
+    out.push('{');
+    match value {
+        crate::rollup::RecordRollupOutcome::UnknownSignal { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "unknown-signal");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.rollup.UnknownSignal");
+            json::member(out, "payload");
+            encode_error_thalamus_rollup_unknown_signal(error, out);
+            out.push('}');
+        }
+        crate::rollup::RecordRollupOutcome::Recorded { rollup_recorded } => {
+            json::member(out, "outcome");
+            json::push_text(out, "recorded");
+            json::member(out, "published");
+            out.push('[');
+            out.push('{');
+            json::member(out, "event");
+            json::push_text(out, "thalamus.rollup.RollupRecorded");
+            json::member(out, "payload");
+            encode_event_thalamus_rollup_rollup_recorded(rollup_recorded, out);
+            out.push('}');
+            out.push(']');
+        }
+        crate::rollup::RecordRollupOutcome::AlreadyRolledUp { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "already-rolled-up");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.rollup.RollupExists");
+            json::member(out, "payload");
+            encode_error_thalamus_rollup_rollup_exists(error, out);
+            out.push('}');
+        }
+    }
+    out.push('}');
+}
+
+/// Writes the input of `thalamus.transition.RecordTransition` as JSON.
+pub fn encode_command_thalamus_transition_record_transition(value: &crate::transition::RecordTransition, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal");
+    encode_thalamus_definition_signal_id(&value.signal, out);
+    json::member(out, "series");
+    encode_thalamus_observation_series_key(&value.series, out);
+    json::member(out, "dims");
+    out.push('{');
+    for (index0, (key0, item0)) in value.dims.iter().enumerate() {
+        if index0 > 0 {
+            out.push(',');
+        }
+        json::push_text(out, key0);
+        out.push(':');
+        encode_thalamus_dimension_dimension_value(&*item0, out);
+    }
+    out.push('}');
+    json::member(out, "definition_rev");
+    json::push_integer(out, value.definition_rev);
+    if let Some(held0) = &value.from_verdict {
+        json::member(out, "from_verdict");
+        encode_thalamus_evaluation_verdict(&*held0, out);
+    }
+    json::member(out, "to_verdict");
+    encode_thalamus_evaluation_verdict(&value.to_verdict, out);
+    json::member(out, "first_ts");
+    json::push_text(out, &value.first_ts.0);
+    json::member(out, "settled_ts");
+    json::push_text(out, &value.settled_ts.0);
+    if let Some(held0) = &value.settling_score {
+        json::member(out, "settling_score");
+        json::push_text(out, &(*held0).0);
+    }
+    json::member(out, "evaluations");
+    out.push('[');
+    for (index0, item0) in value.evaluations.iter().enumerate() {
+        if index0 > 0 {
+            out.push(',');
+        }
+        encode_thalamus_evaluation_evaluation_id(&*item0, out);
+    }
+    out.push(']');
+    out.push('}');
+}
+
+/// Reads the input of `thalamus.transition.RecordTransition` from JSON.
+///
+/// # Errors
+///
+/// [`json::DecodeError`] naming the path and what the declaration says belongs there.
+pub fn decode_command_thalamus_transition_record_transition(value: &json::Value, at: &str) -> Result<crate::transition::RecordTransition, json::DecodeError> {
+    Ok(crate::transition::RecordTransition {
+        signal: {
+            let at0 = json::nested(at, "signal");
+            let member0 = json::member_at(value, at, "signal")?;
+            decode_thalamus_definition_signal_id(member0, &at0)?
+        },
+        series: {
+            let at1 = json::nested(at, "series");
+            let member1 = json::member_at(value, at, "series")?;
+            decode_thalamus_observation_series_key(member1, &at1)?
+        },
+        dims: {
+            let at2 = json::nested(at, "dims");
+            let member2 = json::member_at(value, at, "dims")?;
+            {
+                let mut entries2 = std::collections::BTreeMap::new();
+                for (key2, element2) in json::members_at(member2, &at2, "an object")? {
+                    let nested2 = json::nested(&at2, key2);
+                    entries2.insert(key2.clone(), decode_thalamus_dimension_dimension_value(element2, &nested2)?);
+                }
+                entries2
+            }
+        },
+        definition_rev: {
+            let at3 = json::nested(at, "definition_rev");
+            let member3 = json::member_at(value, at, "definition_rev")?;
+            json::integer_at(member3, &at3, "an integer")?
+        },
+        from_verdict: match value.member("from_verdict") {
+            None | Some(json::Value::Null) => None,
+            Some(member4) => {
+                let at4 = json::nested(at, "from_verdict");
+                Some(decode_thalamus_evaluation_verdict(member4, &at4)?)
+            }
+        },
+        to_verdict: {
+            let at5 = json::nested(at, "to_verdict");
+            let member5 = json::member_at(value, at, "to_verdict")?;
+            decode_thalamus_evaluation_verdict(member5, &at5)?
+        },
+        first_ts: {
+            let at6 = json::nested(at, "first_ts");
+            let member6 = json::member_at(value, at, "first_ts")?;
+            crate::primitives::Timestamp(json::text_at(member6, &at6, "an RFC 3339 instant")?.to_owned())
+        },
+        settled_ts: {
+            let at7 = json::nested(at, "settled_ts");
+            let member7 = json::member_at(value, at, "settled_ts")?;
+            crate::primitives::Timestamp(json::text_at(member7, &at7, "an RFC 3339 instant")?.to_owned())
+        },
+        settling_score: match value.member("settling_score") {
+            None | Some(json::Value::Null) => None,
+            Some(member8) => {
+                let at8 = json::nested(at, "settling_score");
+                Some(crate::primitives::Decimal(json::decimal_at(member8, &at8, "a decimal string")?.to_owned()))
+            }
+        },
+        evaluations: {
+            let at9 = json::nested(at, "evaluations");
+            let member9 = json::member_at(value, at, "evaluations")?;
+            {
+                let mut items9 = Vec::new();
+                for (index9, element9) in json::items_at(member9, &at9, "an array")?.iter().enumerate() {
+                    let nested9 = json::nested(&at9, &index9.to_string());
+                    items9.push(decode_thalamus_evaluation_evaluation_id(element9, &nested9)?);
+                }
+                items9
+            }
+        },
+    })
+}
+
+/// Writes the response of `thalamus.transition.RecordTransition` as JSON.
+pub fn encode_response_thalamus_transition_record_transition(value: &crate::transition::RecordTransitionResponse, out: &mut String) {
+    out.push('{');
+    json::member(out, "transition_id");
+    encode_thalamus_transition_transition_id(&value.transition_id, out);
+    out.push('}');
+}
+
+/// Writes the outcome of `thalamus.transition.RecordTransition` as JSON: the branch taken, what it published, and the declared
+/// refusal it carries where it carries one.
+pub fn encode_outcome_thalamus_transition_record_transition(value: &crate::transition::RecordTransitionOutcome, out: &mut String) {
+    out.push('{');
+    match value {
+        crate::transition::RecordTransitionOutcome::UnknownSignal { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "unknown-signal");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.transition.UnknownSignal");
+            json::member(out, "payload");
+            encode_error_thalamus_transition_unknown_signal(error, out);
+            out.push('}');
+        }
+        crate::transition::RecordTransitionOutcome::Recorded { transition_recorded, .. } => {
+            json::member(out, "outcome");
+            json::push_text(out, "recorded");
+            json::member(out, "published");
+            out.push('[');
+            out.push('{');
+            json::member(out, "event");
+            json::push_text(out, "thalamus.transition.TransitionRecorded");
+            json::member(out, "payload");
+            encode_event_thalamus_transition_transition_recorded(transition_recorded, out);
+            out.push('}');
+            out.push(']');
+        }
+    }
+    out.push('}');
+}
+
 /// Writes any event on the system's log as JSON: its qualified name and its payload,
 /// `{"event": …, "payload": {…}}`, the envelope a command's answer lists it in.
 pub fn encode_system_event(value: &crate::system::SystemEvent) -> String {
@@ -3627,6 +4583,8 @@ pub fn encode_system_event(value: &crate::system::SystemEvent) -> String {
         crate::system::SystemEvent::RegistryDeclared(event) => encode_event_thalamus_dimension_registry_declared(event, &mut out),
         crate::system::SystemEvent::EvaluationRecorded(event) => encode_event_thalamus_evaluation_evaluation_recorded(event, &mut out),
         crate::system::SystemEvent::SampleRecorded(event) => encode_event_thalamus_observation_sample_recorded(event, &mut out),
+        crate::system::SystemEvent::RollupRecorded(event) => encode_event_thalamus_rollup_rollup_recorded(event, &mut out),
+        crate::system::SystemEvent::TransitionRecorded(event) => encode_event_thalamus_transition_transition_recorded(event, &mut out),
     }
     out.push('}');
     out

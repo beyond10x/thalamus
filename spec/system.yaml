@@ -8,3 +8,5 @@ domains:
   - thalamus.observation
   - thalamus.evaluation
   - thalamus.assertion
+  - thalamus.transition
+  - thalamus.rollup

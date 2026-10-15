@@ -62,6 +62,10 @@
           "type": "EvaluationSpec"
         },
         {
+          "name": "persistence",
+          "type": "Optional<Persistence>"
+        },
+        {
           "name": "objective",
           "type": "Optional<json>"
         },

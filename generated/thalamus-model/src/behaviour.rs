@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0
-// contract digest 13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988
+// model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
+// contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! What the specification fully determines, generated: the behaviour of every command the plan
@@ -126,6 +126,42 @@ pub trait SignalSampleStorage {
     /// Every stored instance, in the order the store keeps them: the order a generated query
     /// answers an unordered view in.
     fn list(&self) -> Vec<crate::observation::SignalSampleSnapshot>;
+}
+
+/// Where `thalamus.rollup.DailyRollup` is stored — a port the implementor provides.
+///
+/// Keyed by the identity `rollup_id`. Generated network entries supply an ephemeral implementation; durable storage remains a port.
+pub trait DailyRollupStorage {
+    /// The instance with this identity, or `None` where none is stored.
+    fn get(&self, identity: &crate::rollup::RollupId) -> Option<crate::rollup::DailyRollupSnapshot>;
+
+    /// Stores this instance under its identity, replacing what was held.
+    fn put(&mut self, snapshot: crate::rollup::DailyRollupSnapshot);
+
+    /// Removes the instance with this identity.
+    fn delete(&mut self, identity: &crate::rollup::RollupId);
+
+    /// Every stored instance, in the order the store keeps them: the order a generated query
+    /// answers an unordered view in.
+    fn list(&self) -> Vec<crate::rollup::DailyRollupSnapshot>;
+}
+
+/// Where `thalamus.transition.Transition` is stored — a port the implementor provides.
+///
+/// Keyed by the identity `transition_id`. Generated network entries supply an ephemeral implementation; durable storage remains a port.
+pub trait TransitionStorage {
+    /// The instance with this identity, or `None` where none is stored.
+    fn get(&self, identity: &crate::transition::TransitionId) -> Option<crate::transition::TransitionSnapshot>;
+
+    /// Stores this instance under its identity, replacing what was held.
+    fn put(&mut self, snapshot: crate::transition::TransitionSnapshot);
+
+    /// Removes the instance with this identity.
+    fn delete(&mut self, identity: &crate::transition::TransitionId);
+
+    /// Every stored instance, in the order the store keeps them: the order a generated query
+    /// answers an unordered view in.
+    fn list(&self) -> Vec<crate::transition::TransitionSnapshot>;
 }
 
 /// What the specification leaves to the implementor's context — a port the implementor provides.
@@ -406,6 +442,61 @@ impl<P: crate::observation::obligations::RecordSampleBehavior> crate::observatio
     }
 }
 
+/// `thalamus.rollup.RecordRollup`, generated: every outcome is one the specification fully determines.
+impl<P> crate::rollup::obligations::RecordRollupBehavior for Generated<P>
+where
+    P: SignalDefinitionStorage + DailyRollupStorage,
+{
+    fn record_rollup(&mut self, input: crate::rollup::RecordRollup) -> Result<crate::rollup::RecordRollupOutcome, UnmetObligation> {
+        let _ = &input;
+        // `already-rolled-up`: an identity a record already carries, before any branch is taken.
+        if DailyRollupStorage::get(&self.ports, &input.rollup_id).is_some() {
+            return Ok(crate::rollup::RecordRollupOutcome::AlreadyRolledUp { error: crate::rollup::RollupExists { rollup_id: input.rollup_id.clone() } });
+        }
+        // `when_related:` reads the `thalamus.definition.SignalDefinition` row `input.signal` names, through its storage port; an absent
+        // reference reads no row and selects no related branch.
+        let reference = Some(&input.signal);
+        let related = reference.and_then(|identity| SignalDefinitionStorage::get(&self.ports, identity));
+        // `unknown-signal`: the reference names an identity no row carries.
+        if reference.is_some() && related.is_none() {
+            return Ok(crate::rollup::RecordRollupOutcome::UnknownSignal { error: crate::rollup::UnknownSignal { signal: input.signal.clone() } });
+        }
+        let _ = &related;
+        // `recorded`: the default.
+        let identity: crate::rollup::RollupId = input.rollup_id.clone();
+        let data = crate::rollup::DailyRollupData {
+            rollup_id: identity.clone(),
+            signal: input.signal.clone(),
+            series: input.series.clone(),
+            day: input.day.clone(),
+            n: input.n.clone(),
+            unknown: input.unknown.clone(),
+            partial: input.partial.clone(),
+            min: input.min.clone(),
+            p50: input.p50.clone(),
+            max: input.max.clone(),
+            last: input.last.clone(),
+            worst_verdict: input.worst_verdict.clone(),
+            verdict_counts: input.verdict_counts.clone(),
+            min_score: input.min_score.clone(),
+            max_score: input.max_score.clone(),
+        };
+        if let Some(broken) = data.broken_invariant() {
+            let capability = "entity invariant";
+            return Err(UnmetObligation { capability, source: broken });
+        }
+        let answer = crate::rollup::RecordRollupOutcome::Recorded { rollup_recorded: crate::rollup::RollupRecorded { rollup_id: identity.clone(), signal: input.signal.clone(), series: input.series.clone(), day: input.day.clone() } };
+        DailyRollupStorage::put(&mut self.ports, crate::rollup::AnyDailyRollup::Recorded(crate::rollup::DailyRollup::new(data)).snapshot());
+        return Ok(answer);
+    }
+}
+
+impl<P: crate::transition::obligations::RecordTransitionBehavior> crate::transition::obligations::RecordTransitionBehavior for Generated<P> {
+    fn record_transition(&mut self, input: crate::transition::RecordTransition) -> Result<crate::transition::RecordTransitionOutcome, UnmetObligation> {
+        crate::transition::obligations::RecordTransitionBehavior::record_transition(&mut self.ports, input)
+    }
+}
+
 /// `thalamus.assertion.Assertions`, generated: every row is one the specification fully determines from the stored `thalamus.assertion.Assertion`s.
 impl<P> crate::assertion::obligations::AssertionsQuery for Generated<P>
 where
@@ -645,6 +736,61 @@ where
 impl<P: crate::observation::obligations::SeriesSamplesQuery> crate::observation::obligations::SeriesSamplesQuery for Generated<P> {
     fn series_samples(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::observation::SeriesSamples>, UnmetObligation> {
         crate::observation::obligations::SeriesSamplesQuery::series_samples(&self.ports, series)
+    }
+}
+
+/// `thalamus.rollup.Rollups`, generated: every row is one the specification fully determines from the stored `thalamus.rollup.DailyRollup`s.
+impl<P> crate::rollup::obligations::RollupsQuery for Generated<P>
+where
+    P: DailyRollupStorage,
+{
+    fn rollups(&self) -> Result<Vec<crate::rollup::Rollups>, UnmetObligation> {
+        let admitted = DailyRollupStorage::list(&self.ports);
+        Ok(admitted
+            .into_iter()
+            .map(|held| crate::rollup::Rollups {
+                rollup_id: held.data.rollup_id,
+                signal: held.data.signal,
+                series: held.data.series,
+                day: held.data.day,
+                n: held.data.n,
+                state: held.state,
+            })
+            .collect())
+    }
+}
+
+impl<P: crate::rollup::obligations::SeriesRollupsQuery> crate::rollup::obligations::SeriesRollupsQuery for Generated<P> {
+    fn series_rollups(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::rollup::SeriesRollups>, UnmetObligation> {
+        crate::rollup::obligations::SeriesRollupsQuery::series_rollups(&self.ports, series)
+    }
+}
+
+impl<P: crate::transition::obligations::SeriesTransitionsQuery> crate::transition::obligations::SeriesTransitionsQuery for Generated<P> {
+    fn series_transitions(&self, series: crate::observation::SeriesKey) -> Result<Vec<crate::transition::SeriesTransitions>, UnmetObligation> {
+        crate::transition::obligations::SeriesTransitionsQuery::series_transitions(&self.ports, series)
+    }
+}
+
+/// `thalamus.transition.Transitions`, generated: every row is one the specification fully determines from the stored `thalamus.transition.Transition`s.
+impl<P> crate::transition::obligations::TransitionsQuery for Generated<P>
+where
+    P: TransitionStorage,
+{
+    fn transitions(&self) -> Result<Vec<crate::transition::Transitions>, UnmetObligation> {
+        let admitted = TransitionStorage::list(&self.ports);
+        Ok(admitted
+            .into_iter()
+            .map(|held| crate::transition::Transitions {
+                transition_id: held.data.transition_id,
+                signal: held.data.signal,
+                series: held.data.series,
+                from_verdict: held.data.from_verdict,
+                to_verdict: held.data.to_verdict,
+                settled_ts: held.data.settled_ts,
+                state: held.state,
+            })
+            .collect())
     }
 }
 

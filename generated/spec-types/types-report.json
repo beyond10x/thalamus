@@ -1,12 +1,12 @@
 {
   "format": "ess-types-report/3",
-  "source_digest": "827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0",
+  "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
   "input": {
     "kind": "model",
     "system": "thalamus",
     "specification_version": "v1",
-    "contract_digest": "slice-sha256/2:e6a3109ff3489fba25d884b5b59c33ac9ed99c80e3d4d1a8d301f610af0b90d1",
-    "projection_digest": "ce30cbecf9948b0085212870b6351795d67f3676355d3e29a6b60ae1862e6c2f"
+    "contract_digest": "slice-sha256/2:84d3d1094d63e08d05e6556b5f633589c98643752b8ff1c198bb1b21b3d6a6c7",
+    "projection_digest": "871a9db27afac3dff222c507069f62394884f507c8cf20d4c41f864952e95092"
   },
   "generator_version": "0.60.0",
   "target": "rust",
@@ -40,6 +40,7 @@
     "thalamus.definition.History",
     "thalamus.definition.Links",
     "thalamus.definition.Owner",
+    "thalamus.definition.Persistence",
     "thalamus.definition.QueryText",
     "thalamus.definition.RuleId",
     "thalamus.definition.SignalDefinition.State",
@@ -77,7 +78,14 @@
     "thalamus.observation.SeriesKey",
     "thalamus.observation.SignalSample.State",
     "thalamus.observation.TimeWindow",
-    "thalamus.observation.UnreadReading"
+    "thalamus.observation.UnreadReading",
+    "thalamus.rollup.DailyRollup.State",
+    "thalamus.rollup.RollupId",
+    "thalamus.rollup.RollupRecorded",
+    "thalamus.rollup.VerdictCounts",
+    "thalamus.transition.Transition.State",
+    "thalamus.transition.TransitionId",
+    "thalamus.transition.TransitionRecorded"
   ],
   "declarations": {
     "thalamus.assertion.Asker": "ThalamusAssertionAsker",
@@ -105,6 +113,7 @@
     "thalamus.definition.History": "ThalamusDefinitionHistory",
     "thalamus.definition.Links": "ThalamusDefinitionLinks",
     "thalamus.definition.Owner": "ThalamusDefinitionOwner",
+    "thalamus.definition.Persistence": "ThalamusDefinitionPersistence",
     "thalamus.definition.QueryText": "ThalamusDefinitionQueryText",
     "thalamus.definition.RuleId": "ThalamusDefinitionRuleId",
     "thalamus.definition.SignalDefinition.State": "ThalamusDefinitionSignalDefinitionState",
@@ -142,7 +151,14 @@
     "thalamus.observation.SeriesKey": "ThalamusObservationSeriesKey",
     "thalamus.observation.SignalSample.State": "ThalamusObservationSignalSampleState",
     "thalamus.observation.TimeWindow": "ThalamusObservationTimeWindow",
-    "thalamus.observation.UnreadReading": "ThalamusObservationUnreadReading"
+    "thalamus.observation.UnreadReading": "ThalamusObservationUnreadReading",
+    "thalamus.rollup.DailyRollup.State": "ThalamusRollupDailyRollupState",
+    "thalamus.rollup.RollupId": "ThalamusRollupRollupId",
+    "thalamus.rollup.RollupRecorded": "ThalamusRollupRollupRecorded",
+    "thalamus.rollup.VerdictCounts": "ThalamusRollupVerdictCounts",
+    "thalamus.transition.Transition.State": "ThalamusTransitionTransitionState",
+    "thalamus.transition.TransitionId": "ThalamusTransitionTransitionId",
+    "thalamus.transition.TransitionRecorded": "ThalamusTransitionTransitionRecorded"
   },
   "annotations": [
     {
@@ -511,6 +527,16 @@
       "detail": "retained in source.schema.json; no decoder behavior inferred"
     },
     {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/fixed/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/fixed/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
       "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/min_trend_window/description",
       "rule": "description",
       "detail": "retained in source.schema.json; no decoder behavior inferred"
@@ -518,6 +544,11 @@
     {
       "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/min_trend_window/format",
       "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/rolling_n/description",
+      "rule": "description",
       "detail": "retained in source.schema.json; no decoder behavior inferred"
     },
     {
@@ -632,6 +663,41 @@
     },
     {
       "pointer": "/$defs/thalamus.definition.Owner/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/k/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/k_crit/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/m/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/x-ess-name",
       "rule": "x-ess-name",
       "detail": "model identity and wire mapping retained in source.schema.json"
     },
@@ -1484,6 +1550,141 @@
       "pointer": "/$defs/thalamus.observation.UnreadReading/x-ess-name",
       "rule": "x-ess-name",
       "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.DailyRollup.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.DailyRollup.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.DailyRollup.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupRecorded/properties/day/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupRecorded/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupRecorded/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.RollupRecorded/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/na/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.Transition.State/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.Transition.State/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.Transition.State/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionId/description",
+      "rule": "description",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionId/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionId/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionId/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionRecorded/properties/settled_ts/format",
+      "rule": "format",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionRecorded/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionRecorded/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionRecorded/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
     }
   ],
   "obligations": [
@@ -1523,9 +1724,54 @@
       "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
     },
     {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/fixed/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/rolling_n",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.EvaluationSpec/properties/rolling_n",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
       "pointer": "/$defs/thalamus.definition.Family/x-ess-alphabet",
       "rule": "model_alphabet",
       "detail": "enforce the retained model alphabet: every character of the text is one of it; structural codecs do not check characters"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/k",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/k",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/k_crit",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/k_crit",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/m",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.definition.Persistence/properties/m",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
     },
     {
       "pointer": "/$defs/thalamus.definition.SignalId/x-ess-alphabet",
@@ -1649,6 +1895,61 @@
     },
     {
       "pointer": "/$defs/thalamus.observation.SampleId/pattern",
+      "rule": "pattern",
+      "detail": "validate this constraint against the source schema at runtime"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/crit",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/crit",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/na",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/na",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/ok",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/ok",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/unknown",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/unknown",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/warn",
+      "rule": "integer",
+      "detail": "serde_json::Number holds exact JSON numbers with the default `exact-numbers` feature and binary64 without it, and does not enforce integrality; validate the source constraint"
+    },
+    {
+      "pointer": "/$defs/thalamus.rollup.VerdictCounts/properties/warn",
+      "rule": "rust_exact_numbers",
+      "detail": "this value holds JSON numbers in serde_json; the generated crate's default-on `exact-numbers` feature enables serde_json/arbitrary_precision, and a consumer that turns default features off gets these numbers as binary64"
+    },
+    {
+      "pointer": "/$defs/thalamus.transition.TransitionId/pattern",
       "rule": "pattern",
       "detail": "validate this constraint against the source schema at runtime"
     }

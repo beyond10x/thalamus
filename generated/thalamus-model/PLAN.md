@@ -1,14 +1,14 @@
 <!--
   generated from thalamus v1
-  model digest 827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0
-  contract digest 13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988
+  model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
+  contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
   do not edit: regenerate with `ess synthesize --layout crate`
 -->
 # Synthesis plan — thalamus v1
 
 Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regenerate with `ess synthesize --layout crate`.
 
-144 capabilities: **136 generated**, **8 obligations**, **0 refused**. An obligation is yours to implement against its contract; a refusal is a fact about this synthesis scope, not about the specification.
+177 capabilities: **166 generated**, **11 obligations**, **0 refused**. An obligation is yours to implement against its contract; a refusal is a fact about this synthesis scope, not about the specification.
 
 ## Generated
 
@@ -31,6 +31,7 @@ Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regen
 | domain type | `thalamus.definition.History` |
 | domain type | `thalamus.definition.Links` |
 | domain type | `thalamus.definition.Owner` |
+| domain type | `thalamus.definition.Persistence` |
 | domain type | `thalamus.definition.QueryText` |
 | domain type | `thalamus.definition.RuleId` |
 | domain type | `thalamus.definition.SignalDefinition.State` |
@@ -65,12 +66,19 @@ Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regen
 | domain type | `thalamus.observation.SignalSample.State` |
 | domain type | `thalamus.observation.TimeWindow` |
 | domain type | `thalamus.observation.UnreadReading` |
+| domain type | `thalamus.rollup.DailyRollup.State` |
+| domain type | `thalamus.rollup.RollupId` |
+| domain type | `thalamus.rollup.VerdictCounts` |
+| domain type | `thalamus.transition.Transition.State` |
+| domain type | `thalamus.transition.TransitionId` |
 | entity lifecycle | `thalamus.assertion.Assertion` |
 | entity lifecycle | `thalamus.definition.SignalDefinition` |
 | entity lifecycle | `thalamus.dimension.Dimension` |
 | entity lifecycle | `thalamus.dimension.DimensionRegistry` |
 | entity lifecycle | `thalamus.evaluation.SignalEvaluation` |
 | entity lifecycle | `thalamus.observation.SignalSample` |
+| entity lifecycle | `thalamus.rollup.DailyRollup` |
+| entity lifecycle | `thalamus.transition.Transition` |
 | command contract | `thalamus.assertion.AnswerAssertion` |
 | command behaviour | `thalamus.assertion.AnswerAssertion` |
 | command contract | `thalamus.assertion.AskAssertion` |
@@ -89,6 +97,9 @@ Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regen
 | command contract | `thalamus.dimension.RegisterDimension` |
 | command contract | `thalamus.evaluation.RecordEvaluation` |
 | command contract | `thalamus.observation.RecordSample` |
+| command contract | `thalamus.rollup.RecordRollup` |
+| command behaviour | `thalamus.rollup.RecordRollup` |
+| command contract | `thalamus.transition.RecordTransition` |
 | event type | `thalamus.assertion.AssertionAnswered` |
 | event type | `thalamus.assertion.AssertionAsked` |
 | event type | `thalamus.definition.DefinitionActivated` |
@@ -101,6 +112,8 @@ Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regen
 | event type | `thalamus.dimension.RegistryDeclared` |
 | event type | `thalamus.evaluation.EvaluationRecorded` |
 | event type | `thalamus.observation.SampleRecorded` |
+| event type | `thalamus.rollup.RollupRecorded` |
+| event type | `thalamus.transition.TransitionRecorded` |
 | error type | `thalamus.assertion.AssertionStateConflict` |
 | error type | `thalamus.assertion.NoSignals` |
 | error type | `thalamus.assertion.ReasonRequired` |
@@ -108,10 +121,15 @@ Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regen
 | error type | `thalamus.assertion.UnknownAssertion` |
 | error type | `thalamus.definition.DefinitionExists` |
 | error type | `thalamus.definition.DefinitionStateConflict` |
+| error type | `thalamus.definition.FixedNumberMissing` |
+| error type | `thalamus.definition.FixedNumberUnused` |
 | error type | `thalamus.definition.IncompleteDefinition` |
 | error type | `thalamus.definition.InstantNeedsFixedBaseline` |
 | error type | `thalamus.definition.MuteExpiryPassed` |
+| error type | `thalamus.definition.PersistenceTooSmall` |
 | error type | `thalamus.definition.RetiredDefinition` |
+| error type | `thalamus.definition.RollingWindowMissing` |
+| error type | `thalamus.definition.RollingWindowUnused` |
 | error type | `thalamus.definition.UnknownDefinition` |
 | error type | `thalamus.dimension.DimensionExists` |
 | error type | `thalamus.dimension.RegistryExists` |
@@ -122,6 +140,9 @@ Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regen
 | error type | `thalamus.evaluation.UnknownSample` |
 | error type | `thalamus.observation.SignalNotActive` |
 | error type | `thalamus.observation.UnknownSignal` |
+| error type | `thalamus.rollup.RollupExists` |
+| error type | `thalamus.rollup.UnknownSignal` |
+| error type | `thalamus.transition.UnknownSignal` |
 | view type | `thalamus.assertion.Assertions` |
 | view query | `thalamus.assertion.Assertions` |
 | view type | `thalamus.assertion.OpenAssertions` |
@@ -142,12 +163,21 @@ Scope: `component-skeletons`, laid out as `crate`, planned by `ess-synth`. Regen
 | view type | `thalamus.observation.Samples` |
 | view query | `thalamus.observation.Samples` |
 | view type | `thalamus.observation.SeriesSamples` |
+| view type | `thalamus.rollup.Rollups` |
+| view query | `thalamus.rollup.Rollups` |
+| view type | `thalamus.rollup.SeriesRollups` |
+| view type | `thalamus.transition.SeriesTransitions` |
+| view type | `thalamus.transition.Transitions` |
+| view query | `thalamus.transition.Transitions` |
 | actor grants | `thalamus.assertion.Answerer` |
 | actor grants | `thalamus.assertion.Caller` |
 | actor grants | `thalamus.definition.InstanceOperator` |
+| actor grants | `thalamus.definition.Service` |
 | actor grants | `thalamus.dimension.InstanceOperator` |
 | actor grants | `thalamus.evaluation.Grader` |
 | actor grants | `thalamus.observation.Sampler` |
+| actor grants | `thalamus.rollup.Roller` |
+| actor grants | `thalamus.transition.Hysteresis` |
 | component port | `thalamus-service` |
 | component transport | `thalamus-service` |
 
@@ -165,13 +195,16 @@ What the specification fully determines is generated; what it cannot determine i
 | capability | source | why not generated | contract |
 | --- | --- | --- | --- |
 | command behaviour | `thalamus.assertion.AskAssertion` | kept an obligation by a typed response (`response:`) | given `thalamus.assertion.AskAssertion` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `no-signals` when `signals.count == 0`, error `thalamus.assertion.NoSignals`; `asked` otherwise, creates `thalamus.assertion.Assertion`, emits `thalamus.assertion.AssertionAsked` |
-| command behaviour | `thalamus.definition.ProposeDefinition` | kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed` | given `thalamus.definition.ProposeDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `proposed` otherwise, creates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionProposed`; `already-defined` for an identity a record already carries, error `thalamus.definition.DefinitionExists` |
-| command behaviour | `thalamus.definition.ReviseDefinition` | kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed` | given `thalamus.definition.ReviseDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `retired` when the existing subject's stored fields satisfy `state == Retired`, error `thalamus.definition.RetiredDefinition`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `revised` otherwise, updates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionRevised`; `no-such-definition` for an identity no record carries, error `thalamus.definition.UnknownDefinition` |
+| command behaviour | `thalamus.definition.ProposeDefinition` | kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed` | given `thalamus.definition.ProposeDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `proposed` otherwise, creates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionProposed`; `already-defined` for an identity a record already carries, error `thalamus.definition.DefinitionExists` |
+| command behaviour | `thalamus.definition.ReviseDefinition` | kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed` | given `thalamus.definition.ReviseDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `retired` when the existing subject's stored fields satisfy `state == Retired`, error `thalamus.definition.RetiredDefinition`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `revised` otherwise, updates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionRevised`; `no-such-definition` for an identity no record carries, error `thalamus.definition.UnknownDefinition` |
 | command behaviour | `thalamus.dimension.RegisterDimension` | kept an obligation by `when_related:` reading several related rows in one command (beyond10x/ess#283) | given `thalamus.dimension.RegisterDimension` input, decide and enact exactly one outcome. Selection precedence: on commands with `when_related:`, check `existing_instance` then `exists: false` (read the related rows in the declaration order of their `exists: false` branches, and the first missing one answers) before input-guarded refusals; choose the first declared input refusal whose guard holds; then check addressed-row existence (`unknown_instance`, and `existing_instance` on commands without `when_related:`); then the held state (`when_subject_state` and `when_subject`), with `wrong_state` only if the selected branch moves from a state the row does not hold; then choose the first declared present `when_related:` predicate refusal whose predicate and optional input guard hold, across rows; then accepting and external branches in declaration order. An accepting branch that moves nothing answers in every state. Related-presence predicates do not precede input-guarded refusals. Declared outcomes (declaration order, not selection precedence): `no-registry` when no `thalamus.dimension.DimensionRegistry` carries the identity `input.registry_id` names, error `thalamus.dimension.UnknownRegistry`; `no-parent` when no `thalamus.dimension.Dimension` carries the identity `input.parent` names, error `thalamus.dimension.UnknownParent`; `registered` otherwise, creates `thalamus.dimension.Dimension`, emits `thalamus.dimension.DimensionRegistered`; `already-registered` for an identity a record already carries, error `thalamus.dimension.DimensionExists` |
 | command behaviour | `thalamus.evaluation.RecordEvaluation` | kept an obligation by a typed response (`response:`) | given `thalamus.evaluation.RecordEvaluation` input, decide and enact exactly one outcome. Selection precedence: on commands with `when_related:`, check `existing_instance` then `exists: false` before input-guarded refusals; choose the first declared input refusal whose guard holds; then check addressed-row existence (`unknown_instance`, and `existing_instance` on commands without `when_related:`); then the held state (`when_subject_state` and `when_subject`), with `wrong_state` only if the selected branch moves from a state the row does not hold; then accepting and external branches in declaration order. An accepting branch that moves nothing answers in every state. Related-presence predicates do not precede input-guarded refusals. Declared outcomes (declaration order, not selection precedence): `unknown-sample` when no `thalamus.observation.SignalSample` carries the identity `input.sample_id` names, error `thalamus.evaluation.UnknownSample`; `reason-missing` when `(verdict != OK and not (defined(reason)))`, error `thalamus.evaluation.ReasonRequired`; `score-not-admitted` when `(verdict in [N_A, UNKNOWN] and defined(score))`, error `thalamus.evaluation.ScoreNotAdmitted`; `recorded` otherwise, creates `thalamus.evaluation.SignalEvaluation`, emits `thalamus.evaluation.EvaluationRecorded` |
 | command behaviour | `thalamus.observation.RecordSample` | kept an obligation by a typed response (`response:`) | given `thalamus.observation.RecordSample` input, decide and enact exactly one outcome. Selection precedence: on commands with `when_related:`, check `existing_instance` then `exists: false` before input-guarded refusals; choose the first declared input refusal whose guard holds; then check addressed-row existence (`unknown_instance`, and `existing_instance` on commands without `when_related:`); then the held state (`when_subject_state` and `when_subject`), with `wrong_state` only if the selected branch moves from a state the row does not hold; then accepting and external branches in declaration order. An accepting branch that moves nothing answers in every state. Related-presence predicates do not precede input-guarded refusals. Declared outcomes (declaration order, not selection precedence): `unknown-signal` when no `thalamus.definition.SignalDefinition` carries the identity `input.signal` names, error `thalamus.observation.UnknownSignal`; `not-active` when the `thalamus.definition.SignalDefinition` that `input.signal` names satisfies `state != Active`, error `thalamus.observation.SignalNotActive`; `recorded` otherwise, creates `thalamus.observation.SignalSample`, emits `thalamus.observation.SampleRecorded` |
+| command behaviour | `thalamus.transition.RecordTransition` | kept an obligation by a typed response (`response:`) | given `thalamus.transition.RecordTransition` input, decide and enact exactly one outcome. Selection precedence: on commands with `when_related:`, check `existing_instance` then `exists: false` before input-guarded refusals; choose the first declared input refusal whose guard holds; then check addressed-row existence (`unknown_instance`, and `existing_instance` on commands without `when_related:`); then the held state (`when_subject_state` and `when_subject`), with `wrong_state` only if the selected branch moves from a state the row does not hold; then accepting and external branches in declaration order. An accepting branch that moves nothing answers in every state. Related-presence predicates do not precede input-guarded refusals. Declared outcomes (declaration order, not selection precedence): `unknown-signal` when no `thalamus.definition.SignalDefinition` carries the identity `input.signal` names, error `thalamus.transition.UnknownSignal`; `recorded` otherwise, creates `thalamus.transition.Transition`, emits `thalamus.transition.TransitionRecorded` |
 | view query | `thalamus.evaluation.SeriesVerdicts` | kept an obligation by a view parameter (`params:`), which a generated query does not apply | a query answering `thalamus.evaluation.SeriesVerdicts` with rows projected from `thalamus.evaluation.SignalEvaluation` at `read_your_writes` consistency, containing instances where `series == param.series` |
 | view query | `thalamus.observation.SeriesSamples` | kept an obligation by a view parameter (`params:`), which a generated query does not apply | a query answering `thalamus.observation.SeriesSamples` with rows projected from `thalamus.observation.SignalSample` at `read_your_writes` consistency, containing instances where `series == param.series` |
+| view query | `thalamus.rollup.SeriesRollups` | kept an obligation by a view parameter (`params:`), which a generated query does not apply | a query answering `thalamus.rollup.SeriesRollups` with rows projected from `thalamus.rollup.DailyRollup` at `read_your_writes` consistency, containing instances where `series == param.series` |
+| view query | `thalamus.transition.SeriesTransitions` | kept an obligation by a view parameter (`params:`), which a generated query does not apply | a query answering `thalamus.transition.SeriesTransitions` with rows projected from `thalamus.transition.Transition` at `read_your_writes` consistency, containing instances where `series == param.series` |
 
 ## Refused — not represented by this synthesis
 
