@@ -144,10 +144,10 @@
     },
     {
       "area": "Sources",
-      "detail": "Object counts as instant samples with source-only dimensions. Planned in story:m3-kubernetes-adapter.",
+      "detail": "Object counts as instant samples with source-only dimensions.",
       "href": "/docs/concepts/signals#sources",
       "label": "Kubernetes",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T05:30:15Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-kubernetes-adapter",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.59.0)",
+    "reference": "main 7b0f2e2: task check exit 0, 31 ok lanes"
+  }
+}

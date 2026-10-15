@@ -227,11 +227,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m3-sql-adapter",
         "/docs/concepts/signals#sources",
     ),
-    planned(
+    shipped(
         "Sources",
         "Kubernetes",
         "Object counts as instant samples with source-only dimensions.",
-        "story:m3-kubernetes-adapter",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/kubernetes.rs::kubernetes_definition_it_cannot_read_is_unknown_before_any_call",
+        ),
         "/docs/concepts/signals#sources",
     ),
     planned(
