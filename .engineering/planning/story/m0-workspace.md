@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m0-workspace
 kind: story
-status: draft
+status: active
 title: Cargo workspace, generated model and the task check gate
 relations:
 - decomposes: epic:specification
@@ -53,7 +53,10 @@ scope:
   path: generated/thalamus-model
 - confidence: inferred
   path: spec/suite.json
-revision: 4
+revision: 6
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T02:07:53Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "proposed", to: "active", at: "2026-10-15T02:07:53Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":1}}}
 ---
 ## Context
 

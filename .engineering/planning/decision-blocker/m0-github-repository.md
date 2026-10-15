@@ -2,11 +2,13 @@
 format: aep.planning-md/3
 id: decision-blocker:m0-github-repository
 kind: decision-blocker
-status: open
+status: cleared
 title: Nobody has decided that beyond10x/thalamus is created on GitHub and enrolled in common Gates
 relations:
 - blocks: story:m0-ci
-revision: 2
+revision: 3
+transitions:
+- {from: "open", to: "cleared", at: "2026-10-15T02:07:53Z", actor: "human:timo", revision: 3}
 ---
 ## Question
 
