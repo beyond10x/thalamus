@@ -273,11 +273,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m3-one-vocabulary-across-sources",
         "/docs/concepts/verdicts",
     ),
-    planned(
+    shipped(
         "Command line",
         "thalamus sample",
         "One sample per series of every Active definition of an instance.",
-        "story:m1-cli-sample",
+        Evidence::Test(
+            "crates/thalamus-cli/tests/sample.rs::sample_all_once_records_one_sample_per_series",
+        ),
         "/docs/concepts/samples",
     ),
     planned(
