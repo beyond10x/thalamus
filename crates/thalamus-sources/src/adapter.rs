@@ -21,6 +21,14 @@ pub trait Adapter {
     /// other operation before running anything.
     fn read_operations(&self) -> &[&str];
 
+    /// The operations this adapter reads `definition` with: by default every operation of
+    /// [`Adapter::read_operations`]. An adapter whose definition names the operation it reads
+    /// (the HTTP probe) narrows it to that one, and to none when the name is not a read.
+    fn operations_for<'a>(&'a self, definition: &'a SignalDefinitionData) -> Vec<&'a str> {
+        let _ = definition;
+        self.read_operations().to_vec()
+    }
+
     /// One read per series of `definition` for the window ending at `end`.
     ///
     /// A [`ConnectorsError`] is not lost: the registry turns it into one `unknown` read naming

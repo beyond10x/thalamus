@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "cluster",
+      "operation": "resources.get",
+      "revision": "op-rev-1",
+      "result": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"name\":\"api\",\"namespace\":\"prod\"},\"status\":{\"readyReplicas\":2,\"replicas\":2}}"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "operation failed",
+      "data": {"kind": "operational", "code": "not_granted", "stage": "admission", "next_action": "repair_connection"}
+    }
+  }
+}

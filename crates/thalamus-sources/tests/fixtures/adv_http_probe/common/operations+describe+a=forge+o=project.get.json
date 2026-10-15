@@ -1,0 +1,13 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "forge",
+      "revision": "op-rev-1",
+      "schema": "operations/v1alpha1",
+      "operation": {"id": "project.get", "description": "Read one project", "contract": "operations/v1alpha1", "profile": "generic-http"},
+      "source": "cached",
+      "stale": true
+    }
+  }
+}

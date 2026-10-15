@@ -108,7 +108,8 @@ pub fn read(
 
 /// The reads of `definition` through `adapter`, or one `unknown` read saying
 /// [`NOT_IMPLEMENTED`] when there is none. The adapter reads through a client admitting only the
-/// operations it declared; a Connectors failure becomes one `unknown` read naming it.
+/// operations it declared for `definition` ([`Adapter::operations_for`]); a Connectors failure
+/// becomes one `unknown` read naming it.
 pub fn read_with(
     adapter: Option<&dyn Adapter>,
     connectors: &Connectors,
@@ -119,7 +120,8 @@ pub fn read_with(
     let reads = match adapter {
         None => vec![unknown(definition, end, NOT_IMPLEMENTED)],
         Some(adapter) => {
-            let client = connectors.reads(adapter.read_operations());
+            let operations = adapter.operations_for(definition);
+            let client = connectors.reads(&operations);
             adapter
                 .read(&client, definition, end, run_id)
                 .unwrap_or_else(|failure| vec![unknown(definition, end, failure.to_string())])
