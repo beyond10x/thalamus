@@ -141,7 +141,9 @@ pub const CAPABILITIES: &[Capability] = &[
         "Grading",
         "Offset, pooled, higher-of, lower-of and fixed baselines",
         "A baseline older than its series is UNKNOWN.",
-        Evidence::Test("crates/thalamus-core/tests/baselines.rs::baseline_older_than_series_is_unknown"),
+        Evidence::Test(
+            "crates/thalamus-core/tests/baselines.rs::baseline_older_than_series_is_unknown",
+        ),
         "/docs/concepts/baselines",
     ),
     planned(
@@ -197,7 +199,9 @@ pub const CAPABILITIES: &[Capability] = &[
         "Sources",
         "One read-only Connectors client for every source",
         "With the adapter trait every source implements and a recorded double for tests.",
-        Evidence::Test("crates/thalamus-sources/tests/connectors_client.rs::write_operation_is_refused_before_invocation"),
+        Evidence::Test(
+            "crates/thalamus-sources/tests/connectors_client.rs::write_operation_is_refused_before_invocation",
+        ),
         "/docs/concepts/signals#sources",
     ),
     planned(
