@@ -58,6 +58,12 @@ one of:
 
 ## Comparing a series with its past
 
-`thalamus compare --vs 7d` (planned) answers from stored samples: the current window of every series
-against the same slot a week earlier. The [week vs week view](./interfaces.md#views) draws the same
+`thalamus compare <signal> [--dim key=value]... --vs 7d [--at <timestamp>]` answers from stored
+samples only, so it works for a `history: store` signal and while the source is unreachable. It
+takes the newest stored sample of the series at or before `--at` (default now) and the stored
+sample nearest to that sample's time minus the offset, within half the definition's cadence; for
+`7d` the weekday matches by construction. It prints both readings, the delta and the ratio, and
+exits 0. When either side is missing, `unknown` or `partial`, or the offset reaches before the
+first sample of the series, it prints `UNKNOWN` with a reason (`no stored sample at offset`,
+`baseline predates series`) and exits 3; an unknown side never prints a number. The [week vs week view](./interfaces.md#views) draws the same
 comparison over a whole week.

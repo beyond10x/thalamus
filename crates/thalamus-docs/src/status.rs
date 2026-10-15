@@ -291,11 +291,11 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m1-cli-eval-show",
         "/docs/concepts/verdicts",
     ),
-    planned(
+    shipped(
         "Command line",
         "thalamus compare --vs <offset>",
         "Answers from stored samples.",
-        "story:m2-compare",
+        Evidence::Test("crates/thalamus-cli/tests/compare.rs::compare_vs_7d_reads_stored_samples"),
         "/docs/concepts/baselines",
     ),
     planned(
