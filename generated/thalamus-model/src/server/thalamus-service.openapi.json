@@ -8,8 +8,8 @@
     "x-ess-provenance": {
       "system": "thalamus",
       "specification_version": "v1",
-      "source_digest": "51d971079fa66242e2a2f34142dbe44422e1204f980cec980f14fbeb58009d94",
-      "contract_digest": "slice-sha256/2:fd2d9e49183a79ea356f366023aa03cd159da99e8e343e0af5bc5233645b32af"
+      "source_digest": "827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0",
+      "contract_digest": "slice-sha256/2:13c4b1fcc0534ac1d06b37453f62fcff2b8a5610397a25feaf2dc9a5f5254988"
     },
     "x-ess-reached-by": "network"
   },
@@ -3851,7 +3851,7 @@
         "x-ess-name": "thalamus.definition.Unit",
         "x-ess-kind": "newtype",
         "type": "string",
-        "x-ess-alphabet": "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+        "x-ess-alphabet": "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
       },
       "thalamus.definition.UnknownDefinition.Error": {
         "title": "UnknownDefinition payload",
@@ -6311,7 +6311,7 @@
       "x-ess-name": "thalamus.definition.Unit",
       "x-ess-kind": "newtype",
       "type": "string",
-      "x-ess-alphabet": "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+      "x-ess-alphabet": "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
     },
     "thalamus.dimension.Dimension": {
       "title": "Dimension",

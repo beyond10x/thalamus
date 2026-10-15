@@ -500,7 +500,7 @@
       "description": "A UCUM unit, case-sensitive form (1, s, By, {request}, {pod}). A ratio has unit 1.",
       "title": "Unit",
       "type": "string",
-      "x-ess-alphabet": "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~",
+      "x-ess-alphabet": "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
       "x-ess-kind": "newtype",
       "x-ess-name": "thalamus.definition.Unit"
     },
@@ -1101,8 +1101,8 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:e38c7f469e0f29bdbb7ab3fb4a4b7f88f5f20b0c394089e8f5669cccd3b8518c",
-    "source_digest": "51d971079fa66242e2a2f34142dbe44422e1204f980cec980f14fbeb58009d94",
+    "contract_digest": "slice-sha256/2:e6a3109ff3489fba25d884b5b59c33ac9ed99c80e3d4d1a8d301f610af0b90d1",
+    "source_digest": "827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0",
     "specification_version": "v1",
     "system": "thalamus"
   }

@@ -407,6 +407,7 @@ dependencies = [
 name = "thalamus-core"
 version = "0.1.0"
 dependencies = [
+ "serde_json",
  "thalamus",
  "thalamus-core",
  "thalamus-spec-types",

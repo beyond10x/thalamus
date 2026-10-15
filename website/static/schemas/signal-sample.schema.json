@@ -69,8 +69,8 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "51d971079fa66242e2a2f34142dbe44422e1204f980cec980f14fbeb58009d94",
-    "contract_digest": "slice-sha256/2:eac396e564513173bd8e4d6cb6bfa658ca9ce6ede33f709c84487a9cde3cece9",
+    "source_digest": "827e774bfdab74d78674ef1f90b801f077677fc03bc8c865ffa778e5b79217a0",
+    "contract_digest": "slice-sha256/2:9010a011d477c52bc88dee2b6f56fe4e1cba14c2919a86bc4e5c8ec1ed4ce68f",
     "regenerate": "ess generate"
   },
   "$defs": {
@@ -104,7 +104,7 @@
       "x-ess-name": "thalamus.definition.Unit",
       "x-ess-kind": "newtype",
       "type": "string",
-      "x-ess-alphabet": "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+      "x-ess-alphabet": "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
     },
     "thalamus.dimension.DimensionValue": {
       "title": "DimensionValue",
