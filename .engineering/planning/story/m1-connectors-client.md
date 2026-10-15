@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-connectors-client
 kind: story
-status: draft
+status: active
 title: One read-only Connectors client, adapter trait and recorded Connectors double for every source
 relations:
 - decomposes: epic:signal-contract
@@ -37,7 +37,10 @@ scope:
   path: crates/thalamus-sources/tests/connectors_client.rs
 - confidence: inferred
   path: crates/thalamus-sources/tests/fixtures/connectors
-revision: 3
+revision: 5
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T03:07:33Z", actor: "human:timo", revision: 4}
+- {from: "proposed", to: "active", at: "2026-10-15T03:07:33Z", actor: "human:timo", revision: 5}
 ---
 ## Outcome
 

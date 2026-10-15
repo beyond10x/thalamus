@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m0-ci
 kind: story
-status: draft
+status: active
 title: GitHub Actions runs task check on every push and pull request
 relations:
 - decomposes: epic:specification
@@ -10,7 +10,10 @@ relations:
 scope:
 - confidence: inferred
   path: .github/workflows/check.yml
-revision: 3
+revision: 5
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T03:07:32Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-15T03:07:32Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":2}}}
 ---
 ## Context
 

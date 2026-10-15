@@ -7,6 +7,7 @@ title: One read-only live pass against a real Prometheus measures the sizes in d
 relations:
 - decomposes: epic:signal-contract
 - depends_on: story:m1-cli-eval-show
+- depends_on: story:m4-design-record
 scope:
 - confidence: inferred
   path: docs/design/thalamus.md

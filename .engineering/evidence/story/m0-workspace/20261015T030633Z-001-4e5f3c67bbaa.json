@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T03:06:33Z",
+  "actor": "human:timo",
+  "artifact": "story:m0-workspace",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "task check on base 911a539 (no Taskfile, exit 'Task file not found') vs b863833 (exit 0)",
+    "reference": "~/.cache/thalamus-waves/20261015a/ws/scratch/gate-final.log"
+  }
+}

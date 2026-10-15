@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T03:06:33Z",
+  "actor": "human:timo",
+  "artifact": "story:m0-workspace",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check",
+    "reference": "b863833: task check exit 0, 8 tests passed (cli 6, adv_stub_exit 1, adv_conformance_feature 1)"
+  }
+}

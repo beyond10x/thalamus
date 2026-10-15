@@ -8,6 +8,7 @@ relations:
 - decomposes: epic:history-and-transitions
 - depends_on: story:m2-flap-measurement
 - depends_on: story:m2-transitions
+- depends_on: story:m4-design-record
 scope:
 - confidence: inferred
   path: docs/design/thalamus.md
