@@ -930,7 +930,7 @@
       "x-ess-name": "thalamus.observation.Provenance"
     },
     "thalamus.observation.QueryDigest": {
-      "description": "SHA-256 of the exact query text, lower-case hex.",
+      "description": "SHA-256 of the canonical JSON of the definition's query map (keys sorted, no whitespace), lower-case hex.",
       "title": "QueryDigest",
       "type": "string",
       "x-ess-alphabet": "0123456789abcdef",
@@ -1101,8 +1101,8 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:2b3f65e8381091d91197d0d39a7c73f45a7e00a3fa6e0f23ffdb2366d3929d82",
-    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "contract_digest": "slice-sha256/2:e38c7f469e0f29bdbb7ab3fb4a4b7f88f5f20b0c394089e8f5669cccd3b8518c",
+    "source_digest": "51d971079fa66242e2a2f34142dbe44422e1204f980cec980f14fbeb58009d94",
     "specification_version": "v1",
     "system": "thalamus"
   }

@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "the admission deadline ran out",
+      "data": {"kind": "operational", "code": "timeout", "stage": "admission", "next_action": "retry"}
+    }
+  }
+}

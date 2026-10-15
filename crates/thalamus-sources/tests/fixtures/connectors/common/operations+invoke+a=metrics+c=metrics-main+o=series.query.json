@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "metrics",
+      "operation": "series.query",
+      "revision": "op-rev-1",
+      "result": "{\"complete\":true,\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"value\":\"0.25\"}]}"
+    }
+  }
+}

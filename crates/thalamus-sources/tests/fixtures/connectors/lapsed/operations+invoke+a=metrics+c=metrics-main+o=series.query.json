@@ -1,0 +1,26 @@
+[
+  {
+    "call": 1,
+    "exit": 1,
+    "stderr": {
+      "ok": false,
+      "error": {
+        "code": "failure",
+        "message": "the connection's validation evidence lapsed",
+        "data": {"kind": "operational", "code": "not_granted", "stage": "admission", "next_action": "revalidate"}
+      }
+    }
+  },
+  {
+    "call": 2,
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"complete\":true,\"series\":[]}"
+      }
+    }
+  }
+]

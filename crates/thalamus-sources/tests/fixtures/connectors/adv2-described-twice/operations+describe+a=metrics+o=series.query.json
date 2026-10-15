@@ -1,0 +1,16 @@
+[
+  {
+    "call": 1,
+    "stdout": {
+      "ok": true,
+      "result": {"adapter": "metrics", "operation": "series.query", "schema": "series.query/v1alpha1", "revision": "op-rev-1"}
+    }
+  },
+  {
+    "call": 2,
+    "stdout": {
+      "ok": true,
+      "result": {"adapter": "metrics", "operation": "series.query", "schema": "series.query/v1alpha1", "revision": "op-rev-2"}
+    }
+  }
+]

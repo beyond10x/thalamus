@@ -1,0 +1,29 @@
+[
+  {
+    "call": 1,
+    "stdout": {
+      "ok": true,
+      "result": {
+        "connections": [
+          {"adapter": "metrics", "connection": "metrics-other", "state": "ready", "revision": "conn-rev-9"}
+        ],
+        "source": "authority",
+        "stale": false,
+        "next_cursor": "c2"
+      }
+    }
+  },
+  {
+    "call": 2,
+    "stdout": {
+      "ok": true,
+      "result": {
+        "connections": [
+          {"adapter": "metrics", "connection": "metrics-main", "state": "ready", "revision": "conn-rev-1"}
+        ],
+        "source": "authority",
+        "stale": false
+      }
+    }
+  }
+]
