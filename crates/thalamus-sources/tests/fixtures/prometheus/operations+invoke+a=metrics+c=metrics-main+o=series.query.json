@@ -1,0 +1,312 @@
+[
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(requests_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"15\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"3\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(requests_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"556\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"120.9\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(empty_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"0\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(empty_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"0\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (queue_depth_odd)"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"a\"},\"samples\":[[1792018623,\"NaN\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"b\"},\"samples\":[[1792018623,\"+Inf\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"c\"},\"samples\":[[1792018623,\"-Inf\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"d\"},\"samples\":[[1792018623,\"twelve\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"e\"},\"samples\":[[1792018623,\"0.5\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(nan_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"NaN\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (queue_depth_warned)"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":false,\"warnings\":[\"the query touched more samples than the configured soft limit\"],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"4\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"5\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (queue_depth_many)"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":true,\"complete\":false,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"4\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (queue_depth_noted)"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[\"PromQL info: metric might not be a counter, name does not end in _total/_sum/_count/_bucket: \\\"queue_depth_noted\\\"\"],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"4\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"5\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(cut_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"1\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(cut_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":false,\"warnings\":[\"partial response from a store\"],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"40\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "up"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"__name__\":\"up\",\"cluster\":\"alpha\",\"namespace\":\"shared-1\",\"pod\":\"api-0\",\"job\":\"api\"},\"samples\":[[1792018623,\"1\"]],\"samples_truncated\":false},{\"labels\":{\"__name__\":\"up\",\"cluster\":\"beta\",\"job\":\"api\"},\"samples\":[[1792018623,\"0\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "max by (cluster, pod) (queue_depth)"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\",\"pod\":\"api-0\"},\"samples\":[[1792018623,\"1\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"alpha\",\"pod\":\"api-1\"},\"samples\":[[1792018623,\"2\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\",\"pod\":\"api-0\"},\"samples\":[[1792018623,\"3\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster, pod) (increase(collide_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\",\"pod\":\"api-0\"},\"samples\":[[1792018623,\"1\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"alpha\",\"pod\":\"api-1\"},\"samples\":[[1792018623,\"2\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\",\"pod\":\"api-0\"},\"samples\":[[1792018623,\"3\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(collide_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (queue_depth_text)"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"0.25\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"1e-07\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"gamma\"},\"samples\":[[1792018623,\"1e+21\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"delta\"},\"samples\":[[1792018623,\"-0.5\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (queue_depth_now)",
+      "time_unix_s": 1792018623
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"7\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (queue_depth_now)",
+      "time_unix_s": 1791932223
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1791932223,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1791932223,\"6\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum(increase(global_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{},\"samples\":[[1792018623,\"5\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(global_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"50\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(quiet_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(quiet_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"50\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  }
+]
