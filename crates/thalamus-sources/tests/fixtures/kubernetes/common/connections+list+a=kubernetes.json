@@ -1,0 +1,10 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "connections": [
+        {"adapter": "kubernetes", "connection": "kubernetes-main", "state": "ready", "revision": "conn-rev-1"}
+      ]
+    }
+  }
+}

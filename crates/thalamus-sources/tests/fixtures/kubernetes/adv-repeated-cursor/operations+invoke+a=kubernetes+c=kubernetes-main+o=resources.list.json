@@ -1,0 +1,50 @@
+[
+  {
+    "input": {"namespace": "alpha", "kind": "pods", "cursor": "alpha-2"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "kubernetes",
+        "operation": "resources.list",
+        "revision": "op-rev-1",
+        "result": "{\"items\":[{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-3\",\"namespace\":\"alpha\"},\"status\":{\"phase\":\"Running\"}}],\"next_cursor\":\"alpha-2\",\"complete\":false,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"alpha/pods\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":\"4711\"}}"
+      }
+    }
+  },
+  {
+    "input": {"namespace": "alpha", "kind": "pods", "limit": 100},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "kubernetes",
+        "operation": "resources.list",
+        "revision": "op-rev-1",
+        "result": "{\"items\":[{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-1\",\"namespace\":\"alpha\"},\"status\":{\"phase\":\"Running\"}},{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-2\",\"namespace\":\"alpha\"},\"status\":{\"phase\":\"Running\"}}],\"next_cursor\":\"alpha-2\",\"complete\":false,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"alpha/pods\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":\"4711\"}}"
+      }
+    }
+  },
+  {
+    "input": {"namespace": "beta", "kind": "pods", "limit": 100},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "kubernetes",
+        "operation": "resources.list",
+        "revision": "op-rev-1",
+        "result": "{\"items\":[{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"web-1\",\"namespace\":\"beta\"},\"status\":{\"phase\":\"Running\"}}],\"next_cursor\":null,\"complete\":true,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"beta/pods\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":\"4712\"}}"
+      }
+    }
+  },
+  {
+    "input": {"namespace": "gamma", "kind": "pods", "limit": 100},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "kubernetes",
+        "operation": "resources.list",
+        "revision": "op-rev-1",
+        "result": "{\"items\":[],\"next_cursor\":null,\"complete\":true,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"gamma/pods\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":\"4713\"}}"
+      }
+    }
+  }
+]
