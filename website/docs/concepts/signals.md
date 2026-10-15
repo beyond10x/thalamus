@@ -99,16 +99,17 @@ values come from, how it may be set, and optionally its parent key.
 
 Every source is read through a [Connectors](https://beyond10x.github.io/connectors/)
 ([GitHub](https://github.com/beyond10x/connectors)) connection. thalamus invokes read operations
-only, never writes to a system it watches, and never sees a credential.
+only, never writes to a system it watches, and never sees a credential. Which adapters have
+shipped is on the [status page](/docs/status).
 
-| source | reads | status |
-|---|---|---|
-| Prometheus | PromQL; `NaN` is unknown | planned |
-| Loki | LogQL metric queries | planned |
-| SQL | queries; `NULL` and unparseable cells are unknown, never 0 | planned |
-| Kubernetes | object counts, as instant samples with source-only dimensions | planned |
-| Git hosting | repository records as counts and ratios | planned |
-| HTTP probe | the availability of one Connectors read operation | planned |
+| source | reads |
+|---|---|
+| Prometheus | PromQL; `NaN` is unknown |
+| Loki | LogQL metric queries |
+| SQL | queries; `NULL` and unparseable cells are unknown, never 0 |
+| Kubernetes | object counts, as instant samples with source-only dimensions |
+| Git hosting | repository records as counts and ratios |
+| HTTP probe | the availability of one Connectors read operation |
 
 Producers that already speak another verdict vocabulary are mapped onto the ladder at the adapter;
 see [other vocabularies](./verdicts.md#other-vocabularies).

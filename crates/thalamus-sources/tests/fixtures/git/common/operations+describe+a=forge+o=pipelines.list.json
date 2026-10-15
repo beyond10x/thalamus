@@ -1,0 +1,6 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {"adapter": "forge", "operation": "pipelines.list", "schema": "pipelines.list/v1", "revision": "op-rev-1"}
+  }
+}

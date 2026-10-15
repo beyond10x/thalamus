@@ -240,11 +240,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#sources",
     ),
-    planned(
+    shipped(
         "Sources",
         "Git hosting",
-        "Repository records as count and ratio samples.",
-        "story:m3-git-adapter",
+        "GitLab-hosted repository records as count and ratio samples; an unfinished page walk is a lower bound.",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/git.rs::git_unfinished_paging_is_partial_lower_bound",
+        ),
         "/docs/concepts/signals#sources",
     ),
     planned(
