@@ -1,3 +1,6 @@
 /target/
 /.engineering/drafts/
 /generated/*/.ess-output/
+/website/node_modules/
+/website/build/
+/website/.docusaurus/

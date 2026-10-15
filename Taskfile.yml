@@ -3,7 +3,7 @@ version: '3'
 vars:
   CARGO: 'env CARGO_BUILD_JOBS=4 RUST_TEST_THREADS=4 nice -n 19 cargo'
   ESS: ess
-  CRATES: '-p thalamus-core -p thalamus-store -p thalamus-sources -p thalamus-pipeline -p thalamus-service -p thalamus-cli'
+  CRATES: '-p thalamus-core -p thalamus-store -p thalamus-sources -p thalamus-pipeline -p thalamus-service -p thalamus-cli -p thalamus-docs'
 
 tasks:
   generate:
@@ -44,10 +44,28 @@ tasks:
       - '{{.CARGO}} test --locked --workspace'
 
   check:
-    desc: The gate — spec validity, generated-code drift, fmt, clippy, tests
+    desc: The gate — spec validity, generated-code drift, fmt, clippy, tests, documentation drift
     cmds:
       - '{{.ESS}} specify validate --path spec --strict-requires'
       - task: drift
       - '{{.CARGO}} fmt {{.CRATES}} -- --check'
       - '{{.CARGO}} clippy --locked --workspace --all-targets -- -D warnings'
       - task: test
+      - task: docs-check
+
+  docs-generate:
+    desc: Regenerate the derived documentation files under website/
+    cmds:
+      - '{{.CARGO}} run --locked -p thalamus-docs -- generate --ess {{.ESS}}'
+
+  docs-check:
+    desc: Fail when a generated documentation file is missing, stale or edited by hand
+    cmds:
+      - '{{.CARGO}} run --locked -p thalamus-docs -- generate --check --ess {{.ESS}}'
+
+  website:
+    desc: Build the documentation site, as CI's Documentation validation workflow does
+    dir: website
+    cmds:
+      - npm ci --allow-git=root
+      - npm run build

@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Assertion",
+  "description": "One question whether named signals stayed within baseline after an instant for a horizon, and its answer.",
+  "x-ess-name": "thalamus.assertion.Assertion",
+  "x-ess-kind": "entity",
+  "type": "object",
+  "properties": {
+    "assertion_id": {
+      "$ref": "#/$defs/thalamus.assertion.AssertionId"
+    },
+    "signals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/thalamus.definition.SignalId"
+      },
+      "x-ess-relation": {
+        "name": "signals",
+        "kind": "references",
+        "source": "thalamus.assertion.Assertion",
+        "target": "thalamus.definition.SignalDefinition",
+        "cardinality": "many",
+        "via": "signals"
+      }
+    },
+    "dims": {
+      "description": "The series the assertion is about, narrowed by dimension values.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/thalamus.dimension.DimensionValue"
+      },
+      "x-ess-map-key": "String"
+    },
+    "after": {
+      "description": "The window starts here (a rollout or merge instant).",
+      "type": "string",
+      "format": "date-time"
+    },
+    "horizon": {
+      "description": "How long after `after` the signals must stay within.",
+      "type": "string",
+      "format": "duration"
+    },
+    "within": {
+      "$ref": "#/$defs/thalamus.assertion.Within"
+    },
+    "asker": {
+      "$ref": "#/$defs/thalamus.assertion.Asker"
+    },
+    "result": {
+      "$ref": "#/$defs/thalamus.assertion.AssertionResult"
+    },
+    "worst": {
+      "$ref": "#/$defs/thalamus.evaluation.Verdict",
+      "description": "The worst verdict over the window; its exit code is the assertion's."
+    },
+    "reason": {
+      "description": "Why the result is breach or unknown.",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/thalamus.assertion.Assertion.State"
+    }
+  },
+  "required": [
+    "assertion_id",
+    "signals",
+    "dims",
+    "after",
+    "horizon",
+    "within",
+    "asker",
+    "state"
+  ],
+  "additionalProperties": false,
+  "x-ess-provenance": {
+    "system": "thalamus",
+    "specification_version": "v1",
+    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "contract_digest": "slice-sha256/2:65bccea1dcdbcf20bc939ca558fe28a364995e884c1a5aa0b7b70de0e16b20e3",
+    "regenerate": "ess generate"
+  },
+  "$defs": {
+    "thalamus.assertion.Asker": {
+      "title": "Asker",
+      "description": "Who asked; carried into the answer.",
+      "x-ess-name": "thalamus.assertion.Asker",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/thalamus.assertion.AskerKind"
+        },
+        "ref": {
+          "description": "The caller's own reference (a release tag, a merge request, a run id, a controller name).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.assertion.AskerKind": {
+      "title": "AskerKind",
+      "description": "What kind of caller asked.",
+      "x-ess-name": "thalamus.assertion.AskerKind",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "release",
+        "merge_request",
+        "test_run",
+        "controller"
+      ]
+    },
+    "thalamus.assertion.Assertion.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.assertion.Assertion.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Answered",
+        "Asked"
+      ]
+    },
+    "thalamus.assertion.AssertionId": {
+      "title": "AssertionId",
+      "description": "An assertion id, minted by the service.",
+      "x-ess-name": "thalamus.assertion.AssertionId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "pattern": "^asr_"
+    },
+    "thalamus.assertion.AssertionResult": {
+      "title": "AssertionResult",
+      "description": "The answer to an assertion. Only within passes.",
+      "x-ess-name": "thalamus.assertion.AssertionResult",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "within",
+        "breach",
+        "unknown"
+      ],
+      "x-ess-attributes": [
+        {
+          "kind": "boolean",
+          "name": "passes",
+          "type": "Boolean",
+          "values": {
+            "breach": false,
+            "unknown": false,
+            "within": true
+          }
+        }
+      ]
+    },
+    "thalamus.assertion.Within": {
+      "title": "Within",
+      "description": "What the signals must stay within.",
+      "x-ess-name": "thalamus.assertion.Within",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "baseline"
+      ]
+    },
+    "thalamus.definition.SignalId": {
+      "title": "SignalId",
+      "description": "Stable signal id, spelled <family>.<layer>.<name> in lower case.",
+      "x-ess-name": "thalamus.definition.SignalId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_."
+    },
+    "thalamus.dimension.DimensionValue": {
+      "title": "DimensionValue",
+      "description": "A value of one dimension key in one series.",
+      "x-ess-name": "thalamus.dimension.DimensionValue",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.evaluation.Verdict": {
+      "title": "Verdict",
+      "description": "The one verdict ladder. exit is the process exit code; rank orders an aggregate worst-first (CRIT > WARN > UNKNOWN > OK = N/A); scored says whether the verdict carries a score.",
+      "x-ess-name": "thalamus.evaluation.Verdict",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "OK",
+        "N/A",
+        "WARN",
+        "CRIT",
+        "UNKNOWN"
+      ],
+      "x-ess-attributes": [
+        {
+          "kind": "integer",
+          "name": "exit",
+          "type": "Integer",
+          "values": {
+            "CRIT": 2,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 3,
+            "WARN": 1
+          }
+        },
+        {
+          "kind": "integer",
+          "name": "rank",
+          "type": "Integer",
+          "values": {
+            "CRIT": 3,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 1,
+            "WARN": 2
+          }
+        },
+        {
+          "kind": "boolean",
+          "name": "scored",
+          "type": "Boolean",
+          "values": {
+            "CRIT": true,
+            "N/A": false,
+            "OK": true,
+            "UNKNOWN": false,
+            "WARN": true
+          }
+        }
+      ]
+    }
+  }
+}

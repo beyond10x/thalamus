@@ -1,0 +1,252 @@
+{
+  "asOf": "2026-10-15",
+  "format": "b10x-status/1",
+  "items": [
+    {
+      "area": "Specification",
+      "detail": "Five domains under spec/: signal definitions, dimensions, samples, evaluations and assertions. task check validates them.",
+      "href": "/docs/reference/ess",
+      "label": "The five nouns are specified in ESS",
+      "status": "shipped"
+    },
+    {
+      "area": "Specification",
+      "detail": "generated/thalamus-model and generated/spec-types come from spec/ through ess; task check fails when they drift.",
+      "href": "/docs/reference/ess",
+      "label": "The Rust model is generated from the specification",
+      "status": "shipped"
+    },
+    {
+      "area": "Command line",
+      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). Each still exits 70, not implemented.",
+      "href": "/docs/getting-started",
+      "label": "A usage error exits 64, never a verdict code",
+      "status": "shipped"
+    },
+    {
+      "area": "Specification",
+      "detail": "A conformance harness runs every synthesised scenario of the definition and dimension domains. Planned in story:m0-conformance-definitions.",
+      "href": "/docs/reference/ess",
+      "label": "Definition and dimension scenarios pass",
+      "status": "planned"
+    },
+    {
+      "area": "Specification",
+      "detail": "Samples, evaluations and assertions join the harness under task check. Planned in story:m0-conformance-records.",
+      "href": "/docs/reference/ess",
+      "label": "Every synthesised conformance scenario passes",
+      "status": "planned"
+    },
+    {
+      "area": "Specification",
+      "detail": "Tests against both generated crates hold the tagged reading, and a validator holds the unit grammar ESS cannot state. Planned in story:m0-probes.",
+      "href": "/docs/concepts/samples",
+      "label": "An unknown reading carries no value; a unit is UCUM",
+      "status": "planned"
+    },
+    {
+      "area": "Project",
+      "detail": "On every push and every pull request. Planned in story:m0-ci.",
+      "href": "/docs/getting-started",
+      "label": "CI runs task check",
+      "status": "planned"
+    },
+    {
+      "area": "Grading",
+      "detail": "thalamus-core grades a reading against a baseline onto the ladder; an unknown reading is never OK. Planned in story:m1-verdict-grading.",
+      "href": "/docs/concepts/verdicts",
+      "label": "One verdict, score and reason per reading",
+      "status": "planned"
+    },
+    {
+      "area": "Grading",
+      "detail": "A baseline older than its series is UNKNOWN. Planned in story:m1-baselines.",
+      "href": "/docs/concepts/baselines",
+      "label": "Offset, pooled, higher-of, lower-of and fixed baselines",
+      "status": "planned"
+    },
+    {
+      "area": "Grading",
+      "detail": "Computed from stored samples. Planned in story:m2-store-baselines.",
+      "href": "/docs/concepts/baselines",
+      "label": "Same-slot median and rolling median baselines",
+      "status": "planned"
+    },
+    {
+      "area": "Grading",
+      "detail": "A change counts after k agreeing evaluations (k_crit for CRIT); WARN clears after m OK evaluations. Planned in story:m2-hysteresis-core.",
+      "href": "/docs/concepts/verdicts#persistence",
+      "label": "Persistence settles verdict changes",
+      "status": "planned"
+    },
+    {
+      "area": "Grading",
+      "detail": "Colour ladders, detector exits and blocking gate exits. Planned in story:m3-vocabulary-mapping.",
+      "href": "/docs/concepts/verdicts#other-vocabularies",
+      "label": "Other producers' vocabularies map onto the ladder",
+      "status": "planned"
+    },
+    {
+      "area": "Grading",
+      "detail": "Its finding count against a fixed baseline. Planned in story:m3-advisory-gate-mapping.",
+      "href": "/docs/concepts/verdicts#other-vocabularies",
+      "label": "An advisory gate grades WARN, never CRIT",
+      "status": "planned"
+    },
+    {
+      "area": "Instances",
+      "detail": "Only Active definitions whose dimensions are registered are sampled. Planned in story:m1-instance-registry.",
+      "href": "/docs/concepts/signals",
+      "label": "Definitions and the dimension registry load and validate",
+      "status": "planned"
+    },
+    {
+      "area": "Instances",
+      "detail": "One append-only stream per instance, on the File or SQLite provider. Planned in story:m1-eventlog-store.",
+      "href": "/docs/concepts/samples#storage",
+      "label": "Samples and evaluations persist in Eventlog",
+      "status": "planned"
+    },
+    {
+      "area": "Instances",
+      "detail": "The service samples the definition as Active again and records the unmute. Planned in story:m2-auto-unmute.",
+      "href": "/docs/concepts/signals#lifecycle",
+      "label": "An expired mute ends by itself",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "With the adapter trait every source implements and a recorded double for tests. Planned in story:m1-connectors-client.",
+      "href": "/docs/concepts/signals#sources",
+      "label": "One read-only Connectors client for every source",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "PromQL reads become typed readings; a ratio is a decimal with unit 1, NaN is unknown. Planned in story:m1-prometheus-adapter.",
+      "href": "/docs/concepts/signals#sources",
+      "label": "Prometheus",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "LogQL metric queries. Planned in story:m3-loki-adapter.",
+      "href": "/docs/concepts/signals#sources",
+      "label": "Loki",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "NULL and unparseable cells are unknown, never 0. Planned in story:m3-sql-adapter.",
+      "href": "/docs/concepts/signals#sources",
+      "label": "SQL",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "Object counts as instant samples with source-only dimensions. Planned in story:m3-kubernetes-adapter.",
+      "href": "/docs/concepts/signals#sources",
+      "label": "Kubernetes",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "Repository records as count and ratio samples. Planned in story:m3-git-adapter.",
+      "href": "/docs/concepts/signals#sources",
+      "label": "Git hosting",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "The availability of one Connectors read operation. Planned in story:m3-http-probe-adapter.",
+      "href": "/docs/concepts/signals#sources",
+      "label": "HTTP probe",
+      "status": "planned"
+    },
+    {
+      "area": "Sources",
+      "detail": "A pass over every source kind yields only ladder verdicts and exits with the worst one. Planned in story:m3-one-vocabulary-across-sources.",
+      "href": "/docs/concepts/verdicts",
+      "label": "One vocabulary across every source",
+      "status": "planned"
+    },
+    {
+      "area": "Command line",
+      "detail": "One sample per series of every Active definition of an instance. Planned in story:m1-cli-sample.",
+      "href": "/docs/concepts/samples",
+      "label": "thalamus sample",
+      "status": "planned"
+    },
+    {
+      "area": "Command line",
+      "detail": "eval grades stored samples once per definition revision; show exits with the worst current verdict. Planned in story:m1-cli-eval-show.",
+      "href": "/docs/concepts/verdicts",
+      "label": "thalamus eval and thalamus show",
+      "status": "planned"
+    },
+    {
+      "area": "Command line",
+      "detail": "Answers from stored samples. Planned in story:m2-compare.",
+      "href": "/docs/concepts/baselines",
+      "label": "thalamus compare --vs <offset>",
+      "status": "planned"
+    },
+    {
+      "area": "Command line",
+      "detail": "One rollup per series per UTC day. Planned in story:m2-rollup.",
+      "href": "/docs/concepts/samples#storage",
+      "label": "thalamus rollup",
+      "status": "planned"
+    },
+    {
+      "area": "Command line",
+      "detail": "Measures flap rates over stored evaluations before k and m are fixed. Planned in story:m2-flap-measurement.",
+      "href": "/docs/concepts/verdicts#persistence",
+      "label": "thalamus flaps",
+      "status": "planned"
+    },
+    {
+      "area": "Service",
+      "detail": "The scheduler in thalamus-service owns sampling; a missed slot is an unknown sample. Planned in story:m2-scheduler.",
+      "href": "/docs/concepts/samples",
+      "label": "Each Active definition is sampled on its cadence",
+      "status": "planned"
+    },
+    {
+      "area": "Service",
+      "detail": "A verdict change that persisted is recorded and emitted. Planned in story:m2-transitions.",
+      "href": "/docs/concepts/interfaces#events",
+      "label": "Settled transitions as CloudEvents",
+      "status": "planned"
+    },
+    {
+      "area": "Views",
+      "detail": "Served by thalamus-service, with dashboard and alert-rule export for Prometheus and Loki definitions. Planned in epic:views-and-exports.",
+      "href": "/docs/concepts/interfaces#views",
+      "label": "Heatmap, sparklines, week vs week, before/after a deploy, live",
+      "status": "planned"
+    },
+    {
+      "area": "Integrations",
+      "detail": "A release, a merge request, a test run or a controller asks whether named signals stayed within baseline. Planned in epic:assertions-and-integrations.",
+      "href": "/docs/concepts/interfaces#assertions",
+      "label": "thalamus assert",
+      "status": "planned"
+    },
+    {
+      "area": "Integrations",
+      "detail": "Each fact cites the evaluation that produced it; cortex never receives raw samples. Planned in epic:assertions-and-integrations.",
+      "href": "/docs/concepts/interfaces#cortex",
+      "label": "Transitions and rollups reach cortex as facts",
+      "status": "planned"
+    },
+    {
+      "area": "Integrations",
+      "detail": "Finished cases become samples; a release-day run carries signal assertions. Planned in epic:assertions-and-integrations.",
+      "href": "/docs/concepts/interfaces#test-runs",
+      "label": "Test runs, both directions",
+      "status": "planned"
+    }
+  ],
+  "source": "generated by thalamus-docs from its capability list, checked against main and the planning store"
+}
