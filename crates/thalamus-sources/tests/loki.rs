@@ -243,6 +243,37 @@ fn range_answer(lines: usize, complete: bool, causes: &[&str]) -> Value {
 }
 
 const RANGE_INVOKE: &str = "operations+invoke+a=logs+c=logs-main+o=logs.query_range.json";
+const METRIC_INVOKE: &str = "operations+invoke+a=logs+c=logs-main+o=logs.query_metric.json";
+
+/// A complete `logs.query_metric` instant answer of `query` as the Connectors CLI wraps it, one
+/// series per label set and value.
+fn metric_answer(query: &str, series: &[(Value, &str)]) -> Value {
+    let series: Vec<Value> = series
+        .iter()
+        .map(|(labels, value)| {
+            json!({"labels": labels, "samples": [{"timestamp_unix_ns": END_NS, "value": value}]})
+        })
+        .collect();
+    let document = json!({
+        "result_type": "vector",
+        "series": series,
+        "complete": true,
+        "truncation": [],
+        "provenance": {"instance": "loki-test", "profile": "logql-metric", "observed_at_unix_ms": 1_792_018_623_000_u64},
+    });
+    json!({
+        "input": {"query": query},
+        "stdout": {
+            "ok": true,
+            "result": {
+                "adapter": "logs",
+                "operation": "logs.query_metric",
+                "revision": "op-rev-metric-1",
+                "result": document.to_string(),
+            }
+        }
+    })
+}
 
 #[test]
 fn loki_metric_series_become_samples_with_source_labels_only() {
@@ -351,6 +382,67 @@ fn loki_ratio_is_decimal_with_unit_1() {
     let reads = read(&w, &ratio_definition("{line}"));
     assert_eq!(reads.len(), 1, "{reads:?}");
     assert!(reason(&reads[0]).contains("unit 1"), "{reads:?}");
+}
+
+/// A complete numerator answer with no series at all, over a denominator that answered some,
+/// reads unknown for every denominator series, without a population (design § 11 D20). A renamed
+/// stream label or a broken matcher answers no series exactly as a healthy instance with no error
+/// line does, and no numerator series is there to show the two queries group alike.
+#[test]
+fn loki_empty_numerator_answer_infers_no_zero() {
+    let w = World::new("loki_empty_numerator_answer_infers_no_zero", &[]);
+    w.record(
+        METRIC_INVOKE,
+        &json!([
+            metric_answer(NUMERATOR, &[]),
+            metric_answer(
+                DENOMINATOR,
+                &[
+                    (json!({"cluster": "alpha"}), "556"),
+                    (json!({"cluster": "beta"}), "40"),
+                ]
+            ),
+        ]),
+    );
+
+    let reads = read(&w, &ratio_definition("1"));
+
+    assert_eq!(reads.len(), 2, "one read per denominator series: {reads:?}");
+    assert_eq!(reads[0].dims, dims(&[("cluster", "alpha")]));
+    assert_eq!(reads[1].dims, dims(&[("cluster", "beta")]));
+    for read in &reads {
+        assert!(
+            reason(read).contains("the numerator answered no series"),
+            "{read:?}"
+        );
+        assert_eq!(read.denominator, None, "{read:?}");
+        assert_eq!(read.raw, None, "{read:?}");
+        assert_eq!(read.window.start, Timestamp(START.into()));
+        assert_eq!(
+            read.query_sha256,
+            query_digest(&ratio_definition("1").query)
+        );
+    }
+
+    // Without dimensions the one denominator series is the whole instance: unknown, never 0.
+    let w = World::new("loki_empty_numerator_answer_infers_no_zero_whole", &[]);
+    w.record(
+        METRIC_INVOKE,
+        &json!([
+            metric_answer(NUMERATOR, &[]),
+            metric_answer(DENOMINATOR, &[(json!({}), "40")]),
+        ]),
+    );
+    let mut whole = ratio_definition("1");
+    whole.dimensions = None;
+    let reads = read(&w, &whole);
+    assert_eq!(reads.len(), 1, "{reads:?}");
+    assert!(reads[0].dims.is_empty(), "{reads:?}");
+    assert!(
+        reason(&reads[0]).contains("the numerator answered no series"),
+        "{reads:?}"
+    );
+    assert_eq!(reads[0].denominator, None, "{reads:?}");
 }
 
 #[test]

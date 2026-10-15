@@ -4,7 +4,7 @@
 //! | extractor | reads | each read |
 //! |---|---|---|
 //! | `loki.value` | `logs.query_metric` of `query.value`, instant at the window end | one per returned series, its value |
-//! | `loki.ratio` | `logs.query_metric` of `query.numerator` and `query.denominator`, both instant at the window end | one per denominator label set, paired on the full label set; numerator over denominator, unit `1`; when every numerator series has a denominator twin, a label set the complete numerator lacks reads numerator 0 |
+//! | `loki.ratio` | `logs.query_metric` of `query.numerator` and `query.denominator`, both instant at the window end | one per denominator label set, paired on the full label set; numerator over denominator, unit `1`; when every numerator series has a denominator twin, a label set the complete numerator lacks reads numerator 0; a numerator answer with no series reads each label set `unknown` |
 //! | `loki.count` | `logs.query_range` of `query.value` over the window, at most [`LINE_LIMIT`] lines | one per series of returned lines, how many; no line at all is 0 for a signal without dimensions and `unknown` for one with |
 //!
 //! A series' `dims` hold only the labels it carries that the definition declares (L9). A value
@@ -143,8 +143,9 @@ impl Reads<'_> {
     /// numerator series has a denominator series of the same labels, a label set the denominator
     /// answers and the complete numerator answer lacks reads numerator 0: `count_over_time` emits
     /// nothing for a stream without a matching line. A numerator series without that twin, or an
-    /// incomplete answer on either side, makes the whole pass one `unknown` read (design § 11
-    /// D20).
+    /// incomplete answer on either side, makes the whole pass one `unknown` read. A complete
+    /// numerator answer with no series at all reads every denominator label set `unknown`, without
+    /// a population (design § 11 D20).
     fn ratio(&self) -> Outcome {
         if let Some(unit) = &self.definition.unit
             && unit.0 != "1"
@@ -191,6 +192,11 @@ impl Reads<'_> {
                 Some(texts) => {
                     one_of(labels, texts.clone()).map_err(|why| format!("numerator: {why}"))
                 }
+                // No numerator series at all shows nothing about how the numerator groups: a
+                // renamed label or a broken matcher answers the same as no error anywhere.
+                None if numerator.is_empty() => Err("the numerator answered no series, so no \
+                                                     denominator series is a count of 0"
+                    .to_string()),
                 None => Ok("0".to_string()),
             };
             let denominator =
