@@ -14,7 +14,7 @@ builds all three and runs the gate; every output below is pasted from a run.
 
 - Rust and Cargo (edition 2024).
 - [Task](https://taskfile.dev/), the task runner the gate is written for.
-- The `ess` command line at the version `spec/ess-inputs.yaml` requires (`ess 0.59.0`), from
+- The `ess` command line at the version `spec/ess-inputs.yaml` requires (`ess 0.60.0`), from
   [ESS](https://beyond10x.github.io/ess/) ([GitHub](https://github.com/beyond10x/ess)).
 
 ## 1. Check the specification
