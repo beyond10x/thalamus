@@ -130,10 +130,10 @@
     },
     {
       "area": "Sources",
-      "detail": "LogQL metric queries. Planned in story:m3-loki-adapter.",
+      "detail": "LogQL metric queries.",
       "href": "/docs/concepts/signals#sources",
       "label": "Loki",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",

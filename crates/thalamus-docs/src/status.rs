@@ -213,11 +213,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m1-prometheus-adapter",
         "/docs/concepts/signals#sources",
     ),
-    planned(
+    shipped(
         "Sources",
         "Loki",
         "LogQL metric queries.",
-        "story:m3-loki-adapter",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/loki.rs::loki_nan_value_is_unknown_never_zero",
+        ),
         "/docs/concepts/signals#sources",
     ),
     planned(
