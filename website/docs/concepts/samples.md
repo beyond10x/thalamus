@@ -12,10 +12,16 @@ A **sample** ([`SignalSample`](../reference/ess/thalamus-observation.md#signalsa
 reading of one signal for one series at one instant. Samples are append-only: a sample is recorded
 and never changed. Grading it is a separate record, the [evaluation](./verdicts.md).
 
+`thalamus sample <signal-id>` records one sample per series of one `Active` definition, and
+`thalamus sample --all --once` does so for every `Active` definition of the instance, all under one
+run id. An unreadable source is recorded as an `unknown` sample, and the command exits 0. An invalid
+instance, or a definition that is not `Active`, exits 65 and records nothing; a store that cannot be
+opened exits 74.
+
 :::caution[Planned]
 
-The sample is specified and its Rust and serde types are generated. Recording samples
-(`thalamus sample`, the service's scheduler) is planned; see the [status page](/docs/status).
+The service's scheduler, which samples each definition on its cadence, is planned; see the
+[status page](/docs/status).
 
 :::
 

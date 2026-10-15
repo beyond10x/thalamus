@@ -1,0 +1,25 @@
+id: service.cache.miss_ratio
+title: Share of cache lookups that missed
+family: service
+kind: ratio
+unit: "1"
+dimensions: [component]
+source: { adapter: metrics, connection: metrics-down }
+extractor: promql.ratio
+query:
+  numerator: sum by (component) (increase(cache_misses_total[1h]))
+  denominator: sum by (component) (increase(cache_lookups_total[1h]))
+window: 1h
+cadence: 1h
+history: source
+denominator: { unit: "{lookup}", min_n: 20, since: first_sample }
+evaluation:
+  rule: ratio_vs_pooled_baseline
+  baselines: [pooled, offset_1d, offset_7d]
+  warn: { x: 2, abs: 0.05 }
+  crit: { x: 4, abs: 0.2 }
+owner: team:service
+lifecycle: active
+rev: 1
+revised_at: 2026-10-02T00:00:00Z
+revised_by: operator

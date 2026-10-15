@@ -172,10 +172,10 @@
     },
     {
       "area": "Command line",
-      "detail": "One sample per series of every Active definition of an instance. Planned in story:m1-cli-sample.",
+      "detail": "One sample per series of every Active definition of an instance.",
       "href": "/docs/concepts/samples",
       "label": "thalamus sample",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Command line",

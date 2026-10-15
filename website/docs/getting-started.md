@@ -56,7 +56,7 @@ $ cargo build --locked -p thalamus-cli
 $ ./target/debug/thalamus --help
 Samples signals, grades each sample into a verdict and shows the verdicts
 
-Usage: thalamus <COMMAND>
+Usage: thalamus [OPTIONS] <COMMAND>
 
 Commands:
   sample   Read a definition's source and record one sample
@@ -68,15 +68,18 @@ Commands:
   help     Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help     Print help
-  -V, --version  Print version
+      --instance <DIR>    The instance directory: `dimensions.yaml`, `definitions/*.yaml` and the registry files [env: THALAMUS_INSTANCE]
+      --store <LOCATOR>   The instance's store: `sqlite:<path>` or a loopback `postgres://` URL without a password. Default: `sqlite:<instance>/.thalamus/store.sqlite` [env: THALAMUS_STORE]
+      --connectors <BIN>  The `connectors` binary sources are read through (else `THALAMUS_CONNECTORS`, else `connectors` on `PATH`)
+  -h, --help              Print help
+  -V, --version           Print version
 ```
 
-Every subcommand exits 70 until the story that implements it lands:
+Every subcommand not yet implemented exits 70:
 
 ```console
-$ ./target/debug/thalamus sample
-thalamus sample: not implemented
+$ ./target/debug/thalamus eval
+thalamus eval: not implemented
 $ echo $?
 70
 ```

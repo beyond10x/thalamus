@@ -1167,6 +1167,7 @@ name = "thalamus-cli"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "eventlog-core",
  "serde_json",
  "thalamus",
  "thalamus-core",
@@ -1174,6 +1175,8 @@ dependencies = [
  "thalamus-sources",
  "thalamus-spec-types",
  "thalamus-store",
+ "time",
+ "tokio-postgres",
 ]
 
 [[package]]

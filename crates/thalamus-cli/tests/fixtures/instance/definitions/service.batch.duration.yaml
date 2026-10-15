@@ -1,0 +1,26 @@
+id: service.batch.duration
+title: Seconds the nightly batch ran
+family: service
+kind: gauge
+unit: s
+dimensions: []
+source: { adapter: metrics, connection: metrics-main }
+extractor: promql.value
+query: { value: max(batch_duration_seconds) }
+window: 1d
+cadence: 1d
+history: source
+denominator: { unit: "{run}", min_n: 1, since: first_sample }
+evaluation:
+  rule: higher_is_worse
+  baselines: [fixed]
+  fixed: "3600"
+  warn: { x: "1.5" }
+  crit: { x: 3 }
+owner: team:service
+lifecycle: muted
+mute_reason: batch rewrite in progress
+mute_until: 2026-11-01T00:00:00Z
+rev: 2
+revised_at: 2026-10-03T00:00:00Z
+revised_by: operator
