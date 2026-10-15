@@ -33,6 +33,8 @@ const MUTED: &str = "service.batch.duration";
 const FAILED: &str = "sum by (component) (increase(requests_failed_total[6h]))";
 const REQUESTS: &str = "sum by (component) (increase(requests_total[6h]))";
 const QUEUE: &str = "sum(queue_depth)";
+const EXIT_CODE: &str = "max(gate_exit_code)";
+const COLOUR: &str = "SELECT colour FROM gate_runs";
 
 /// The Connectors double, built once for the whole test binary beside the `thalamus` binary.
 fn double() -> PathBuf {
@@ -135,6 +137,7 @@ impl World {
                 "component",
             ));
             answers.push(vector(QUEUE, at, &[("", "42")], ""));
+            answers.push(vector(EXIT_CODE, at, &[("", "1")], ""));
         }
         self.write(
             "operations+invoke+a=metrics+c=metrics-main+o=series.query.json",
@@ -571,6 +574,126 @@ fn no_help_prints_an_environment_value() {
         let shown = help(args, &names);
         assert!(!shown.contains(MARK), "{args:?}: {shown}");
     }
+}
+
+/// A `producer_mapped` definition: `id`, read through `source` and `extractor` with `query`,
+/// graded by `mapping`.
+fn producer_mapped(id: &str, source: &str, extractor: &str, query: &str, mapping: &str) -> String {
+    format!(
+        "id: {id}\n\
+         title: A producer that speaks its own vocabulary\n\
+         family: gate\n\
+         kind: gauge\n\
+         unit: \"{{verdict}}\"\n\
+         dimensions: []\n\
+         source: {source}\n\
+         extractor: {extractor}\n\
+         query: {{ value: \"{query}\" }}\n\
+         window: PT1H\n\
+         cadence: PT1H\n\
+         history: store\n\
+         denominator: {{ unit: \"{{run}}\", min_n: 0, since: 2026-01-01T00:00:00Z }}\n\
+         evaluation:\n\
+         \x20 rule: producer_mapped\n\
+         \x20 baselines: [fixed]\n\
+         \x20 fixed: \"0\"\n\
+         \x20 mapping: {mapping}\n\
+         owner: team:gate\n\
+         lifecycle: active\n\
+         rev: 1\n\
+         revised_at: 2026-10-02T00:00:00Z\n\
+         revised_by: operator\n"
+    )
+}
+
+/// `story:m3-vocabulary-mapping`: under `producer_mapped` a sample records the producer's value as
+/// printed, `text`, for grading to map at grade time. A text cell (`green`) is an `unknown` reading
+/// carrying its text; an exit code (`1`) is an `ok` reading carrying its text too. A definition
+/// under a threshold rule stores no `text` member, though its read has raw text.
+#[test]
+fn producer_mapped_samples_record_the_value_as_printed() {
+    let world = World::new("producer_text");
+    let definitions = world.instance().join("definitions");
+    std::fs::write(
+        definitions.join("gate.ci.colour.yaml"),
+        producer_mapped(
+            "gate.ci.colour",
+            "{ adapter: sql, connection: ci-results }",
+            "sql.value",
+            COLOUR,
+            "{ green: OK, red: CRIT }",
+        ),
+    )
+    .expect("write the colour definition");
+    std::fs::write(
+        definitions.join("gate.ci.exit_code.yaml"),
+        producer_mapped(
+            "gate.ci.exit_code",
+            "{ adapter: metrics, connection: metrics-main }",
+            "promql.value",
+            EXIT_CODE,
+            "{ \"0\": OK, \"1\": CRIT }",
+        ),
+    )
+    .expect("write the exit-code definition");
+    world.write(
+        "connections+list+a=sql.json",
+        &json!({"stdout": {"ok": true, "result": {"connections": [
+            {"adapter": "sql", "connection": "ci-results", "state": "ready", "revision": "conn-rev-1"}
+        ], "next_cursor": null}}}),
+    );
+    world.write(
+        "operations+describe+a=sql+o=query.read.json",
+        &json!({"stdout": {"ok": true, "result": {
+            "adapter": "sql", "operation": "query.read",
+            "schema": "query.read/v1alpha1", "revision": "op-rev-1"
+        }}}),
+    );
+    let rows = json!({
+        "columns": [{"name": "value", "native_type": "text"}],
+        "rows": [["green"]],
+        "truncated": false,
+        "provenance": {"instance": "sql", "resource": "gates", "observed_at_unix_ms": 0,
+                       "source_revision": null}
+    });
+    world.write(
+        "operations+invoke+a=sql+c=ci-results+o=query.read.json",
+        &json!({
+            "input": {"query": COLOUR},
+            "stdout": {"ok": true, "result": {
+                "adapter": "sql", "operation": "query.read", "revision": "op-rev-1",
+                "result": rows.to_string()
+            }}
+        }),
+    );
+
+    let out = world.thalamus(&["sample", "--all", "--once", "--at", T1]);
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", text(&out.stderr));
+    let stored = world.stored();
+    let of = |signal: &str| {
+        stored
+            .iter()
+            .find(|sample| sample["signal"] == signal)
+            .unwrap_or_else(|| panic!("a sample of {signal}: {stored:#?}"))
+    };
+
+    let colour = of("gate.ci.colour");
+    assert_eq!(colour["reading"]["quality"], "unknown", "{colour:#}");
+    assert_eq!(colour["text"], "green", "{colour:#}");
+
+    let exit_code = of("gate.ci.exit_code");
+    assert_eq!(
+        exit_code["reading"],
+        json!({"quality": "ok", "value": {"value": "1"}}),
+        "{exit_code:#}"
+    );
+    assert_eq!(exit_code["text"], "1", "{exit_code:#}");
+
+    let depth = of(DEPTH);
+    assert!(
+        depth.get("text").is_none(),
+        "a threshold definition stores no text: {depth:#}"
+    );
 }
 
 #[test]

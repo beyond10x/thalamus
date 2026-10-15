@@ -17,6 +17,11 @@
 //! the population could have, so `age_s` never overstates a series' age.
 //!
 //! An unknown read is recorded like any other: unknown is never dropped and never 0.
+//!
+//! The producer's value as printed, `text`, is recorded where
+//! `thalamus_sources::vocabulary::sample_text` says the read carries one (a `producer_mapped`
+//! definition whose value was read), so grading maps it at grade time. A merged collision sample
+//! records none.
 
 use std::collections::BTreeMap;
 use std::fmt;
@@ -37,7 +42,7 @@ use thalamus_model::observation::{
 use thalamus_model::primitives::Timestamp;
 use thalamus_sources::adapter::Read;
 use thalamus_sources::connectors::Connectors;
-use thalamus_sources::registry;
+use thalamus_sources::{registry, vocabulary};
 use thalamus_store::eventlog::EventlogStore;
 
 use crate::instance::LoadedInstance;
@@ -267,12 +272,16 @@ pub fn sample_into(
         };
         let reads = registry::read(connectors, definition.data(), end, &run_id);
         for (series, dims, reads) in by_series(instance, &definition, reads, &mut pass.refused) {
+            let text = match reads.as_slice() {
+                [read] => vocabulary::sample_text(definition.data(), read),
+                _ => None,
+            };
             let read = merge(&series, reads);
             let input = match sample_input(
                 instance,
                 store,
                 &definition,
-                (series, dims, read),
+                (series, dims, read, text),
                 end,
                 &run_id,
                 producer,
@@ -354,8 +363,9 @@ fn by_series(
 }
 
 /// The one read a pass records for `series`: the read itself when there is one; when several
-/// reads fall on the series, the first of them made `unknown`, with no population and no raw
-/// text, its reason naming the collision, the number of reads and each distinct reason they
+/// reads fall on the series, the first of them made `unknown`, with no population, no raw text
+/// and no [`Unread`](thalamus_sources::adapter::Unread) type, so it records no producer `text`;
+/// its reason names the collision, the number of reads and each distinct reason they
 /// carried.
 fn merge(series: &SeriesKey, mut reads: Vec<Read>) -> Read {
     let count = reads.len();
@@ -383,6 +393,7 @@ fn merge(series: &SeriesKey, mut reads: Vec<Read>) -> Read {
     read.reading = Reading::Unknown(UnreadReading { reason });
     read.denominator = None;
     read.raw = None;
+    read.unread = None;
     read
 }
 
@@ -406,7 +417,12 @@ fn sample_input(
     instance: &LoadedInstance,
     store: &EventlogStore,
     definition: &Definition,
-    (series, dims, read): (SeriesKey, BTreeMap<String, DimensionValue>, Read),
+    (series, dims, read, text): (
+        SeriesKey,
+        BTreeMap<String, DimensionValue>,
+        Read,
+        Option<String>,
+    ),
     end: &Timestamp,
     run_id: &RunId,
     producer: &Producer,
@@ -439,6 +455,7 @@ fn sample_input(
         ts: end.clone(),
         window: read.window,
         reading: read.reading,
+        text,
         unit,
         denominator,
         provenance: Provenance {
