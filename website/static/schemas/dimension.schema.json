@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dimension",
+  "description": "One registered dimension key, its rule and its registry kind.",
+  "x-ess-name": "thalamus.dimension.Dimension",
+  "x-ess-kind": "entity",
+  "type": "object",
+  "properties": {
+    "key": {
+      "$ref": "#/$defs/thalamus.dimension.DimensionKey"
+    },
+    "registry_id": {
+      "$ref": "#/$defs/thalamus.dimension.RegistryId",
+      "x-ess-relation": {
+        "name": "dimensions",
+        "kind": "owns",
+        "source": "thalamus.dimension.DimensionRegistry",
+        "target": "thalamus.dimension.Dimension",
+        "cardinality": "many",
+        "via": "registry_id"
+      }
+    },
+    "values": {
+      "$ref": "#/$defs/thalamus.dimension.ValueSource"
+    },
+    "rule": {
+      "$ref": "#/$defs/thalamus.dimension.DimensionRule"
+    },
+    "parent": {
+      "$ref": "#/$defs/thalamus.dimension.DimensionKey",
+      "description": "The key this one nests under (namespace under cluster).",
+      "x-ess-relation": {
+        "name": "parent_dimension",
+        "kind": "references",
+        "source": "thalamus.dimension.Dimension",
+        "target": "thalamus.dimension.Dimension",
+        "cardinality": "one",
+        "via": "parent"
+      }
+    },
+    "otel_attribute": {
+      "description": "The OpenTelemetry resource attribute the key maps to (k8s.namespace.name, service.name).",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/thalamus.dimension.Dimension.State"
+    }
+  },
+  "required": [
+    "key",
+    "registry_id",
+    "values",
+    "rule",
+    "state"
+  ],
+  "additionalProperties": false,
+  "x-ess-provenance": {
+    "system": "thalamus",
+    "specification_version": "v1",
+    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "contract_digest": "slice-sha256/2:2e95da59cafa9498e9e7378b1c21da9ca94a1ac0f23920e6f4c817ab784edea3",
+    "regenerate": "ess generate"
+  },
+  "$defs": {
+    "thalamus.dimension.Dimension.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.dimension.Dimension.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Registered"
+      ]
+    },
+    "thalamus.dimension.DimensionKey": {
+      "title": "DimensionKey",
+      "description": "A dimension key (cluster, namespace, tenant, component, suite).",
+      "x-ess-name": "thalamus.dimension.DimensionKey",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
+    },
+    "thalamus.dimension.DimensionRule": {
+      "title": "DimensionRule",
+      "description": "source_only means the key is set only when the source row carries it, never derived from a parent.",
+      "x-ess-name": "thalamus.dimension.DimensionRule",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "source_only",
+        "derived"
+      ]
+    },
+    "thalamus.dimension.Locator": {
+      "title": "Locator",
+      "description": "The inventory or registry file a key's values are listed in (inventory/clusters, registries/components.json).",
+      "x-ess-name": "thalamus.dimension.Locator",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.dimension.RegistryId": {
+      "title": "RegistryId",
+      "description": "The instance whose dimension registry this is.",
+      "x-ess-name": "thalamus.dimension.RegistryId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_-"
+    },
+    "thalamus.dimension.ValueSource": {
+      "title": "ValueSource",
+      "description": "The registry kind of a key. connectors is a Connectors inventory, file a registry file in the instance, open admits any value (test-run dimensions) and carries no locator.",
+      "x-ess-name": "thalamus.dimension.ValueSource",
+      "x-ess-kind": "union",
+      "oneOf": [
+        {
+          "title": "connectors",
+          "type": "object",
+          "properties": {
+            "registry": {
+              "type": "string",
+              "const": "connectors"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.dimension.Locator"
+            }
+          },
+          "required": [
+            "registry",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "title": "file",
+          "type": "object",
+          "properties": {
+            "registry": {
+              "type": "string",
+              "const": "file"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.dimension.Locator"
+            }
+          },
+          "required": [
+            "registry",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "title": "open",
+          "type": "object",
+          "properties": {
+            "registry": {
+              "type": "string",
+              "const": "open"
+            }
+          },
+          "required": [
+            "registry"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "x-ess-union-tag": "registry"
+    }
+  }
+}

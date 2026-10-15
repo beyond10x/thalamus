@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SignalEvaluation",
+  "description": "One verdict over one sample, graded against one definition revision.",
+  "x-ess-name": "thalamus.evaluation.SignalEvaluation",
+  "x-ess-kind": "entity",
+  "type": "object",
+  "properties": {
+    "evaluation_id": {
+      "$ref": "#/$defs/thalamus.evaluation.EvaluationId"
+    },
+    "sample_id": {
+      "$ref": "#/$defs/thalamus.observation.SampleId",
+      "x-ess-relation": {
+        "name": "sample",
+        "kind": "references",
+        "source": "thalamus.evaluation.SignalEvaluation",
+        "target": "thalamus.observation.SignalSample",
+        "cardinality": "one",
+        "via": "sample_id"
+      }
+    },
+    "signal": {
+      "$ref": "#/$defs/thalamus.definition.SignalId",
+      "x-ess-relation": {
+        "name": "definition",
+        "kind": "references",
+        "source": "thalamus.evaluation.SignalEvaluation",
+        "target": "thalamus.definition.SignalDefinition",
+        "cardinality": "one",
+        "via": "signal"
+      }
+    },
+    "series": {
+      "$ref": "#/$defs/thalamus.observation.SeriesKey"
+    },
+    "dims": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/thalamus.dimension.DimensionValue"
+      },
+      "x-ess-map-key": "String"
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "definition_rev": {
+      "description": "The definition revision whose rule decided the verdict.",
+      "type": "integer"
+    },
+    "verdict": {
+      "$ref": "#/$defs/thalamus.evaluation.Verdict"
+    },
+    "prev": {
+      "$ref": "#/$defs/thalamus.evaluation.Verdict",
+      "description": "The series' previous verdict, so a change is visible without a second read; absent on a series' first evaluation."
+    },
+    "score": {
+      "description": "0 at the baseline, 1 at the WARN line, 2 at the CRIT line, negative when better than the baseline. Absent for UNKNOWN and N/A, never 0.",
+      "type": "string",
+      "format": "decimal",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "baseline": {
+      "$ref": "#/$defs/thalamus.evaluation.Baseline"
+    },
+    "reason": {
+      "description": "Why the rule decided this verdict. Required on every verdict other than OK.",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/thalamus.evaluation.SignalEvaluation.State"
+    }
+  },
+  "required": [
+    "evaluation_id",
+    "sample_id",
+    "signal",
+    "series",
+    "dims",
+    "ts",
+    "definition_rev",
+    "verdict",
+    "state"
+  ],
+  "additionalProperties": false,
+  "x-ess-provenance": {
+    "system": "thalamus",
+    "specification_version": "v1",
+    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "contract_digest": "slice-sha256/2:18e790b6fc0d473926e16d1ddeea372f5673b1e7ebff6ce2bdf11d325ce6a943",
+    "regenerate": "ess generate"
+  },
+  "$defs": {
+    "thalamus.definition.SignalId": {
+      "title": "SignalId",
+      "description": "Stable signal id, spelled <family>.<layer>.<name> in lower case.",
+      "x-ess-name": "thalamus.definition.SignalId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_."
+    },
+    "thalamus.dimension.DimensionValue": {
+      "title": "DimensionValue",
+      "description": "A value of one dimension key in one series.",
+      "x-ess-name": "thalamus.dimension.DimensionValue",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.evaluation.Baseline": {
+      "title": "Baseline",
+      "description": "The baseline a sample was graded against.",
+      "x-ess-name": "thalamus.evaluation.Baseline",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/thalamus.evaluation.BaselineLabel"
+        },
+        "offsets": {
+          "description": "The offsets pooled (1d, 7d); empty when none.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reading": {
+          "$ref": "#/$defs/thalamus.observation.Reading",
+          "description": "The baseline's own value and quality. A baseline that could not be read, or predates its series, is unknown, never 0."
+        }
+      },
+      "required": [
+        "kind",
+        "offsets",
+        "reading"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.evaluation.BaselineLabel": {
+      "title": "BaselineLabel",
+      "description": "Which baseline the sample was graded against (offset_pooled, fixed, rolling_median).",
+      "x-ess-name": "thalamus.evaluation.BaselineLabel",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
+    },
+    "thalamus.evaluation.EvaluationId": {
+      "title": "EvaluationId",
+      "description": "An evaluation id, minted by the grader.",
+      "x-ess-name": "thalamus.evaluation.EvaluationId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "pattern": "^evl_"
+    },
+    "thalamus.evaluation.SignalEvaluation.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.evaluation.SignalEvaluation.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Recorded"
+      ]
+    },
+    "thalamus.evaluation.Verdict": {
+      "title": "Verdict",
+      "description": "The one verdict ladder. exit is the process exit code; rank orders an aggregate worst-first (CRIT > WARN > UNKNOWN > OK = N/A); scored says whether the verdict carries a score.",
+      "x-ess-name": "thalamus.evaluation.Verdict",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "OK",
+        "N/A",
+        "WARN",
+        "CRIT",
+        "UNKNOWN"
+      ],
+      "x-ess-attributes": [
+        {
+          "kind": "integer",
+          "name": "exit",
+          "type": "Integer",
+          "values": {
+            "CRIT": 2,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 3,
+            "WARN": 1
+          }
+        },
+        {
+          "kind": "integer",
+          "name": "rank",
+          "type": "Integer",
+          "values": {
+            "CRIT": 3,
+            "N/A": 0,
+            "OK": 0,
+            "UNKNOWN": 1,
+            "WARN": 2
+          }
+        },
+        {
+          "kind": "boolean",
+          "name": "scored",
+          "type": "Boolean",
+          "values": {
+            "CRIT": true,
+            "N/A": false,
+            "OK": true,
+            "UNKNOWN": false,
+            "WARN": true
+          }
+        }
+      ]
+    },
+    "thalamus.observation.Bound": {
+      "title": "Bound",
+      "description": "Which side a partial reading's value bounds.",
+      "x-ess-name": "thalamus.observation.Bound",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "lower",
+        "upper"
+      ]
+    },
+    "thalamus.observation.CompleteReading": {
+      "title": "CompleteReading",
+      "description": "Read completely.",
+      "x-ess-name": "thalamus.observation.CompleteReading",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.observation.PartialReading": {
+      "title": "PartialReading",
+      "description": "Read but cut (a full page, a paged read that could not finish).",
+      "x-ess-name": "thalamus.observation.PartialReading",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "A bound on the true value, never the value itself.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "bound": {
+          "$ref": "#/$defs/thalamus.observation.Bound"
+        }
+      },
+      "required": [
+        "value",
+        "bound"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.observation.Reading": {
+      "title": "Reading",
+      "description": "The value and its quality as one type. quality unknown has no value and a reason; partial has a value and its bound; ok has a value. The illegal pairs cannot be built.",
+      "x-ess-name": "thalamus.observation.Reading",
+      "x-ess-kind": "union",
+      "oneOf": [
+        {
+          "title": "ok",
+          "type": "object",
+          "properties": {
+            "quality": {
+              "type": "string",
+              "const": "ok"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.observation.CompleteReading"
+            }
+          },
+          "required": [
+            "quality",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "title": "partial",
+          "type": "object",
+          "properties": {
+            "quality": {
+              "type": "string",
+              "const": "partial"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.observation.PartialReading"
+            }
+          },
+          "required": [
+            "quality",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "title": "unknown",
+          "type": "object",
+          "properties": {
+            "quality": {
+              "type": "string",
+              "const": "unknown"
+            },
+            "value": {
+              "$ref": "#/$defs/thalamus.observation.UnreadReading"
+            }
+          },
+          "required": [
+            "quality",
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "x-ess-union-tag": "quality"
+    },
+    "thalamus.observation.SampleId": {
+      "title": "SampleId",
+      "description": "A sample id, minted by the producer.",
+      "x-ess-name": "thalamus.observation.SampleId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "pattern": "^smp_"
+    },
+    "thalamus.observation.SeriesKey": {
+      "title": "SeriesKey",
+      "description": "One series, a signal id together with its dims values.",
+      "x-ess-name": "thalamus.observation.SeriesKey",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.observation.UnreadReading": {
+      "title": "UnreadReading",
+      "description": "Not read. Carries no value at all, so unknown can never become 0.",
+      "x-ess-name": "thalamus.observation.UnreadReading",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

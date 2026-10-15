@@ -1,0 +1,183 @@
+{
+  "format": "b10x-product-landing/1",
+  "product": {
+    "name": "thalamus",
+    "mark": "T",
+    "eyebrow": "Realtime perception · specification first",
+    "promise": [
+      "Every signal, one verdict.",
+      "Out of bounds, compared with what is normal for it."
+    ],
+    "lede": "thalamus is the realtime perception layer over the systems an organization runs. It reads numbers from the instruments those systems already expose (metrics, logs, databases, orchestrators, version control, test runs), records each reading as a typed sample, and grades it into one verdict of one ladder against a baseline. It is specified in ESS first: the five domains below are on main, and the code that implements them is being built.",
+    "actions": [
+      {
+        "label": "Read the documentation",
+        "href": "/docs/",
+        "kind": "primary"
+      },
+      {
+        "label": "Browse the specification",
+        "href": "/docs/reference/ess"
+      }
+    ],
+    "meta": "Rust libraries, a service and a CLI · specified in ESS · read-only, no secrets · Apache-2.0",
+    "art": {
+      "kind": "domain-graph",
+      "data": "data/ess/thalamus.domain-graph.json",
+      "caption": "Every entity of the thalamus specification, generated from spec/ by thalamus-docs."
+    },
+    "kpis": [
+      "entities",
+      "relations",
+      "shipped",
+      "planned"
+    ]
+  },
+  "sections": [
+    {
+      "kind": "features",
+      "eyebrow": "What it answers",
+      "title": "Is it out of bounds, since when, against which baseline?",
+      "lede": "Each rule below removes a failure mode found in an earlier prototype that grew thirteen producers of health numbers, each with its own conventions. The rules are fixed in the specification and the design; the code that enforces them is planned.",
+      "items": [
+        {
+          "title": "One verdict ladder",
+          "description": "OK, N/A, WARN, CRIT and UNKNOWN, with one worst-of order and one exit-code mapping for every source.",
+          "status": "planned",
+          "href": "/docs/concepts/verdicts"
+        },
+        {
+          "title": "Unknown is never 0 and never OK",
+          "description": "A reading is a tagged union: ok carries a number, partial a bound, unknown no value at all. The specification makes the illegal pair unbuildable.",
+          "status": "decided",
+          "href": "/docs/concepts/samples"
+        },
+        {
+          "title": "Baselines that know their age",
+          "description": "A baseline that could not be read, or that is older than its series, is UNKNOWN with a reason, never a silent comparison against too little history.",
+          "status": "planned",
+          "href": "/docs/concepts/baselines"
+        },
+        {
+          "title": "One score for every unit",
+          "description": "0 at the baseline, 1 at the WARN line, 2 at the CRIT line, so signals with different units share one heatmap and one sort order.",
+          "status": "planned",
+          "href": "/docs/concepts/score"
+        },
+        {
+          "title": "One copy of every threshold",
+          "description": "A threshold lives in its signal definition and nowhere else; an evaluation names the definition revision it was graded against.",
+          "status": "decided",
+          "href": "/docs/concepts/signals"
+        },
+        {
+          "title": "Read-only, no secrets",
+          "description": "A source names a Connectors connection. thalamus only invokes read operations through it and never holds a credential.",
+          "status": "decided",
+          "href": "/docs/concepts/signals#sources"
+        }
+      ]
+    },
+    {
+      "kind": "flow",
+      "eyebrow": "One pass",
+      "title": "From an instrument to a verdict.",
+      "lede": "What one sampling pass over one signal definition will do.",
+      "steps": [
+        {
+          "label": "Connectors",
+          "title": "Read",
+          "description": "The definition's query runs against its source through a Connectors connection, read-only."
+        },
+        {
+          "label": "SignalSample",
+          "title": "Record",
+          "description": "One typed sample per series: a reading, its unit, its denominator and enough provenance to re-run the read."
+        },
+        {
+          "label": "Baseline",
+          "title": "Compare",
+          "description": "The same window a day or a week earlier, pooled, a median, or a fixed number."
+        },
+        {
+          "label": "SignalEvaluation",
+          "title": "Grade",
+          "description": "One verdict, its score and its reason, kept apart from the sample so a threshold change re-grades history."
+        },
+        {
+          "label": "Transition",
+          "title": "Settle",
+          "description": "A verdict change that persists becomes a transition: an event, and a fact in cortex."
+        }
+      ]
+    },
+    {
+      "kind": "domain-graph",
+      "eyebrow": "Specification",
+      "title": "A sample is graded, never edited.",
+      "lede": "The thalamus.evaluation domain: an evaluation references the sample it graded and the definition whose revision decided it. Generated from spec/ by thalamus-docs.",
+      "data": "data/ess/thalamus-evaluation.domain-graph.json"
+    },
+    {
+      "kind": "features",
+      "eyebrow": "A pair",
+      "title": "thalamus perceives, cortex remembers.",
+      "lede": "Most samples never leave thalamus. What reaches cortex is the change someone has to act on, with the evaluation as its evidence.",
+      "items": [
+        {
+          "title": "thalamus: what the systems say now",
+          "description": "Seconds to weeks. Append-only numeric samples and evaluations, raw samples kept for a bounded window, daily rollups kept.",
+          "href": "/docs/"
+        },
+        {
+          "title": "cortex: what the organization knows",
+          "description": "Months to years. Evidence-backed facts in a knowledge store, every revision kept. Verdict transitions and daily rollups arrive there as facts.",
+          "status": "planned",
+          "href": "/docs/concepts/interfaces#cortex"
+        }
+      ]
+    },
+    {
+      "kind": "status",
+      "eyebrow": "Status",
+      "title": "Specified. Here is exactly what exists.",
+      "lede": "Shipped means code on main today. Planned means an item in the repository's planning store and nothing more.",
+      "items": "data/status.json"
+    },
+    {
+      "kind": "related",
+      "eyebrow": "Related tools",
+      "title": "Where thalamus sits.",
+      "tools": [
+        {
+          "name": "cortex",
+          "description": "Knowledge instances fed on a schedule; thalamus is planned as one of its sources.",
+          "href": "https://beyond10x.github.io/cortex/",
+          "mark": "X"
+        },
+        {
+          "name": "Connectors",
+          "description": "Provider setup and governed invocation; every thalamus source reads through it and it holds every credential.",
+          "href": "https://beyond10x.github.io/connectors/",
+          "mark": "Co"
+        },
+        {
+          "name": "conductor",
+          "description": "Runs the organization's agent sessions; thalamus's first consumer, through assertions and the live verdict stream.",
+          "href": "https://beyond10x.github.io/conductor/",
+          "mark": "Cd"
+        },
+        {
+          "name": "Eventlog",
+          "description": "Rust libraries for durable event streams; the planned first store of samples and evaluations.",
+          "href": "https://beyond10x.github.io/ecosystem/eventlog/",
+          "mark": "Ev"
+        },
+        {
+          "id": "ess",
+          "relation": "specifies"
+        }
+      ]
+    }
+  ]
+}

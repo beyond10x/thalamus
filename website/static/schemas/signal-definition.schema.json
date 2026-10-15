@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SignalDefinition",
+  "description": "One signal; what is measured, from which source, and how a sample of it is graded.",
+  "x-ess-name": "thalamus.definition.SignalDefinition",
+  "x-ess-kind": "entity",
+  "type": "object",
+  "properties": {
+    "signal_id": {
+      "$ref": "#/$defs/thalamus.definition.SignalId"
+    },
+    "title": {
+      "type": "string"
+    },
+    "family": {
+      "$ref": "#/$defs/thalamus.definition.Family"
+    },
+    "kind": {
+      "$ref": "#/$defs/thalamus.definition.SignalKind"
+    },
+    "unit": {
+      "$ref": "#/$defs/thalamus.definition.Unit"
+    },
+    "dimensions": {
+      "description": "Keys from the instance's dimension registry; an empty list declares a signal with no dimensions.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/thalamus.dimension.DimensionKey"
+      }
+    },
+    "source": {
+      "$ref": "#/$defs/thalamus.definition.Source"
+    },
+    "extractor": {
+      "$ref": "#/$defs/thalamus.definition.ExtractorId"
+    },
+    "query": {
+      "description": "Named query texts (numerator, denominator), stored once and hashed into every sample.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/thalamus.definition.QueryText"
+      },
+      "x-ess-map-key": "String"
+    },
+    "window": {
+      "type": "string",
+      "format": "duration"
+    },
+    "cadence": {
+      "description": "How often the service samples the signal.",
+      "type": "string",
+      "format": "duration"
+    },
+    "history": {
+      "$ref": "#/$defs/thalamus.definition.History"
+    },
+    "denominator": {
+      "$ref": "#/$defs/thalamus.definition.DenominatorSpec"
+    },
+    "evaluation": {
+      "$ref": "#/$defs/thalamus.definition.EvaluationSpec"
+    },
+    "objective": {},
+    "owner": {
+      "$ref": "#/$defs/thalamus.definition.Owner"
+    },
+    "links": {
+      "$ref": "#/$defs/thalamus.definition.Links"
+    },
+    "rev": {
+      "description": "Revision counter; 1 at proposal, one more for every revision. An evaluation names the rev it was graded against.",
+      "type": "integer"
+    },
+    "revised_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revised_by": {
+      "$ref": "#/$defs/thalamus.definition.Author"
+    },
+    "mute_reason": {
+      "type": "string"
+    },
+    "mute_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state": {
+      "$ref": "#/$defs/thalamus.definition.SignalDefinition.State"
+    }
+  },
+  "required": [
+    "signal_id",
+    "title",
+    "family",
+    "kind",
+    "source",
+    "extractor",
+    "query",
+    "window",
+    "cadence",
+    "history",
+    "evaluation",
+    "links",
+    "rev",
+    "revised_at",
+    "revised_by",
+    "state"
+  ],
+  "additionalProperties": false,
+  "x-ess-provenance": {
+    "system": "thalamus",
+    "specification_version": "v1",
+    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "contract_digest": "slice-sha256/2:a767bdb90bdeb274115a74e5c2dbc2af236dc81d872b58c6ef35a3ac54708603",
+    "regenerate": "ess generate"
+  },
+  "$defs": {
+    "thalamus.definition.AdapterId": {
+      "title": "AdapterId",
+      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).",
+      "x-ess-name": "thalamus.definition.AdapterId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
+    },
+    "thalamus.definition.Author": {
+      "title": "Author",
+      "description": "Who made a revision.",
+      "x-ess-name": "thalamus.definition.Author",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.definition.BaselineKind": {
+      "title": "BaselineKind",
+      "description": "A baseline a sample is graded against.",
+      "x-ess-name": "thalamus.definition.BaselineKind",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "offset_1d",
+        "offset_7d",
+        "pooled",
+        "higher_of",
+        "lower_of",
+        "same_slot_median_4w",
+        "rolling_median",
+        "fixed"
+      ]
+    },
+    "thalamus.definition.ConnectionId": {
+      "title": "ConnectionId",
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential.",
+      "x-ess-name": "thalamus.definition.ConnectionId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.:/"
+    },
+    "thalamus.definition.DenominatorSpec": {
+      "title": "DenominatorSpec",
+      "description": "The population a ratio or count is taken over.",
+      "x-ess-name": "thalamus.definition.DenominatorSpec",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "unit": {
+          "$ref": "#/$defs/thalamus.definition.Unit"
+        },
+        "min_n": {
+          "description": "Below this population the verdict is N/A.",
+          "type": "integer"
+        },
+        "since": {
+          "description": "The earliest moment the population could contain anything, as a reference (dimension.created, source retention start, first sample).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unit",
+        "min_n",
+        "since"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.definition.EvaluationSpec": {
+      "title": "EvaluationSpec",
+      "description": "How a sample is graded. The only copy of the signal's thresholds.",
+      "x-ess-name": "thalamus.definition.EvaluationSpec",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "rule": {
+          "$ref": "#/$defs/thalamus.definition.RuleId"
+        },
+        "baselines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/thalamus.definition.BaselineKind"
+          }
+        },
+        "warn": {
+          "$ref": "#/$defs/thalamus.definition.Threshold"
+        },
+        "crit": {
+          "$ref": "#/$defs/thalamus.definition.Threshold"
+        },
+        "min_trend_window": {
+          "description": "For an instant signal, no delta and no trend below this window.",
+          "type": "string",
+          "format": "duration"
+        }
+      },
+      "required": [
+        "rule",
+        "baselines"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.definition.ExtractorId": {
+      "title": "ExtractorId",
+      "description": "A built-in extractor (sql.ratio) or a plugin id.",
+      "x-ess-name": "thalamus.definition.ExtractorId",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.definition.Family": {
+      "title": "Family",
+      "description": "An instance-defined grouping of signals.",
+      "x-ess-name": "thalamus.definition.Family",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
+    },
+    "thalamus.definition.History": {
+      "title": "History",
+      "description": "source means the source can be re-queried at an offset; store means only thalamus remembers the series.",
+      "x-ess-name": "thalamus.definition.History",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "source",
+        "store"
+      ]
+    },
+    "thalamus.definition.Links": {
+      "title": "Links",
+      "description": "What the signal is evidence about.",
+      "x-ess-name": "thalamus.definition.Links",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "components",
+        "issues"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.definition.Owner": {
+      "title": "Owner",
+      "description": "Who answers for the signal (team:<name>).",
+      "x-ess-name": "thalamus.definition.Owner",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.definition.QueryText": {
+      "title": "QueryText",
+      "description": "Query text, stored once and hashed into every sample.",
+      "x-ess-name": "thalamus.definition.QueryText",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.definition.RuleId": {
+      "title": "RuleId",
+      "description": "The grading rule (ratio_vs_pooled_baseline).",
+      "x-ess-name": "thalamus.definition.RuleId",
+      "x-ess-kind": "newtype",
+      "type": "string"
+    },
+    "thalamus.definition.SignalDefinition.State": {
+      "title": "State",
+      "x-ess-name": "thalamus.definition.SignalDefinition.State",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Active",
+        "Muted",
+        "Proposed",
+        "Retired"
+      ]
+    },
+    "thalamus.definition.SignalId": {
+      "title": "SignalId",
+      "description": "Stable signal id, spelled <family>.<layer>.<name> in lower case.",
+      "x-ess-name": "thalamus.definition.SignalId",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_."
+    },
+    "thalamus.definition.SignalKind": {
+      "title": "SignalKind",
+      "description": "How a reading of the signal is formed. An instant signal gets no trend below its minimum trend window.",
+      "x-ess-name": "thalamus.definition.SignalKind",
+      "x-ess-kind": "enum",
+      "type": "string",
+      "enum": [
+        "gauge",
+        "counter_increase",
+        "ratio",
+        "instant",
+        "count_of_cases"
+      ]
+    },
+    "thalamus.definition.Source": {
+      "title": "Source",
+      "description": "Where a signal is read; a Connectors connection, never a credential.",
+      "x-ess-name": "thalamus.definition.Source",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "adapter": {
+          "$ref": "#/$defs/thalamus.definition.AdapterId"
+        },
+        "connection": {
+          "$ref": "#/$defs/thalamus.definition.ConnectionId"
+        }
+      },
+      "required": [
+        "adapter",
+        "connection"
+      ],
+      "additionalProperties": false
+    },
+    "thalamus.definition.Threshold": {
+      "title": "Threshold",
+      "description": "One line (WARN or CRIT) of a grading rule.",
+      "x-ess-name": "thalamus.definition.Threshold",
+      "x-ess-kind": "struct",
+      "type": "object",
+      "properties": {
+        "x": {
+          "description": "Multiplier over the baseline.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "abs": {
+          "description": "Absolute floor the value must also reach.",
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "min_events": {
+          "description": "Fewest events before the line applies.",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "thalamus.definition.Unit": {
+      "title": "Unit",
+      "description": "A UCUM unit, case-sensitive form (1, s, By, {request}, {pod}). A ratio has unit 1.",
+      "x-ess-name": "thalamus.definition.Unit",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "!#$%&'*+-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    },
+    "thalamus.dimension.DimensionKey": {
+      "title": "DimensionKey",
+      "description": "A dimension key (cluster, namespace, tenant, component, suite).",
+      "x-ess-name": "thalamus.dimension.DimensionKey",
+      "x-ess-kind": "newtype",
+      "type": "string",
+      "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
+    }
+  }
+}
