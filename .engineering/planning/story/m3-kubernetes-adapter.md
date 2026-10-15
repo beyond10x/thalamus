@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-kubernetes-adapter
 kind: story
-status: draft
+status: active
 title: Kubernetes object counts become instant samples with source-only dimensions
 relations:
 - decomposes: epic:source-adapters
@@ -15,7 +15,10 @@ scope:
   path: crates/thalamus-sources/tests/fixtures/kubernetes
 - confidence: inferred
   path: crates/thalamus-sources/tests/kubernetes.rs
-revision: 3
+revision: 5
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T04:58:57Z", actor: "human:timo", revision: 4}
+- {from: "proposed", to: "active", at: "2026-10-15T04:58:57Z", actor: "human:timo", revision: 5}
 ---
 ## Context
 

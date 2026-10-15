@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-loki-adapter
 kind: story
-status: draft
+status: active
 title: Loki metric queries become typed samples through a Connectors connection
 relations:
 - decomposes: epic:source-adapters
@@ -15,7 +15,10 @@ scope:
   path: crates/thalamus-sources/tests/fixtures/loki
 - confidence: inferred
   path: crates/thalamus-sources/tests/loki.rs
-revision: 3
+revision: 5
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T04:58:56Z", actor: "human:timo", revision: 4}
+- {from: "proposed", to: "active", at: "2026-10-15T04:58:56Z", actor: "human:timo", revision: 5}
 ---
 ## Context
 

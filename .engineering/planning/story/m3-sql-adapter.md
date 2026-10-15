@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-sql-adapter
 kind: story
-status: draft
+status: active
 title: SQL reads become typed samples; NULL and unparseable cells are unknown, never 0
 relations:
 - decomposes: epic:source-adapters
@@ -15,7 +15,10 @@ scope:
   path: crates/thalamus-sources/tests/fixtures/sql
 - confidence: inferred
   path: crates/thalamus-sources/tests/sql.rs
-revision: 5
+revision: 7
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T04:58:56Z", actor: "human:timo", revision: 6}
+- {from: "proposed", to: "active", at: "2026-10-15T04:58:56Z", actor: "human:timo", revision: 7}
 ---
 ## Context
 

@@ -25,10 +25,10 @@
     },
     {
       "area": "Specification",
-      "detail": "A conformance harness runs every synthesised scenario of the definition and dimension domains. Planned in story:m0-conformance-definitions.",
+      "detail": "A conformance harness runs every synthesised scenario of the definition and dimension domains.",
       "href": "/docs/reference/ess",
       "label": "Definition and dimension scenarios pass",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Specification",

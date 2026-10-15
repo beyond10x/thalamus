@@ -102,11 +102,13 @@ pub const CAPABILITIES: &[Capability] = &[
         Evidence::Test("crates/thalamus-cli/tests/cli.rs::an_unknown_flag_exits_64"),
         "/docs/getting-started",
     ),
-    planned(
+    shipped(
         "Specification",
         "Definition and dimension scenarios pass",
         "A conformance harness runs every synthesised scenario of the definition and dimension domains.",
-        "story:m0-conformance-definitions",
+        Evidence::Test(
+            "crates/thalamus-core/tests/conformance.rs::every_definition_and_dimension_scenario_of_the_suite_holds",
+        ),
         "/docs/reference/ess",
     ),
     planned(

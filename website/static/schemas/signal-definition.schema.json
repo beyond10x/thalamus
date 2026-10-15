@@ -111,7 +111,7 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "b94b21e9ee6e74c9891c76f5a65bded2d7cf1a055917c6c83b204dfafa73425d",
+    "source_digest": "51d971079fa66242e2a2f34142dbe44422e1204f980cec980f14fbeb58009d94",
     "contract_digest": "slice-sha256/2:a767bdb90bdeb274115a74e5c2dbc2af236dc81d872b58c6ef35a3ac54708603",
     "regenerate": "ess generate"
   },
