@@ -13,7 +13,7 @@ scope:
   path: crates/thalamus-service/src/views/deploy.rs
 - confidence: inferred
   path: crates/thalamus-service/tests/before_after.rs
-revision: 5
+revision: 7
 ---
 ## Context
 
@@ -59,3 +59,9 @@ Planned (inferred):
 ## Revision after acceptance critic round 2
 
 Added failing-first tests: `zero_or_negative_window_is_refused_with_400` and `unparseable_window_is_refused_with_400`, each asserting nothing was read from the store.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- A side with no `ok` reading shows no score and the row has no delta; rows without a delta sort after those with one, then by signal id.
+
+Correction to the open-point note above (review-result:adversary-m4-design-record-pass-2, P5): a side with no `ok` reading has no median; its score is unaffected (the highest score among its scored evaluations). A side with no scored evaluation is `UNKNOWN` with a reason and the row has no delta (design § 6.5, D38). Rows without a delta sort after those with one, then by signal id.

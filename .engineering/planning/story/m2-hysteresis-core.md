@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-hysteresis-core
 kind: story
-status: draft
+status: active
 title: Settle verdict changes with k/m persistence in thalamus-core
 relations:
 - decomposes: epic:history-and-transitions
@@ -13,7 +13,10 @@ scope:
   path: crates/thalamus-core/src/hysteresis.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/hysteresis.rs
-revision: 6
+revision: 13
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T12:33:40Z", actor: "human:timo", revision: 12, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "proposed", to: "active", at: "2026-10-15T12:33:40Z", actor: "human:timo", revision: 13, decided_on: {"recorded":{"review_outcome":3}}}
 ---
 ## Context
 
@@ -43,3 +46,13 @@ Planned (inferred):
 ## Acceptance
 
 `cargo test -p thalamus-core --test hysteresis` passes the failing-first tests `warn_settles_after_two`, `crit_settles_after_one`, `warn_clears_after_three_ok`, `two_ok_do_not_clear_warn`, `unknown_does_not_clear_warn`, `na_does_not_clear_warn`, `alternating_ok_warn_never_settles`, `first_settled_verdict_has_no_from`, `replay_equals_live`, `persistence_block_overrides_defaults` (a definition with `persistence: {k: 3, k_crit: 2, m: 4}` settles `WARN` after three, `CRIT` after two and clears after four) and `settled_change_carries_d13_fields`.
+
+## Note from story:m2-spec-history-records (2026-10-15)
+
+The specification now declares `persistence`, `evaluation.fixed` and `evaluation.rolling_n` on a definition, but the definition-file loader (`crates/thalamus-core/src/registry.rs`) sets all three to `None`. This story also teaches the loader to read the field(s) it consumes, with the registry's rules (repeated keys refused, values validated), and a failing-first loader test; `website/docs/concepts/signals.md` lists the field.
+
+## Note, superseding the one above (2026-10-15)
+
+The loader now reads `evaluation.fixed`, `evaluation.rolling_n` and `persistence` in story:m2-spec-history-records (its adversary pass 1 found the gap with failing cases); this story no longer edits `crates/thalamus-core/src/registry.rs` for them.
+
+Superseding the per-value fallback above (coordinator decision after review-result:adversary-m2-spec-history-records-pass-2, finding 7): the specification's `Persistence` requires all of `k`, `k_crit` and `m`, and the loader refuses a block missing any of them. A definition without a `persistence` block uses the design defaults 2, 1, 3 (design § 11 D15); a block present carries all three values, so `hysteresis.rs` has no per-value fallback.

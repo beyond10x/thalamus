@@ -17,7 +17,7 @@ scope:
   path: crates/thalamus-service/src/views/svg.rs
 - confidence: inferred
   path: crates/thalamus-service/tests/heatmap.rs
-revision: 4
+revision: 6
 ---
 ## Context
 
@@ -59,3 +59,9 @@ Planned (inferred):
 ## Acceptance
 
 `cargo test -p thalamus-service --test heatmap` passes, against a store seeded with 28 days of hourly evaluations and no source reachable, the failing-first tests `four_week_heatmap_has_28_utc_day_columns_from_stored_evaluations`, `hour_step_has_24_columns_per_day`, `cell_takes_worst_verdict_and_its_highest_score`, `unknown_cell_is_hatched_never_coloured_as_zero`, `all_na_cell_is_grey`, `column_without_evaluation_is_a_gap`, `cell_counts_highest_rev_evaluation_per_sample`, `rows_grouped_by_layer_of_signal_id` and `score_zero_is_the_scale_midpoint`.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- The colours of the scale between its stated fixed points: the implementor picks them, the golden file pins them, the § 11 row lists them.
+
+From review-result:adversary-m4-design-record-pass-2, P4: `format=json` applies to every view except `/views/live`, whose machine-readable form is the evaluation stream (design § 6.5, D34, D35). This supersedes "format=json on every view" above.

@@ -12,7 +12,7 @@ scope:
   path: crates/thalamus-service/src/views/week.rs
 - confidence: inferred
   path: crates/thalamus-service/tests/week.rs
-revision: 4
+revision: 5
 ---
 ## Context
 
@@ -50,3 +50,7 @@ Planned (inferred):
 ## Acceptance
 
 `cargo test -p thalamus-service --test week` passes, against a seeded store and no source reachable, the failing-first tests `slot_compared_with_same_slot_seven_days_earlier`, `week_has_168_hour_slots_ending_at_at`, `missing_last_week_slot_is_a_gap_not_zero`, `delta_only_between_two_scored_cells`, `series_younger_than_a_week_is_baseline_predates_series` and `rows_ordered_by_largest_score_delta`.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- "Largest score delta" ranks by absolute value; the sign is shown.

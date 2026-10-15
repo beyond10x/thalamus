@@ -328,6 +328,14 @@
           "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
           "type": "string"
         },
+        "mapping": {
+          "additionalProperties": {
+            "$ref": "#/$defs/thalamus.evaluation.Verdict"
+          },
+          "description": "A producer's own vocabulary mapped onto the ladder (a colour, a detector or gate exit code to OK, WARN, CRIT or UNKNOWN). Required, and not empty, when the rule is producer_mapped, and refused under any other rule; a producer value it does not list is UNKNOWN.",
+          "type": "object",
+          "x-ess-map-key": "String"
+        },
         "min_trend_window": {
           "description": "For an instant signal, no delta and no trend below this window.",
           "format": "duration",
@@ -1267,8 +1275,8 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:84d3d1094d63e08d05e6556b5f633589c98643752b8ff1c198bb1b21b3d6a6c7",
-    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
+    "contract_digest": "slice-sha256/2:bb08f1b4edacd382d391935fa4a5900d7af272862b7dfb6c0358d0217354bbe6",
+    "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
     "specification_version": "v1",
     "system": "thalamus"
   }

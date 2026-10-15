@@ -26,14 +26,18 @@ pub enum RuleId {
     HigherIsWorse,
     /// A count or gauge against `lower_of` or `fixed`; lower is worse.
     LowerIsWorse,
+    /// A verdict a producer gave in its own vocabulary, mapped by `evaluation.mapping`
+    /// ([`mapped`], design § 2.3).
+    ProducerMapped,
 }
 
 impl RuleId {
     /// Every rule, in the order an error lists them.
-    pub const ALL: [RuleId; 3] = [
+    pub const ALL: [RuleId; 4] = [
         RuleId::RatioVsPooledBaseline,
         RuleId::HigherIsWorse,
         RuleId::LowerIsWorse,
+        RuleId::ProducerMapped,
     ];
 
     /// The id as a definition writes it.
@@ -43,6 +47,7 @@ impl RuleId {
             RuleId::RatioVsPooledBaseline => "ratio_vs_pooled_baseline",
             RuleId::HigherIsWorse => "higher_is_worse",
             RuleId::LowerIsWorse => "lower_is_worse",
+            RuleId::ProducerMapped => mapped::ID,
         }
     }
 
@@ -56,8 +61,10 @@ impl RuleId {
             RuleId::RatioVsPooledBaseline => (Direction::HigherIsWorse, Events::TimesN),
             RuleId::HigherIsWorse => (Direction::HigherIsWorse, Events::Plain),
             RuleId::LowerIsWorse => (Direction::LowerIsWorse, Events::Plain),
+            RuleId::ProducerMapped => return Ok(Prepared::Mapped(mapped::Rule::new(evaluation))),
         };
-        threshold::Rule::new(self.as_str(), direction, events, evaluation).map(Prepared::Threshold)
+        threshold::Rule::new(self.as_str(), direction, events, evaluation)
+            .map(|rule| Prepared::Threshold(Box::new(rule)))
     }
 }
 
@@ -103,7 +110,9 @@ impl std::error::Error for UnknownRule {}
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Prepared {
     /// A [`threshold`] rule.
-    Threshold(threshold::Rule),
+    Threshold(Box<threshold::Rule>),
+    /// The [`mapped`] rule.
+    Mapped(mapped::Rule),
 }
 
 impl Prepared {
@@ -113,6 +122,9 @@ impl Prepared {
     pub fn decide(&self, value: &Decimal, baseline: &Decimal, n: Option<i64>) -> Decision {
         match self {
             Prepared::Threshold(rule) => rule.decide(value, baseline, n),
+            // A sample with producer text is graded by `grading::grade` through the mapping; one
+            // without is never graded on its number.
+            Prepared::Mapped(rule) => rule.without_text(),
         }
     }
 
@@ -128,6 +140,8 @@ impl Prepared {
     ) -> Option<Decision> {
         match self {
             Prepared::Threshold(rule) => rule.escalate(value, bound, baseline, n),
+            // A bound is no producer value, whatever text the sample records.
+            Prepared::Mapped(_) => None,
         }
     }
 }

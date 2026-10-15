@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T12:22:41Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-spec-history-records",
+  "kind": "story",
+  "revision": 9,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "coordinator verification, wave 20261015e",
+    "review": "review-result:adversary-m2-spec-history-records-pass-1",
+    "outcome": "fixed"
+  }
+}

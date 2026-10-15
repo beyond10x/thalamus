@@ -111,6 +111,7 @@ fn evaluation_spec() -> EvaluationSpec {
         min_trend_window: None,
         fixed: None,
         rolling_n: None,
+        mapping: None,
     }
 }
 
@@ -195,6 +196,7 @@ fn revise(signal: &str) -> ReviseDefinition {
 fn record_sample(signal: &str, series: &str) -> RecordSample {
     let at = |instant: &str| text(Timestamp, instant);
     RecordSample {
+        text: None,
         signal: text(SignalId, signal),
         series: text(SeriesKey, series),
         dims: BTreeMap::from([("cluster".to_owned(), text(DimensionValue, "a"))]),
@@ -759,6 +761,13 @@ fn proposed_refusal(answer: &ProposeDefinitionOutcome) -> Option<&'static str> {
         ProposeDefinitionOutcome::FixedNumberUnused { .. } => {
             Some("thalamus.definition.FixedNumberUnused")
         }
+        ProposeDefinitionOutcome::MappingMissing { .. } => {
+            Some("thalamus.definition.MappingMissing")
+        }
+        ProposeDefinitionOutcome::MappingUnused { .. } => Some("thalamus.definition.MappingUnused"),
+        ProposeDefinitionOutcome::ThresholdsUnused { .. } => {
+            Some("thalamus.definition.ThresholdsUnused")
+        }
         ProposeDefinitionOutcome::PersistenceBelowOne { .. } => {
             Some("thalamus.definition.PersistenceTooSmall")
         }
@@ -786,6 +795,13 @@ fn revised_refusal(answer: &ReviseDefinitionOutcome) -> Option<&'static str> {
         }
         ReviseDefinitionOutcome::FixedNumberUnused { .. } => {
             Some("thalamus.definition.FixedNumberUnused")
+        }
+        ReviseDefinitionOutcome::MappingMissing { .. } => {
+            Some("thalamus.definition.MappingMissing")
+        }
+        ReviseDefinitionOutcome::MappingUnused { .. } => Some("thalamus.definition.MappingUnused"),
+        ReviseDefinitionOutcome::ThresholdsUnused { .. } => {
+            Some("thalamus.definition.ThresholdsUnused")
         }
         ReviseDefinitionOutcome::PersistenceBelowOne { .. } => {
             Some("thalamus.definition.PersistenceTooSmall")

@@ -25,7 +25,7 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345",
+    "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
     "contract_digest": "slice-sha256/2:2e95da59cafa9498e9e7378b1c21da9ca94a1ac0f23920e6f4c817ab784edea3",
     "regenerate": "ess generate"
   },

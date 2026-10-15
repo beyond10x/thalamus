@@ -140,6 +140,7 @@ fn definition(
             min_trend_window: None,
             fixed: None,
             rolling_n: None,
+            mapping: None,
         },
         persistence: None,
         objective: None,

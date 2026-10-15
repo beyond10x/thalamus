@@ -152,6 +152,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/baselines",
     ),
+    shipped(
+        "Grading",
+        "Persistence settles verdict changes",
+        "thalamus-core settles a change after k agreeing evaluations (k_crit for CRIT); WARN clears after m OK evaluations, never on N/A or UNKNOWN.",
+        Evidence::Test("crates/thalamus-core/tests/hysteresis.rs::unknown_does_not_clear_warn"),
+        "/docs/concepts/verdicts#persistence",
+    ),
     planned(
         "Grading",
         "Same-slot median and rolling median baselines",
@@ -159,18 +166,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m2-store-baselines",
         "/docs/concepts/baselines",
     ),
-    planned(
-        "Grading",
-        "Persistence settles verdict changes",
-        "A change counts after k agreeing evaluations (k_crit for CRIT); WARN clears after m OK evaluations.",
-        "story:m2-hysteresis-core",
-        "/docs/concepts/verdicts#persistence",
-    ),
-    planned(
+    shipped(
         "Grading",
         "Other producers' vocabularies map onto the ladder",
-        "Colour ladders, detector exits and blocking gate exits.",
-        "story:m3-vocabulary-mapping",
+        "Colour ladders, detector exits and blocking gate exits, by the table in evaluation.mapping; na is UNKNOWN, never green.",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/vocabulary.rs::colour_na_never_ranks_as_green",
+        ),
         "/docs/concepts/verdicts#other-vocabularies",
     ),
     planned(

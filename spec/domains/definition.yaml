@@ -139,6 +139,9 @@ types:
       - name: rolling_n
         type: Optional<Integer>
         summary: The N of a rolling_median baseline, the median of the last N samples of the series. Required when baselines name rolling_median.
+      - name: mapping
+        type: Optional<Map<String, thalamus.evaluation.Verdict>>
+        summary: A producer's own vocabulary mapped onto the ladder (a colour, a detector or gate exit code to OK, WARN, CRIT or UNKNOWN). Required, and not empty, when the rule is producer_mapped, and refused under any other rule; a producer value it does not list is UNKNOWN.
     naming:
       summary: How a sample is graded. The only copy of the signal's thresholds.
 
@@ -376,6 +379,24 @@ errors:
       - name: signal_id
         type: thalamus.definition.SignalId
 
+  - name: thalamus.definition.MappingMissing
+    summary: The rule producer_mapped grades a producer's own value through evaluation.mapping, and the definition declares no mapping onto OK, WARN, CRIT or UNKNOWN; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.MappingUnused
+    summary: evaluation.mapping is declared, and the rule is not producer_mapped, so nothing reads it; a table nothing reads is not kept, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.ThresholdsUnused
+    summary: The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
 events:
   - name: thalamus.definition.DefinitionProposed
     fields:
@@ -530,6 +551,43 @@ commands:
           thalamus.definition.PersistenceTooSmall:
             signal_id: input.signal_id
         summary: persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing was proposed.
+      # UNMAPPED: an empty mapping, or one onto N/A, is no mapping either: an empty table maps
+      # nothing, and a producer value is read, so it is never "too little to grade", and a reading
+      # carries no N/A. Guarding either with a second child of the connective (an emptiness test, or
+      # `exists: {in: evaluation.mapping, as: v, that: v == N_A}`) leaves that child unwitnessed
+      # (ESS-SYNTH-022). The behaviour selects this outcome for both; held by
+      # crates/thalamus-core/tests/producer_mapped.rs::mapping_onto_n_a_is_refused_like_a_missing_one
+      # and ::empty_mapping_is_refused_like_a_missing_one.
+      - name: mapping-missing
+        when:
+          all:
+            - evaluation.rule == "producer_mapped"
+            - not defined(evaluation.mapping)
+        error: thalamus.definition.MappingMissing
+        payload:
+          thalamus.definition.MappingMissing:
+            signal_id: input.signal_id
+        summary: The rule producer_mapped was named without evaluation.mapping; nothing was proposed.
+      - name: mapping-unused
+        when:
+          all:
+            - defined(evaluation.mapping)
+            - evaluation.rule != "producer_mapped"
+        error: thalamus.definition.MappingUnused
+        payload:
+          thalamus.definition.MappingUnused:
+            signal_id: input.signal_id
+        summary: evaluation.mapping was declared under a rule other than producer_mapped; nothing was proposed.
+      - name: thresholds-unused
+        when:
+          all:
+            - evaluation.rule == "producer_mapped"
+            - any: ["defined(evaluation.warn)", "defined(evaluation.crit)"]
+        error: thalamus.definition.ThresholdsUnused
+        payload:
+          thalamus.definition.ThresholdsUnused:
+            signal_id: input.signal_id
+        summary: A warn or crit line was declared under producer_mapped; nothing was proposed.
       - name: proposed
         creates: thalamus.definition.SignalDefinition
         instance: signal_id
@@ -685,6 +743,40 @@ commands:
           thalamus.definition.PersistenceTooSmall:
             signal_id: input.signal_id
         summary: persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing changed.
+      # UNMAPPED: as on ProposeDefinition, the behaviour selects mapping-missing for an empty mapping
+      # and for one naming N/A too (ESS-SYNTH-022); held by
+      # crates/thalamus-core/tests/producer_mapped.rs::mapping_onto_n_a_is_refused_like_a_missing_one
+      # and ::empty_mapping_is_refused_like_a_missing_one.
+      - name: mapping-missing
+        when:
+          all:
+            - evaluation.rule == "producer_mapped"
+            - not defined(evaluation.mapping)
+        error: thalamus.definition.MappingMissing
+        payload:
+          thalamus.definition.MappingMissing:
+            signal_id: input.signal_id
+        summary: The rule producer_mapped was named without evaluation.mapping; nothing changed.
+      - name: mapping-unused
+        when:
+          all:
+            - defined(evaluation.mapping)
+            - evaluation.rule != "producer_mapped"
+        error: thalamus.definition.MappingUnused
+        payload:
+          thalamus.definition.MappingUnused:
+            signal_id: input.signal_id
+        summary: evaluation.mapping was declared under a rule other than producer_mapped; nothing changed.
+      - name: thresholds-unused
+        when:
+          all:
+            - evaluation.rule == "producer_mapped"
+            - any: ["defined(evaluation.warn)", "defined(evaluation.crit)"]
+        error: thalamus.definition.ThresholdsUnused
+        payload:
+          thalamus.definition.ThresholdsUnused:
+            signal_id: input.signal_id
+        summary: A warn or crit line was declared under producer_mapped; nothing changed.
       - name: revised
         updates: thalamus.definition.SignalDefinition
         instance: signal_id

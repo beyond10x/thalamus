@@ -73,6 +73,18 @@ pub struct Read {
     pub raw: Option<String>,
     /// The earliest moment the source still holds, only when the source exposes one.
     pub retention_start: Option<Timestamp>,
+    /// Why an `unknown` read is unknown, where the adapter can say so in a type; `None` for every
+    /// other read.
+    pub unread: Option<Unread>,
+}
+
+/// Why an `unknown` [`Read`] is unknown, where an adapter can say so in a type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Unread {
+    /// The source answered and the producer's value was read, and its only defect is that it is
+    /// text, not a number; `raw` holds the text. A vocabulary mapping may still map it
+    /// (`crate::vocabulary::map_reads`). A cut, colliding, NULL or unreachable read is never this.
+    Text,
 }
 
 /// An `unknown` read of `definition` for the window ending at `end`, saying `reason`.
@@ -102,6 +114,7 @@ pub fn unknown(
         query_sha256: query_digest(&definition.query),
         raw: None,
         retention_start: None,
+        unread: None,
     }
 }
 

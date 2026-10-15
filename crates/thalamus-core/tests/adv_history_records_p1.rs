@@ -52,6 +52,7 @@ fn evaluation_spec() -> EvaluationSpec {
         min_trend_window: None,
         fixed: None,
         rolling_n: None,
+        mapping: None,
     }
 }
 

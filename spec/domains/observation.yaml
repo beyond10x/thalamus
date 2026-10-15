@@ -151,6 +151,9 @@ entities:
         type: thalamus.observation.TimeWindow
       - name: reading
         type: thalamus.observation.Reading
+      - name: text
+        type: Optional<String>
+        summary: The producer's value exactly as the source printed it (a text cell, an exit code, an HTTP status), recorded only under a producer_mapped definition and only when the adapter read the value. Grading maps it through the definition's evaluation.mapping at the revision being graded, so a mapping revision re-grades history.
       - name: unit
         type: thalamus.definition.Unit
       - name: denominator
@@ -219,6 +222,8 @@ commands:
         type: thalamus.observation.TimeWindow
       - name: reading
         type: thalamus.observation.Reading
+      - name: text
+        type: Optional<String>
       - name: unit
         type: thalamus.definition.Unit
       - name: denominator
@@ -258,6 +263,7 @@ commands:
           ts: input.ts
           window: input.window
           reading: input.reading
+          text: input.text
           unit: input.unit
           denominator: input.denominator
           provenance: input.provenance
@@ -289,6 +295,8 @@ views:
         type: thalamus.observation.TimeWindow
       - name: reading
         type: thalamus.observation.Reading
+      - name: text
+        type: Optional<String>
       - name: unit
         type: thalamus.definition.Unit
       - name: denominator
@@ -318,6 +326,8 @@ views:
         type: thalamus.observation.TimeWindow
       - name: reading
         type: thalamus.observation.Reading
+      - name: text
+        type: Optional<String>
       - name: unit
         type: thalamus.definition.Unit
       - name: denominator

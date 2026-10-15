@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345
-// contract digest 743de6fde38e8322855a866475e38f9b1135e768965b29a2c1a9c9a5cce2d6eb
+// model digest 73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed
+// contract digest 093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061
 // do not edit: regenerate with `ess synthesize --layout crate`
 //! Every generated declaration, as JSON, in the renderings the published wire contracts fix.
 //!
@@ -288,6 +288,19 @@ pub fn encode_thalamus_definition_evaluation_spec(value: &crate::definition::Eva
         json::member(out, "rolling_n");
         json::push_integer(out, *held0);
     }
+    if let Some(held0) = &value.mapping {
+        json::member(out, "mapping");
+        out.push('{');
+        for (index1, (key1, item1)) in (*held0).iter().enumerate() {
+            if index1 > 0 {
+                out.push(',');
+            }
+            json::push_text(out, key1);
+            out.push(':');
+            encode_thalamus_evaluation_verdict(&*item1, out);
+        }
+        out.push('}');
+    }
     out.push('}');
 }
 
@@ -348,6 +361,20 @@ pub fn decode_thalamus_definition_evaluation_spec(value: &json::Value, at: &str)
             Some(member6) => {
                 let at6 = json::nested(at, "rolling_n");
                 Some(json::integer_at(member6, &at6, "an integer")?)
+            }
+        },
+        mapping: match value.member("mapping") {
+            None | Some(json::Value::Null) => None,
+            Some(member7) => {
+                let at7 = json::nested(at, "mapping");
+                Some({
+                let mut entries7 = std::collections::BTreeMap::new();
+                for (key7, element7) in json::members_at(member7, &at7, "an object")? {
+                    let nested7 = json::nested(&at7, key7);
+                    entries7.insert(key7.clone(), decode_thalamus_evaluation_verdict(element7, &nested7)?);
+                }
+                entries7
+            })
             }
         },
     })
@@ -1741,6 +1768,22 @@ pub fn encode_error_thalamus_definition_instant_needs_fixed_baseline(value: &cra
     out.push('}');
 }
 
+/// Writes the declared error `thalamus.definition.MappingMissing` as JSON.
+pub fn encode_error_thalamus_definition_mapping_missing(value: &crate::definition::MappingMissing, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.definition.MappingUnused` as JSON.
+pub fn encode_error_thalamus_definition_mapping_unused(value: &crate::definition::MappingUnused, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
 /// Writes the declared error `thalamus.definition.MuteExpiryPassed` as JSON.
 pub fn encode_error_thalamus_definition_mute_expiry_passed(value: &crate::definition::MuteExpiryPassed, out: &mut String) {
     out.push('{');
@@ -1775,6 +1818,14 @@ pub fn encode_error_thalamus_definition_rolling_window_missing(value: &crate::de
 
 /// Writes the declared error `thalamus.definition.RollingWindowUnused` as JSON.
 pub fn encode_error_thalamus_definition_rolling_window_unused(value: &crate::definition::RollingWindowUnused, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.definition.ThresholdsUnused` as JSON.
+pub fn encode_error_thalamus_definition_thresholds_unused(value: &crate::definition::ThresholdsUnused, out: &mut String) {
     out.push('{');
     json::member(out, "signal_id");
     encode_thalamus_definition_signal_id(&value.signal_id, out);
@@ -2253,6 +2304,10 @@ pub fn encode_view_thalamus_observation_samples(value: &crate::observation::Samp
     encode_thalamus_observation_time_window(&value.window, out);
     json::member(out, "reading");
     encode_thalamus_observation_reading(&value.reading, out);
+    if let Some(held0) = &value.text {
+        json::member(out, "text");
+        json::push_text(out, &*held0);
+    }
     json::member(out, "unit");
     encode_thalamus_definition_unit(&value.unit, out);
     if let Some(held0) = &value.denominator {
@@ -2277,6 +2332,10 @@ pub fn encode_view_thalamus_observation_series_samples(value: &crate::observatio
     encode_thalamus_observation_time_window(&value.window, out);
     json::member(out, "reading");
     encode_thalamus_observation_reading(&value.reading, out);
+    if let Some(held0) = &value.text {
+        json::member(out, "text");
+        json::push_text(out, &*held0);
+    }
     json::member(out, "unit");
     encode_thalamus_definition_unit(&value.unit, out);
     if let Some(held0) = &value.denominator {
@@ -3192,6 +3251,48 @@ pub fn encode_outcome_thalamus_definition_propose_definition(value: &crate::defi
             encode_error_thalamus_definition_persistence_too_small(error, out);
             out.push('}');
         }
+        crate::definition::ProposeDefinitionOutcome::MappingMissing { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "mapping-missing");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.MappingMissing");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_mapping_missing(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::MappingUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "mapping-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.MappingUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_mapping_unused(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::ThresholdsUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "thresholds-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.ThresholdsUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_thresholds_unused(error, out);
+            out.push('}');
+        }
         crate::definition::ProposeDefinitionOutcome::Proposed { definition_proposed } => {
             json::member(out, "outcome");
             json::push_text(out, "proposed");
@@ -3584,6 +3685,48 @@ pub fn encode_outcome_thalamus_definition_revise_definition(value: &crate::defin
             json::push_text(out, "thalamus.definition.PersistenceTooSmall");
             json::member(out, "payload");
             encode_error_thalamus_definition_persistence_too_small(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::MappingMissing { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "mapping-missing");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.MappingMissing");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_mapping_missing(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::MappingUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "mapping-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.MappingUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_mapping_unused(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::ThresholdsUnused { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "thresholds-unused");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.ThresholdsUnused");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_thresholds_unused(error, out);
             out.push('}');
         }
         crate::definition::ReviseDefinitionOutcome::Revised { definition_revised } => {
@@ -4063,6 +4206,10 @@ pub fn encode_command_thalamus_observation_record_sample(value: &crate::observat
     encode_thalamus_observation_time_window(&value.window, out);
     json::member(out, "reading");
     encode_thalamus_observation_reading(&value.reading, out);
+    if let Some(held0) = &value.text {
+        json::member(out, "text");
+        json::push_text(out, &*held0);
+    }
     json::member(out, "unit");
     encode_thalamus_definition_unit(&value.unit, out);
     if let Some(held0) = &value.denominator {
@@ -4118,22 +4265,29 @@ pub fn decode_command_thalamus_observation_record_sample(value: &json::Value, at
             let member5 = json::member_at(value, at, "reading")?;
             decode_thalamus_observation_reading(member5, &at5)?
         },
+        text: match value.member("text") {
+            None | Some(json::Value::Null) => None,
+            Some(member6) => {
+                let at6 = json::nested(at, "text");
+                Some(json::text_at(member6, &at6, "a string")?.to_owned())
+            }
+        },
         unit: {
-            let at6 = json::nested(at, "unit");
-            let member6 = json::member_at(value, at, "unit")?;
-            decode_thalamus_definition_unit(member6, &at6)?
+            let at7 = json::nested(at, "unit");
+            let member7 = json::member_at(value, at, "unit")?;
+            decode_thalamus_definition_unit(member7, &at7)?
         },
         denominator: match value.member("denominator") {
             None | Some(json::Value::Null) => None,
-            Some(member7) => {
-                let at7 = json::nested(at, "denominator");
-                Some(decode_thalamus_observation_denominator(member7, &at7)?)
+            Some(member8) => {
+                let at8 = json::nested(at, "denominator");
+                Some(decode_thalamus_observation_denominator(member8, &at8)?)
             }
         },
         provenance: {
-            let at8 = json::nested(at, "provenance");
-            let member8 = json::member_at(value, at, "provenance")?;
-            decode_thalamus_observation_provenance(member8, &at8)?
+            let at9 = json::nested(at, "provenance");
+            let member9 = json::member_at(value, at, "provenance")?;
+            decode_thalamus_observation_provenance(member9, &at9)?
         },
     })
 }

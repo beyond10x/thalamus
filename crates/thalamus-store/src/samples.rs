@@ -14,8 +14,8 @@ use thalamus_model::primitives::Timestamp;
 use thalamus_model::server::wire;
 
 use crate::eventlog::{
-    EventlogStore, ID_TAKEN, SAMPLE_SCHEMA, StoreError, dims, dims_value, part, text, unpart,
-    unpart_optional,
+    EventlogStore, ID_TAKEN, SAMPLE_SCHEMA, StoreError, dims, dims_value, optional_text, part,
+    text, unpart, unpart_optional,
 };
 
 /// The event name a sample is appended under.
@@ -152,6 +152,9 @@ pub(crate) fn encode(sample: &SignalSampleData) -> Result<Value, StoreError> {
         "reading".to_owned(),
         part(&sample.reading, wire::encode_thalamus_observation_reading)?,
     );
+    if let Some(text) = &sample.text {
+        body.insert("text".to_owned(), Value::from(text.as_str()));
+    }
     body.insert(
         "unit".to_owned(),
         part(&sample.unit, wire::encode_thalamus_definition_unit)?,
@@ -190,6 +193,7 @@ pub(crate) fn decode(body: &Value) -> Result<SignalSampleData, StoreError> {
             wire::decode_thalamus_observation_time_window,
         )?,
         reading: unpart(body, "reading", wire::decode_thalamus_observation_reading)?,
+        text: optional_text(body, "text")?,
         unit: unpart(body, "unit", wire::decode_thalamus_definition_unit)?,
         denominator: unpart_optional(
             body,

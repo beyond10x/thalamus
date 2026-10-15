@@ -901,6 +901,17 @@ pub(crate) fn text(body: &Value, name: &str) -> Result<String, StoreError> {
         .ok_or_else(|| StoreError::Record(format!("the record has no text `{name}`")))
 }
 
+/// A record's optional text member `name`: absent, or a string.
+pub(crate) fn optional_text(body: &Value, name: &str) -> Result<Option<String>, StoreError> {
+    match body.get(name) {
+        None => Ok(None),
+        Some(Value::String(value)) => Ok(Some(value.clone())),
+        Some(_) => Err(StoreError::Record(format!(
+            "the record's `{name}` is not text"
+        ))),
+    }
+}
+
 /// A record's `dims`: a map of text.
 pub(crate) fn dims(
     body: &Value,

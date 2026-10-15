@@ -211,6 +211,7 @@ fn record(ports: &mut Ports, signal: &str, pairs: &[(&str, &str)]) -> RecordSamp
     let signal = SignalId(signal.to_owned());
     let dims = dims(pairs);
     let input = RecordSample {
+        text: None,
         series: series_key(&signal, &dims),
         signal,
         dims,

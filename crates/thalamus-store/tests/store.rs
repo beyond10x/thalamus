@@ -92,6 +92,7 @@ fn sample(id: &str, series: &str, at: u32, reading: Reading) -> SignalSampleData
         "shared-2"
     };
     SignalSampleData {
+        text: None,
         sample_id: SampleId(id.to_owned()),
         signal: SignalId(SIGNAL.to_owned()),
         series: SeriesKey(series.to_owned()),
@@ -861,6 +862,40 @@ fn postgres_locator_asking_for_tls_is_refused() {
         assert_eq!(
             url.parse::<Locator>().expect("admitted"),
             Locator::Postgres(url.clone())
+        );
+    }
+}
+
+#[test]
+fn producer_text_round_trips_and_is_absent_when_none() {
+    let root = tempfile::tempdir().expect("tempdir");
+    for locator in targets(root.path()) {
+        let mut mapped = sample(
+            "smp_text",
+            SERIES_A,
+            1,
+            Reading::Unknown(UnreadReading {
+                reason: "value `green` is not a number".to_owned(),
+            }),
+        );
+        mapped.text = Some("green".to_owned());
+        let plain = sample("smp_plain", SERIES_A, 2, ok("1"));
+        let mut writer = open(&locator);
+        writer.append_sample(&mapped).expect("stored");
+        writer.append_sample(&plain).expect("stored");
+        let store = open(&locator);
+        let back = store
+            .sample(&SampleId("smp_text".to_owned()))
+            .expect("the sample is there after a restart");
+        assert_eq!(back, mapped, "{locator}");
+        assert_eq!(
+            stored_record(&store, "smp_text")["text"],
+            serde_json::json!("green"),
+            "{locator}"
+        );
+        assert!(
+            !has_key(stored_record(&store, "smp_plain"), "text"),
+            "{locator}: a sample without producer text stores no text member"
         );
     }
 }

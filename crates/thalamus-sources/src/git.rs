@@ -400,6 +400,7 @@ impl Reads<'_> {
             query_sha256: query_digest(&self.definition.query),
             raw: None,
             retention_start: None,
+            unread: None,
         }
     }
 

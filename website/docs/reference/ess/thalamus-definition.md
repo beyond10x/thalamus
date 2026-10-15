@@ -39,7 +39,7 @@ What is measured and how. One copy of every threshold lives here and nowhere els
 
 ### `EvaluationSpec`
 
-`thalamus.definition.EvaluationSpec` is a record of seven fields:
+`thalamus.definition.EvaluationSpec` is a record of eight fields:
 
 - `rule` — `thalamus.definition.RuleId`
 - `baselines` — `List<thalamus.definition.BaselineKind>`
@@ -48,6 +48,7 @@ What is measured and how. One copy of every threshold lives here and nowhere els
 - `min_trend_window` — `Optional<Duration>`, which may be absent
 - `fixed` — `Optional<Decimal>`, which may be absent
 - `rolling_n` — `Optional<Integer>`, which may be absent
+- `mapping` — `Optional<Map<String, thalamus.evaluation.Verdict>>`, which may be absent
 
 ### `ExtractorId`
 
@@ -326,7 +327,7 @@ It takes:
 - `links` — `thalamus.definition.Links`
 - `author` — `thalamus.definition.Author`
 
-It has eight outcomes.
+It has 11 outcomes.
 
 **`instant-not-fixed`** — An instant signal declared a baseline other than fixed; nothing was proposed. Taken when `(kind == instant and exists b in evaluation.baselines: (b != fixed))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.InstantNeedsFixedBaseline`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
@@ -339,6 +340,12 @@ It has eight outcomes.
 **`fixed-number-unused`** — evaluation.fixed was declared without a fixed baseline to read it; nothing was proposed. Taken when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.FixedNumberUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`persistence-below-one`** — persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing was proposed. Taken when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.PersistenceTooSmall`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`mapping-missing`** — The rule producer_mapped was named without evaluation.mapping; nothing was proposed. Taken when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.MappingMissing`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`mapping-unused`** — evaluation.mapping was declared under a rule other than producer_mapped; nothing was proposed. Taken when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.MappingUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`thresholds-unused`** — A warn or crit line was declared under producer_mapped; nothing was proposed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`proposed`** — The definition exists at revision 1 and is Proposed. The default branch, taken when no other outcome's condition matched. It creates a `thalamus.definition.SignalDefinition`, which starts in `Proposed`. The new instance's identity is published as `signal_id` on `thalamus.definition.DefinitionProposed`. It emits `thalamus.definition.DefinitionProposed`. It sets `title` from `input.title`, `family` from `input.family`, `kind` from `input.kind`, `unit` from `input.unit`, `dimensions` from `input.dimensions`, `source` from `input.source`, `extractor` from `input.extractor`, `query` from `input.query`, `window` from `input.window`, `cadence` from `input.cadence`, `history` from `input.history`, `denominator` from `input.denominator`, `evaluation` from `input.evaluation`, `persistence` from `input.persistence`, `objective` from `input.objective`, `owner` from `input.owner`, `links` from `input.links`, `rev` from `"1"`, `revised_at` from `implementation-generated` and `revised_by` from `input.author`. A test reaches it by constructing an input that satisfies no other outcome's condition.
 
@@ -386,7 +393,7 @@ It takes:
 - `links` — `thalamus.definition.Links`
 - `author` — `thalamus.definition.Author`
 
-It has nine outcomes.
+It has 12 outcomes.
 
 **`retired`** — The definition is retired; nothing changed. Taken when the existing subject's stored fields satisfy `state == Retired`. No entity in this specification changes. It reports `thalamus.definition.RetiredDefinition`, carrying `signal_id`. It emits nothing. A test establishes and independently observes the subject enum fact before selecting this branch.
 
@@ -401,6 +408,12 @@ It has nine outcomes.
 **`fixed-number-unused`** — evaluation.fixed was declared without a fixed baseline to read it; nothing changed. Taken when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.FixedNumberUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`persistence-below-one`** — persistence k, k_crit or m is below 1, settling or clearing on no evaluation; nothing changed. Taken when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.PersistenceTooSmall`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`mapping-missing`** — The rule producer_mapped was named without evaluation.mapping; nothing changed. Taken when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.MappingMissing`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`mapping-unused`** — evaluation.mapping was declared under a rule other than producer_mapped; nothing changed. Taken when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.MappingUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`thresholds-unused`** — A warn or crit line was declared under producer_mapped; nothing changed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`revised`** — The body is replaced and rev is one higher; evaluations already recorded keep the rev they name. The default branch, taken when no other outcome's condition matched. It changes a `thalamus.definition.SignalDefinition` without moving it along its lifecycle. The instance is the one named by the input field `signal_id`. It emits `thalamus.definition.DefinitionRevised`. It sets `title` from `input.title`, `family` from `input.family`, `kind` from `input.kind`, `unit` from `input.unit`, `dimensions` from `input.dimensions`, `source` from `input.source`, `extractor` from `input.extractor`, `query` from `input.query`, `window` from `input.window`, `cadence` from `input.cadence`, `history` from `input.history`, `denominator` from `input.denominator`, `evaluation` from `input.evaluation`, `persistence` from `input.persistence`, `objective` from `input.objective`, `owner` from `input.owner`, `links` from `input.links`, `rev` from `its previous value plus 1`, `revised_at` from `implementation-generated` and `revised_by` from `input.author`. A test reaches it by constructing an input that satisfies no other outcome's condition.
 
@@ -575,6 +588,30 @@ Reported by `thalamus.definition.ProposeDefinition` on its `instant-not-fixed` o
 
 Reported by `thalamus.definition.ReviseDefinition` on its `instant-not-fixed` outcome.
 
+### `MappingMissing`
+
+The rule producer_mapped grades a producer's own value through evaluation.mapping, and the definition declares no mapping onto OK, WARN, CRIT or UNKNOWN; nothing changed.
+
+It carries:
+
+- `signal_id` — `thalamus.definition.SignalId`
+
+Reported by `thalamus.definition.ProposeDefinition` on its `mapping-missing` outcome.
+
+Reported by `thalamus.definition.ReviseDefinition` on its `mapping-missing` outcome.
+
+### `MappingUnused`
+
+evaluation.mapping is declared, and the rule is not producer_mapped, so nothing reads it; a table nothing reads is not kept, so nothing changed.
+
+It carries:
+
+- `signal_id` — `thalamus.definition.SignalId`
+
+Reported by `thalamus.definition.ProposeDefinition` on its `mapping-unused` outcome.
+
+Reported by `thalamus.definition.ReviseDefinition` on its `mapping-unused` outcome.
+
 ### `MuteExpiryPassed`
 
 A mute carries an expiry in the future; this one has passed, so nothing was muted.
@@ -631,6 +668,18 @@ Reported by `thalamus.definition.ProposeDefinition` on its `rolling-n-unused` ou
 
 Reported by `thalamus.definition.ReviseDefinition` on its `rolling-n-unused` outcome.
 
+### `ThresholdsUnused`
+
+The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.
+
+It carries:
+
+- `signal_id` — `thalamus.definition.SignalId`
+
+Reported by `thalamus.definition.ProposeDefinition` on its `thresholds-unused` outcome.
+
+Reported by `thalamus.definition.ReviseDefinition` on its `thresholds-unused` outcome.
+
 ### `UnknownDefinition`
 
 No definition has this id; nothing changed.
@@ -668,4 +717,4 @@ It may invoke [`UnmuteDefinition`](#unmutedefinition).
 
 ---
 
-Generated from thalamus v1 · model digest `36486c1af727e3970e09eee21ce103728cca8a5870e0da6c3e5e285eb66f6345` · contract digest `slice-sha256/2:979ceca75f527649c029b7c348e5323c5e46a5e7a5a39dc8d2cff59a7f9e076a`. Do not edit this file; change the specification and regenerate it with `task generate`.
+Generated from thalamus v1 · model digest `73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed` · contract digest `slice-sha256/2:247902c35ced71c6feccc3ae600c7bbd73e8e33e62554c4f9dd4f6618c3aee8c`. Do not edit this file; change the specification and regenerate it with `task generate`.

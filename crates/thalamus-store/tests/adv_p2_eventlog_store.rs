@@ -76,6 +76,7 @@ fn open(target: &Target) -> EventlogStore {
 
 fn sample_at(id: &str, ts: &str) -> SignalSampleData {
     SignalSampleData {
+        text: None,
         sample_id: SampleId(id.to_owned()),
         signal: SignalId(SIGNAL.to_owned()),
         series: SeriesKey(SERIES.to_owned()),

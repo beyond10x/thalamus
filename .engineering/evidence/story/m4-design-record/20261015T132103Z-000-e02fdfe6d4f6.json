@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T13:21:03Z",
+  "actor": "human:timo",
+  "artifact": "story:m4-design-record",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main c9d410c"
+  }
+}
