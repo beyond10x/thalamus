@@ -46,10 +46,10 @@
     },
     {
       "area": "Project",
-      "detail": "On every push and every pull request. Planned in story:m0-ci.",
+      "detail": "On every push and every pull request, through .github/workflows/check.yml.",
       "href": "/docs/getting-started",
       "label": "CI runs task check",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Grading",

@@ -123,11 +123,11 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m0-probes",
         "/docs/concepts/samples",
     ),
-    planned(
+    shipped(
         "Project",
         "CI runs task check",
-        "On every push and every pull request.",
-        "story:m0-ci",
+        "On every push and every pull request, through .github/workflows/check.yml.",
+        Evidence::Task("check"),
         "/docs/getting-started",
     ),
     planned(
