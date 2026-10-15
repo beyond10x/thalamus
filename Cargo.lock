@@ -252,6 +252,7 @@ dependencies = [
  "thalamus",
  "thalamus-core",
  "thalamus-spec-types",
+ "time",
 ]
 
 [[package]]

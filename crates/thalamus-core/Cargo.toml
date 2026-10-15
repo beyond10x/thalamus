@@ -12,6 +12,7 @@ conformance = []
 [dependencies]
 thalamus-model = { package = "thalamus", path = "../../generated/thalamus-model" }
 thalamus-spec-types = { path = "../../generated/spec-types" }
+time = { version = "=0.3.45", features = ["formatting", "parsing"] }
 
 [dev-dependencies]
 thalamus-core = { path = ".", features = ["conformance"] }
