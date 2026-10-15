@@ -1,0 +1,6 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {"connection": {"summary": {"state": "ready"}}}
+  }
+}

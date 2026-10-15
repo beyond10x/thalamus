@@ -1,0 +1,13 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "cluster",
+      "revision": "op-rev-1",
+      "schema": "operations/v1alpha1",
+      "operation": {"id": "resources.get", "description": "Read one resource", "contract": "operations/v1alpha1", "profile": "kubeconfig"},
+      "source": "cached",
+      "stale": true
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "data": {"kind": "operational", "code": "timeout", "stage": "dispatch", "next_action": "retry_explicitly"}
+    }
+  }
+}

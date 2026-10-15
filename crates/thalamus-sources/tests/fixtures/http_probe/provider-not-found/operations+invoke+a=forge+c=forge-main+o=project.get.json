@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "operation failed",
+      "data": {"kind": "operational", "code": "service_failure", "stage": "dispatch", "next_action": "none", "service_code": "not_found"}
+    }
+  }
+}

@@ -40,6 +40,17 @@ pub enum ConnectorsError {
         code: String,
         /// The stage that refused, such as `admission` or `dispatch`.
         stage: String,
+        /// The adapter's own code beside a `service_failure`, such as `not_found` or
+        /// `rate_limited` (`error.data.service_code`), when Connectors gave one.
+        service_code: Option<String>,
+    },
+    /// The adapter refused the operation's description, so the operation was described and never
+    /// invoked.
+    NotAdmitted {
+        /// The call described, such as `forge.project.get`.
+        call: String,
+        /// Why the adapter refused the description.
+        reason: String,
     },
     /// The connection is not among the adapter instance's connections.
     NoConnection {
@@ -64,11 +75,20 @@ impl std::fmt::Display for ConnectorsError {
                 f,
                 "operation {operation:?} is not a declared read; refused before running connectors"
             ),
-            Self::Refused { call, code, stage } => {
-                write!(
-                    f,
-                    "{call}: connectors refused with code {code} at stage {stage}"
-                )
+            Self::Refused {
+                call,
+                code,
+                stage,
+                service_code,
+            } => {
+                write!(f, "{call}: connectors refused with code {code}")?;
+                if let Some(service_code) = service_code {
+                    write!(f, " (service code {service_code})")?;
+                }
+                write!(f, " at stage {stage}")
+            }
+            Self::NotAdmitted { call, reason } => {
+                write!(f, "{call}: described and not invoked: {reason}")
             }
             Self::NoConnection {
                 adapter,
@@ -236,6 +256,7 @@ impl Connectors {
         connection: &str,
         operation: &str,
         input: &str,
+        admit: &dyn Fn(&Value) -> Result<(), String>,
     ) -> Result<Value, ConnectorsError> {
         let call = format!("{adapter}.{operation}");
         let described = self.json(
@@ -249,6 +270,10 @@ impl Connectors {
             ],
             "operations describe",
         )?;
+        admit(&described).map_err(|reason| ConnectorsError::NotAdmitted {
+            call: call.clone(),
+            reason,
+        })?;
         let field = |name: &str| {
             described[name].as_str().map(str::to_string).ok_or_else(|| {
                 ConnectorsError::Unavailable {
@@ -310,6 +335,7 @@ fn envelope(doc: Value, call: &str) -> Result<Value, ConnectorsError> {
             .or_else(|| text(&error["code"]))
             .unwrap_or_else(|| "unspecified".to_string()),
         stage: text(&error["data"]["stage"]).unwrap_or_else(|| "unspecified".to_string()),
+        service_code: text(&error["data"]["service_code"]),
     })
 }
 
@@ -338,6 +364,19 @@ impl ReadClient<'_> {
         operation: &str,
         input: &Value,
     ) -> Result<Value, ConnectorsError> {
+        self.invoke_if(source, operation, input, &|_| Ok(()))
+    }
+
+    /// As [`ReadClient::invoke`], but the operation is invoked only when `admit` accepts its
+    /// `operations describe` answer; otherwise [`ConnectorsError::NotAdmitted`]. The invoke pins
+    /// the schema and revision of the very description `admit` accepted.
+    pub fn invoke_if(
+        &self,
+        source: &Source,
+        operation: &str,
+        input: &Value,
+        admit: &dyn Fn(&Value) -> Result<(), String>,
+    ) -> Result<Value, ConnectorsError> {
         if !self.operations.contains(&operation) {
             return Err(ConnectorsError::NotARead {
                 operation: operation.to_string(),
@@ -352,7 +391,7 @@ impl ReadClient<'_> {
         connectors.revalidate(adapter, connection, false)?;
         let (mut renew, mut timeout) = (true, true);
         let answer = loop {
-            match connectors.invoke_once(adapter, connection, operation, &input) {
+            match connectors.invoke_once(adapter, connection, operation, &input, admit) {
                 Err(e) if renew && refused_at_admission(&e, "not_granted") => {
                     renew = false;
                     connectors.revalidate(adapter, connection, true)?;

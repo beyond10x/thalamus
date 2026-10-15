@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "forge",
+      "operation": "project.get",
+      "revision": "op-rev-1",
+      "result": "[{\"status\":200}]"
+    }
+  }
+}

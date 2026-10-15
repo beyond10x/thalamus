@@ -1,0 +1,10 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "connections": [
+        {"adapter": "forge", "connection": "forge-main", "state": "ready", "revision": "conn-rev-1"}
+      ]
+    }
+  }
+}

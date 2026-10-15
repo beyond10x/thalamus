@@ -1,0 +1,10 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "connections": [
+        {"adapter": "cluster", "connection": "cluster-main", "state": "ready", "revision": "conn-rev-1"}
+      ]
+    }
+  }
+}

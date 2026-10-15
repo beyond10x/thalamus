@@ -1,0 +1,10 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "data": {"kind": "operational", "code": "not_found", "stage": "admission", "next_action": "check_configuration", "service_code": "not_found"}
+    }
+  }
+}
