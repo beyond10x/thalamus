@@ -1,0 +1,114 @@
+[
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(adv2_numcut_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":false,\"warnings\":[],\"infos\":[\"PromQL info: note 0\",\"PromQL info: note 1\",\"PromQL info: note 2\",\"PromQL info: note 3\",\"PromQL info: note 4\",\"PromQL info: note 5\",\"PromQL info: note 6\",\"PromQL info: note 7\",\"PromQL info: note 8\",\"PromQL info: note 9\",\"PromQL info: note 10\",\"PromQL info: note 11\",\"PromQL info: note 12\",\"PromQL info: note 13\",\"PromQL info: note 14\",\"PromQL info: note 15\",\"PromQL info: note 16\",\"PromQL info: note 17\",\"PromQL info: note 18\",\"PromQL info: note 19\",\"PromQL info: note 20\",\"PromQL info: note 21\",\"PromQL info: note 22\",\"PromQL info: note 23\",\"PromQL info: note 24\",\"PromQL info: note 25\",\"PromQL info: note 26\",\"PromQL info: note 27\",\"PromQL info: note 28\",\"PromQL info: note 29\",\"PromQL info: note 30\",\"PromQL info: note 31\"],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"2\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(adv2_numcut_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"80\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster, namespace) (increase(adv2_ns_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\",\"namespace\":\"shared-1\"},\"samples\":[[1792018623,\"2\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(adv2_ns_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"80\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster, namespace) (increase(adv2_mixed_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"3\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\",\"namespace\":\"x\"},\"samples\":[[1792018623,\"1\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster, namespace) (increase(adv2_mixed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\",\"namespace\":\"shared-1\"},\"samples\":[[1792018623,\"50\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"alpha\",\"namespace\":\"shared-2\"},\"samples\":[[1792018623,\"50\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\",\"namespace\":\"x\"},\"samples\":[[1792018623,\"10\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster, pod) (increase(adv2_pod_failed_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\",\"pod\":\"api-0\"},\"samples\":[[1792018623,\"1\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"alpha\",\"pod\":\"api-1\"},\"samples\":[[1792018623,\"2\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {
+      "query": "sum by (cluster) (increase(adv2_pod_total[6h]))"
+    },
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"prometheus-test\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{\"cluster\":\"alpha\"},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false},{\"labels\":{\"cluster\":\"beta\"},\"samples\":[[1792018623,\"80\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  }
+]
