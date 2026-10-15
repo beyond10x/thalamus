@@ -1,0 +1,22 @@
+id: test.run.pass_ratio
+title: Share of test cases that passed in a run
+family: test
+kind: ratio
+unit: "1"
+dimensions: [suite]
+source: { adapter: test_run, connection: test-events }
+extractor: test_run.pass_ratio
+query: { numerator: passed, denominator: cases }
+window: 1d
+cadence: 1d
+history: store
+denominator: { unit: "{case}", min_n: 1, since: first_sample }
+evaluation:
+  rule: ratio_vs_pooled_baseline
+  baselines: [offset_1d]
+owner: team:quality
+links: { components: [], issues: [] }
+lifecycle: retired
+rev: 2
+revised_at: 2026-10-04T00:00:00Z
+revised_by: operator

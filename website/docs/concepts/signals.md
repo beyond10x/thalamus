@@ -3,7 +3,7 @@ title: Signals
 sidebar_position: 1
 description: A signal definition says what is measured, from which source, in which unit and over which dimensions, and holds the only copy of its thresholds.
 lede: A signal definition is the one place that says what is measured and how it is graded; every sample and every evaluation names the definition revision it came from.
-source: spec/domains/definition.yaml, spec/domains/dimension.yaml, docs/design/thalamus.md § 2.1, § 2.4, § 5.2, § 11 (D8, D9, D17, D19)
+source: spec/domains/definition.yaml, spec/domains/dimension.yaml, docs/design/thalamus.md § 2.1, § 2.4, § 5.2, § 11 (D8, D9, D10, D17, D18, D19), crates/thalamus-core/src/registry.rs
 ---
 
 # Signals
@@ -12,20 +12,16 @@ A **signal** is one thing thalamus measures: the share of requests a platform fa
 pods present, the pass ratio of a test run. Its **definition** says what is measured and how, and
 it is the only copy of its thresholds.
 
-:::caution[Planned]
-
-The definition is specified (`thalamus.definition.SignalDefinition`) and its Rust type is
-generated. Loading and validating an instance's definitions is planned; see the
-[status page](/docs/status).
-
-:::
+An instance's definition files and its dimension registry are loaded and validated by
+`thalamus_core::registry`. A file that breaks a rule is refused at load, and the error names the
+file and the rule.
 
 ## A definition
 
-The shape below follows the specification; the values are an example.
+One file per definition. The shape below follows the specification; the values are an example.
 
 ```yaml
-signal_id: platform.namespace.request_failure_ratio   # <family>.<layer>.<name>, lowercase, stable
+id: platform.namespace.request_failure_ratio   # <family>.<layer>.<name>, lowercase, stable
 title: Share of requests the platform failed
 family: platform
 kind: ratio                     # gauge | counter_increase | ratio | instant | count_of_cases
@@ -45,18 +41,23 @@ evaluation:
   crit: {x: 4, abs: 0.05}
 owner: team:platform
 links: {components: [api], issues: []}
+lifecycle: active               # proposed | active | muted | retired
 rev: 1
+revised_at: 2026-10-01T00:00:00Z
+revised_by: someone
 ```
 
 | field | rule |
 |---|---|
-| `kind` | `gauge`, `counter_increase`, `ratio`, `instant` or `count_of_cases`. An `instant` count gets no trend below its `min_trend_window`. |
+| `id` | three non-empty segments of lower-case letters, digits and `_`, joined by dots; the first is the `family`. |
+| `kind` | `gauge`, `counter_increase`, `ratio`, `instant` or `count_of_cases`. An `instant` count gets no trend below its `min_trend_window`, and is graded against `fixed` only. |
 | `unit` | a UCUM unit. A ratio is a number with unit `1`, never a formatted percentage. |
 | `dimensions` | keys from the instance's dimension registry. An empty list declares a signal of the whole instance; an absent list is undeclared. |
-| `source` | an adapter and a Connectors connection id. thalamus holds no secret. |
+| `source` | an adapter and a Connectors connection id: an identifier, never a URL or a path (no `:/`, no leading `/`, no `http:`, `https:`, `file:`, `ftp:`, `ws:` or `wss:` prefix). thalamus holds no secret. |
+| `window`, `cadence` | `<n>s`, `<n>m`, `<n>h`, `<n>d`, `<n>w`, or an ISO 8601 duration of weeks, days, hours, minutes and seconds, each unit at most once. More than zero and at most 719528 days, with no years or months, whose length depends on the calendar. It is stored in the canonical RFC 3339 form of the same length: `6h` as `PT6H`, `P1W2D` as `P9D`, `PT1H1S` as `PT1H0M1S`. `min_trend_window` follows the same rule. |
 | `history` | `source` when the source can be re-queried at an offset, `store` when only thalamus remembers past values. It decides which [baselines](./baselines.md) are possible. |
-| `denominator` | the population a ratio or count is taken over, and `min_n`, below which the sample is graded `N/A`. |
-| `evaluation` | the rule, the baselines and the WARN and CRIT lines. This is the only copy of every threshold. |
+| `denominator` | the population a ratio or count is taken over, and `min_n`, below which the sample is graded `N/A`. `since` is `first_sample`, a fixed RFC 3339 timestamp, or `<key>.created`: the `created` of the sample's value in the `file` registry of a declared dimension (`dimension.created` when exactly one declared dimension has a `file` registry). The origin is never earlier than the source's retention start. |
+| `evaluation` | the rule, the baselines and the WARN and CRIT lines. This is the only copy of every threshold. An `Active` or `Muted` definition whose baselines name no single baseline thalamus computes is refused at load. |
 | `rev` | a definition change is a new revision with a date and an author, so an evaluation names the revision it was graded against. |
 
 The full type, with every field, is
@@ -82,17 +83,17 @@ from `spec/`.
 
 A sample's dimensions (`cluster`, `namespace`, `component`, a test `suite`) come from a closed
 registry declared **per instance**. A sample with an unregistered key or value is refused. Each
-registered key ([`Dimension`](../reference/ess/thalamus-dimension.md#dimension)) says where its
+registered key ([`Dimension`](../reference/ess/thalamus-dimension.md#dimension)), named once, says where its
 values come from, how it may be set, and optionally its parent key.
 
 | field | values | meaning |
 |---|---|---|
-| `values` | `file` | values listed in a registry file in the instance |
+| `values` | `file` | values listed in a registry file in the instance: a relative path naming a file inside the instance directory, with no empty, `.` or `..` segment, scheme or drive. An entry may carry `created` |
 | | `open` | any value; meant for test-run dimensions (`project`, `suite`, `case`) |
 | | `connectors` | values read from a Connectors inventory operation. Specified, but refused when an instance loads until Connectors offers such an operation |
 | `rule` | `source_only` | set only when the source row carries it, never derived from a parent: a number measured for a shared environment is never attributed to one tenant in it |
 | | `derived` | the alternative: the key's value may be derived rather than read from the row |
-| `parent` | a key | the key this one sits under (`namespace` under `cluster`) |
+| `parent` | a key | the key this one sits under (`namespace` under `cluster`). It is registered, and no key reaches itself through its parents |
 | `otel_attribute` | a name | the OpenTelemetry resource attribute the key maps to (`cluster` to `k8s.cluster.name`) |
 
 ## Sources

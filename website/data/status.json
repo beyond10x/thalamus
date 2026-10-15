@@ -95,10 +95,10 @@
     },
     {
       "area": "Instances",
-      "detail": "Only Active definitions whose dimensions are registered are sampled. Planned in story:m1-instance-registry.",
+      "detail": "Only Active definitions whose dimensions are registered are sampled.",
       "href": "/docs/concepts/signals",
       "label": "Definitions and the dimension registry load and validate",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Instances",

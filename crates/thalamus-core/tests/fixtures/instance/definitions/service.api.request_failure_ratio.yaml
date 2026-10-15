@@ -1,0 +1,27 @@
+id: service.api.request_failure_ratio
+title: Share of requests the service failed
+family: service
+kind: ratio
+unit: "1"
+dimensions: [component, environment]
+source: { adapter: prometheus, connection: metrics-main }
+extractor: promql.ratio
+query:
+  numerator: sum by (component, environment) (increase(requests_failed_total[6h]))
+  denominator: sum by (component, environment) (increase(requests_total[6h]))
+window: 6h
+cadence: 1h
+history: source
+denominator: { unit: "{request}", min_n: 20, since: component.created }
+evaluation:
+  rule: ratio_vs_pooled_baseline
+  baselines: [pooled, offset_1d, offset_7d]
+  warn: { x: 2, abs: 0.02, min_events: 10 }
+  crit: { x: 4, abs: 0.05 }
+objective: null
+owner: team:service
+links: { components: [api], issues: [] }
+lifecycle: active
+rev: 3
+revised_at: 2026-10-01T00:00:00Z
+revised_by: operator

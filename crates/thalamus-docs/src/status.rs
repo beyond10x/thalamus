@@ -180,11 +180,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m3-advisory-gate-mapping",
         "/docs/concepts/verdicts#other-vocabularies",
     ),
-    planned(
+    shipped(
         "Instances",
         "Definitions and the dimension registry load and validate",
         "Only Active definitions whose dimensions are registered are sampled.",
-        "story:m1-instance-registry",
+        Evidence::Test(
+            "crates/thalamus-core/tests/registry.rs::sample_of_non_active_definition_is_refused",
+        ),
         "/docs/concepts/signals",
     ),
     planned(
