@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-eventlog-store
 kind: story
-status: draft
+status: implemented
 title: Samples and evaluations persist in one Eventlog stream per instance (File, SQLite)
 relations:
 - decomposes: epic:signal-contract
@@ -23,7 +23,11 @@ scope:
   path: crates/thalamus-store/tests/conformance.rs
 - confidence: inferred
   path: crates/thalamus-store/tests/store.rs
-revision: 4
+revision: 8
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T08:25:13Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "proposed", to: "active", at: "2026-10-15T08:25:14Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "active", to: "implemented", at: "2026-10-15T13:16:45Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"review_outcome":8}}}
 ---
 ## Outcome
 
@@ -75,3 +79,7 @@ Retention (35 days) and daily rollups (design § 4; M2); PostgreSQL; CloudEvents
 ## Revision after design critic round 2
 
 The store conformance test reuses the runner: `crates/thalamus-store/tests/conformance.rs` calls `thalamus_core::conformance::run` (dev-dependency `thalamus-core` with feature `conformance`) with Eventlog storage. It writes no runner of its own.
+
+## Correction (2026-10-15, operator)
+
+No File provider: the store runs on Eventlog's SQLite and PostgreSQL providers (Eventlog 0.9.0, the newest release). Every place this story names File and SQLite now reads SQLite and PostgreSQL; the PostgreSQL lane runs against a disposable `postgres:17` container locally (`task test-postgres`) and a service container in CI. Design § 11 D24.

@@ -189,11 +189,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals",
     ),
-    planned(
+    shipped(
         "Instances",
         "Samples and evaluations persist in Eventlog",
         "One append-only stream per instance, on the File or SQLite provider.",
-        "story:m1-eventlog-store",
+        Evidence::Test(
+            "crates/thalamus-store/tests/store.rs::reopened_store_reads_series_in_ts_order",
+        ),
         "/docs/concepts/samples#storage",
     ),
     planned(

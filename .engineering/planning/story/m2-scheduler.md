@@ -17,7 +17,7 @@ scope:
   path: crates/thalamus-service/src/scheduler.rs
 - confidence: inferred
   path: crates/thalamus-service/tests/scheduler.rs
-revision: 6
+revision: 7
 ---
 ## Context
 
@@ -54,3 +54,7 @@ Planned (inferred):
 ## Acceptance
 
 `cargo test -p thalamus-service --test scheduler` passes, on a fake clock with no source reachable, the failing-first tests `samples_each_active_definition_once_per_cadence_slot`, `does_not_sample_proposed_muted_or_retired`, `missed_slot_is_recorded_unknown_with_reason` (D16: one `unknown` sample with reason `missed_slot` per series and missed slot, and the double's argv log shows no read for that slot), `restart_does_not_resample_a_sampled_slot`, `slow_read_is_unknown_not_zero`, `one_run_id_per_pass` and `revision_applies_at_next_slot`.
+
+## Note from story:m1-eventlog-store (2026-10-15)
+
+`thalamus-store`'s Eventlog store runs its own current-thread Tokio runtime and must not be called from inside another Tokio runtime. The scheduler either calls it from a blocking thread (`spawn_blocking`) or the store gains an async surface in this story.

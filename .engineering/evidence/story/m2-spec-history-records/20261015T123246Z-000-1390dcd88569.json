@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T12:32:46Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-spec-history-records",
+  "kind": "story",
+  "revision": 9,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main 6b98444"
+  }
+}

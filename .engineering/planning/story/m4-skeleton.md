@@ -43,7 +43,7 @@ scope:
   path: crates/thalamus-sources/src/lib.rs
 - confidence: inferred
   path: crates/thalamus-store/src/lib.rs
-revision: 6
+revision: 7
 ---
 ## Context
 
@@ -99,3 +99,7 @@ The stub files listed under Work are created here and recorded in the scope of t
 - `cargo run -q -p thalamus-cli -- --help` lists `export` and `deploys`; `cargo run -q -p thalamus-cli -- export` and `-- deploys` each exit 70 printing `not implemented`.
 - `cargo test -p thalamus-service --test http` passes the failing-first tests `no_listen_serves_no_http`, `index_links_every_view_route`, `unknown_route_answers_404`, `post_to_any_route_answers_405` and `remote_listen_address_refused_without_allow_remote`, the route tests through `http::router` and `tower::ServiceExt::oneshot` with no socket bound.
 - `cargo tree -p thalamus-service -e dev --depth 1` lists `tower` and `http-body-util` and neither `reqwest` nor `ureq`.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- `--listen` has no default (no HTTP without it, D31). A host name is resolved, and every address must be loopback unless `--allow-remote` is given.

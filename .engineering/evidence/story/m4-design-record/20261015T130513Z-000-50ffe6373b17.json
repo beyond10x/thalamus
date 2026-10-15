@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T13:05:13Z",
+  "actor": "human:timo",
+  "artifact": "story:m4-design-record",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "coordinator verification, wave 20261015e",
+    "review": "review-result:adversary-m4-design-record-pass-1",
+    "outcome": "fixed"
+  }
+}

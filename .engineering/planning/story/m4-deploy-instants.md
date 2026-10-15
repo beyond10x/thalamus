@@ -31,7 +31,7 @@ scope:
   path: crates/thalamus-store/src/deploys.rs
 - confidence: inferred
   path: crates/thalamus-store/tests/conformance.rs
-revision: 3
+revision: 4
 ---
 ## Context
 
@@ -80,3 +80,7 @@ Planned (inferred):
 - `cargo test -p thalamus-sources --test deploys` passes, over recorded Connectors answers in `crates/thalamus-sources/tests/fixtures/deploys/`, the failing-first tests `earliest_pod_creation_of_a_rollout_is_its_instant`, `merge_time_is_the_instant`, `unmerged_merge_request_is_not_a_deploy`, `object_without_creation_timestamp_is_not_recorded`, `deploy_dims_only_from_source_fields`, `deploy_id_is_stable_for_the_same_change` and `deploy_readers_invoke_only_read_operations` (the double argv log).
 - `cargo test -p thalamus-cli --test deploys` passes `record_twice_reports_already_recorded`, `unresolved_dim_value_refuses_the_instant` and `list_is_in_ts_order`.
 - `cargo test -p thalamus-store --test conformance` passes `thalamus.deploy.RecordDeployInstant/outcome/recorded` and `thalamus.deploy.RecordDeployInstant/outcome/already-recorded` with the Eventlog storage.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- The spelling of `deploy_id` from its stated inputs is the implementor's; the § 11 row states it.

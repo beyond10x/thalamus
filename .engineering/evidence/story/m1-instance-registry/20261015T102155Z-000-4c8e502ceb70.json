@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T10:21:55Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-instance-registry",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main 8a9be4e"
+  }
+}

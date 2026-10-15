@@ -28,7 +28,7 @@ scope:
   path: crates/thalamus-core/tests/export_rules.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/fixtures/export
-revision: 4
+revision: 5
 ---
 ## Context
 
@@ -72,3 +72,10 @@ Planned (inferred):
 
 - `cargo test -p thalamus-core --test export_rules` passes the failing-first tests `ratio_vs_pooled_baseline_known_answer` (the design § 2.1 definition against the golden file `crates/thalamus-core/tests/fixtures/export/ratio_pooled.rules.yaml`), `recorded_names_follow_openmetrics_naming`, `for_is_k_times_cadence_and_k_crit_for_crit`, `higher_of_and_lower_of_are_max_and_min_of_offsets`, `fixed_baseline_alert_compares_a_constant`, `min_n_and_min_events_guard_the_alert`, `store_baseline_is_skipped_with_reason`, `non_threshold_rule_is_skipped_with_reason`, `only_promql_and_loki_definitions_are_exported`, `loki_definition_records_in_loki_rules_and_alerts_in_prometheus_rules`, `only_active_definitions_are_exported` and `threshold_change_in_definition_changes_the_export`.
 - `cargo test -p thalamus-cli --test export_rules` passes `export_rules_writes_rule_groups_and_lists_skipped_on_stderr` and `exported_rules_parse_as_rule_groups`.
+
+Open points found by story:m4-design-record (wave 20261015e); coordinator defaults, each recorded as a design § 11 row when this story lands:
+
+- `m` (clear after m OK) maps to `keep_firing_for: m x cadence`.
+- The `counter_increase` range window is the definition's window.
+- The `min_n` and `min_events` guards are `and` clauses on the count expressions.
+- Loki gets the Prometheus-compatible rule-group format its ruler reads; the golden file pins it.
