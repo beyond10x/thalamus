@@ -1,0 +1,6 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {"adapter": "sql", "operation": "query.read", "schema": "query.read/v1alpha1", "revision": "op-rev-1"}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "input": {"query": "SELECT colour AS value FROM gate_runs"},
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "sql",
+      "operation": "query.read",
+      "revision": "op-rev-1",
+      "result": "{\"columns\":[{\"name\":\"value\",\"native_type\":\"text\"}],\"rows\":[[\"na\"]],\"truncated\":false,\"provenance\":{\"instance\":\"sql\",\"resource\":\"gates\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+    }
+  }
+}

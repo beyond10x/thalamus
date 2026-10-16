@@ -1,0 +1,26 @@
+id: platform.pods.pending
+title: Pods waiting to be scheduled, per namespace
+family: platform
+kind: instant
+unit: "{pod}"
+dimensions: [namespace]
+source: { adapter: kubernetes, connection: kubernetes-main }
+extractor: kubernetes.count
+query:
+  kind: pods
+  predicate: status.phase=Pending
+window: PT1H
+cadence: PT1H
+history: store
+denominator: { unit: "{pod}", min_n: 0, since: 2026-01-01T00:00:00Z }
+evaluation:
+  rule: higher_is_worse
+  baselines: [fixed]
+  fixed: "0"
+  warn: { abs: "1" }
+  crit: { abs: "5" }
+owner: team:platform
+lifecycle: active
+rev: 1
+revised_at: 2026-10-01T00:00:00Z
+revised_by: operator

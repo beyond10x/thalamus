@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "connections": [
+        {"adapter": "sql", "connection": "reports-replica", "state": "ready", "revision": "conn-rev-1"}
+      ],
+      "next_cursor": null
+    }
+  }
+}

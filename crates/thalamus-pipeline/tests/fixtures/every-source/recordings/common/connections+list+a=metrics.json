@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "connections": [
+        {"adapter": "metrics", "connection": "metrics-main", "state": "ready", "revision": "conn-rev-1"}
+      ],
+      "next_cursor": null
+    }
+  }
+}

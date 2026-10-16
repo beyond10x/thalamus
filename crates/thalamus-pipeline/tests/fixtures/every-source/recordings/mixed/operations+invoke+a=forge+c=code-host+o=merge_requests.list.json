@@ -1,0 +1,11 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "forge",
+      "operation": "merge_requests.list",
+      "revision": "op-rev-1",
+      "result": "{\"body\":[{\"id\":1001,\"iid\":1,\"project_id\":7,\"title\":\"Change 1\",\"state\":\"merged\",\"source_branch\":\"change-1\",\"target_branch\":\"main\",\"created_at\":\"2026-10-14T09:00:00.000Z\",\"updated_at\":\"2026-10-14T22:00:00.000Z\",\"merged_at\":\"2026-10-14T22:00:00.000Z\"},{\"id\":1002,\"iid\":2,\"project_id\":7,\"title\":\"Change 2\",\"state\":\"merged\",\"source_branch\":\"change-2\",\"target_branch\":\"main\",\"created_at\":\"2026-10-14T09:00:00.000Z\",\"updated_at\":\"2026-10-14T22:30:00.000Z\",\"merged_at\":\"2026-10-14T22:30:00.000Z\"}],\"status\":200,\"provenance\":{\"instance\":\"code-host\",\"resource\":\"/projects/7/merge_requests\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+    }
+  }
+}

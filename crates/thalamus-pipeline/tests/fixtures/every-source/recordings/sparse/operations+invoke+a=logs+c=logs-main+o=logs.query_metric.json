@@ -1,0 +1,26 @@
+[
+  {
+    "input": {"query": "sum(count_over_time({app=\"api\"} |= \"error\" [1h]))"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "logs",
+        "operation": "logs.query_metric",
+        "revision": "op-rev-metric-1",
+        "result": "{\"result_type\":\"vector\",\"series\":[{\"labels\":{},\"samples\":[{\"timestamp_unix_ns\":\"1792018623000000000\",\"value\":\"1\"}]}],\"complete\":true,\"truncation\":[],\"provenance\":{\"instance\":\"logs-main\",\"profile\":\"logql-metric\",\"observed_at_unix_ms\":1792018623000}}"
+      }
+    }
+  },
+  {
+    "input": {"query": "sum(count_over_time({app=\"api\"} [1h]))"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "logs",
+        "operation": "logs.query_metric",
+        "revision": "op-rev-metric-1",
+        "result": "{\"result_type\":\"vector\",\"series\":[{\"labels\":{},\"samples\":[{\"timestamp_unix_ns\":\"1792018623000000000\",\"value\":\"4\"}]}],\"complete\":true,\"truncation\":[],\"provenance\":{\"instance\":\"logs-main\",\"profile\":\"logql-metric\",\"observed_at_unix_ms\":1792018623000}}"
+      }
+    }
+  }
+]

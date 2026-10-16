@@ -1,0 +1,24 @@
+id: service.queue.depth
+title: Messages waiting in the work queue, from a database
+family: service
+kind: gauge
+unit: "{message}"
+dimensions: []
+source: { adapter: sql, connection: reports-replica }
+extractor: sql.value
+query: { value: "SELECT value FROM queue_depth" }
+window: PT1H
+cadence: PT1H
+history: store
+denominator: { unit: "{message}", min_n: 0, since: 2026-01-01T00:00:00Z }
+evaluation:
+  rule: higher_is_worse
+  baselines: [fixed]
+  fixed: "0"
+  warn: { abs: "100" }
+  crit: { abs: "1000" }
+owner: team:service
+lifecycle: active
+rev: 1
+revised_at: 2026-10-01T00:00:00Z
+revised_by: operator
