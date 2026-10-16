@@ -80,9 +80,9 @@ tasks:
       - '{{.ESS}} specify validate --path spec --strict-requires'
       - task: drift
       - '{{.CARGO}} fmt {{.CRATES}} -- --check'
+      - task: docs-check
       - '{{.CARGO}} clippy --locked --workspace --all-targets -- -D warnings'
       - task: test
-      - task: docs-check
 
   docs-generate:
     desc: Regenerate the derived documentation files under website/
