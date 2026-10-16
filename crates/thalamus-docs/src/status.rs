@@ -98,7 +98,7 @@ pub const CAPABILITIES: &[Capability] = &[
     shipped(
         "Command line",
         "A usage error exits 64, never a verdict code",
-        "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). Each still exits 70, not implemented.",
+        "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show and compare are implemented; rollup and flaps still exit 70, not implemented.",
         Evidence::Test("crates/thalamus-cli/tests/cli.rs::an_unknown_flag_exits_64"),
         "/docs/getting-started",
     ),
@@ -175,11 +175,11 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/verdicts#other-vocabularies",
     ),
-    planned(
+    shipped(
         "Grading",
         "An advisory gate grades WARN, never CRIT",
-        "Its finding count against a fixed baseline.",
-        "story:m3-advisory-gate-mapping",
+        "Its finding count against a fixed baseline, by the rule fixed_warn_only; no count printed is UNKNOWN.",
+        Evidence::Test("crates/thalamus-core/tests/advisory_gate.rs::advisory_never_grades_crit"),
         "/docs/concepts/verdicts#other-vocabularies",
     ),
     shipped(
@@ -293,18 +293,18 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/samples",
     ),
-    planned(
+    shipped(
         "Command line",
         "thalamus eval and thalamus show",
         "eval grades stored samples once per definition revision; show exits with the worst current verdict.",
-        "story:m1-cli-eval-show",
-        "/docs/concepts/verdicts",
+        Evidence::Test("crates/thalamus-cli/tests/eval_show.rs::show_exits_with_worst_verdict"),
+        "/docs/concepts/verdicts#eval-and-show",
     ),
-    planned(
+    shipped(
         "Command line",
         "thalamus compare --vs <offset>",
         "Answers from stored samples.",
-        "story:m2-compare",
+        Evidence::Test("crates/thalamus-cli/tests/compare.rs::compare_vs_7d_reads_stored_samples"),
         "/docs/concepts/baselines",
     ),
     planned(

@@ -276,7 +276,7 @@ fn local_connection_is_reserved_for_the_host_adapter() {
         adapter: AdapterId("prometheus".into()),
         connection: ConnectionId("local".into()),
     };
-    let refusals = input_refusals(def.kind, &source, &def.evaluation, None);
+    let refusals = input_refusals(def.kind, def.unit.as_ref(), &source, &def.evaluation, None);
     assert!(
         !refusals.is_empty(),
         "a prometheus source on the reserved connection local is accepted"

@@ -8,8 +8,8 @@
     "x-ess-provenance": {
       "system": "thalamus",
       "specification_version": "v1",
-      "source_digest": "b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a",
-      "contract_digest": "slice-sha256/2:468f6502d1569e62e77cf40bce974fd8ace2ccc86ced19dbf5164f2dcdb78110"
+      "source_digest": "6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd",
+      "contract_digest": "slice-sha256/2:52593762eb7c5911c4f82160d91abef9b7c9217fd30b29c6b5cb7e3ac76f0515"
     },
     "x-ess-reached-by": "network"
   },
@@ -650,12 +650,15 @@
             }
           },
           "422": {
-            "description": "Outcomes `host-not-local`, `local-not-host`, `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `host-not-local`, `local-not-host`, `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused`, `thresholds-unused`, `advisory-not-count`, `advisory-not-finding-unit` and `advisory-not-fixed`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
                   "discriminator": {
                     "mapping": {
+                      "advisory-not-count": "#/components/schemas/thalamus.definition.ProposeDefinition.advisory-not-count.Response",
+                      "advisory-not-finding-unit": "#/components/schemas/thalamus.definition.ProposeDefinition.advisory-not-finding-unit.Response",
+                      "advisory-not-fixed": "#/components/schemas/thalamus.definition.ProposeDefinition.advisory-not-fixed.Response",
                       "fixed-number-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-missing.Response",
                       "fixed-number-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-unused.Response",
                       "host-not-local": "#/components/schemas/thalamus.definition.ProposeDefinition.host-not-local.Response",
@@ -703,6 +706,15 @@
                     },
                     {
                       "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.thresholds-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.advisory-not-count.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.advisory-not-finding-unit.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.advisory-not-fixed.Response"
                     }
                   ]
                 }
@@ -934,12 +946,15 @@
             }
           },
           "422": {
-            "description": "Outcomes `host-not-local`, `local-not-host`, `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `host-not-local`, `local-not-host`, `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused`, `thresholds-unused`, `advisory-not-count`, `advisory-not-finding-unit` and `advisory-not-fixed`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
                   "discriminator": {
                     "mapping": {
+                      "advisory-not-count": "#/components/schemas/thalamus.definition.ReviseDefinition.advisory-not-count.Response",
+                      "advisory-not-finding-unit": "#/components/schemas/thalamus.definition.ReviseDefinition.advisory-not-finding-unit.Response",
+                      "advisory-not-fixed": "#/components/schemas/thalamus.definition.ReviseDefinition.advisory-not-fixed.Response",
                       "fixed-number-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-missing.Response",
                       "fixed-number-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-unused.Response",
                       "host-not-local": "#/components/schemas/thalamus.definition.ReviseDefinition.host-not-local.Response",
@@ -987,6 +1002,15 @@
                     },
                     {
                       "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.thresholds-unused.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.advisory-not-count.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.advisory-not-finding-unit.Response"
+                    },
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.advisory-not-fixed.Response"
                     }
                   ]
                 }
@@ -3033,6 +3057,54 @@
         "type": "string",
         "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_"
       },
+      "thalamus.definition.AdvisoryNeedsCountOfCases.Error": {
+        "title": "AdvisoryNeedsCountOfCases payload",
+        "description": "The rule fixed_warn_only grades an advisory gate's finding count, a signal of kind count_of_cases, and its score steps to the first whole count above the baseline; another kind was declared, so nothing changed.",
+        "x-ess-name": "thalamus.definition.AdvisoryNeedsCountOfCases",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.definition.AdvisoryNeedsFindingUnit.Error": {
+        "title": "AdvisoryNeedsFindingUnit payload",
+        "description": "The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.",
+        "x-ess-name": "thalamus.definition.AdvisoryNeedsFindingUnit",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
+      },
+      "thalamus.definition.AdvisoryNeedsFixedBaseline.Error": {
+        "title": "AdvisoryNeedsFixedBaseline payload",
+        "description": "The rule fixed_warn_only grades an advisory gate's count against the definition's fixed baseline, and evaluation.baselines is not fixed alone; nothing changed.",
+        "x-ess-name": "thalamus.definition.AdvisoryNeedsFixedBaseline",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
+      },
       "thalamus.definition.Author": {
         "title": "Author",
         "description": "Who made a revision.",
@@ -3897,6 +3969,96 @@
         ],
         "additionalProperties": false
       },
+      "thalamus.definition.ProposeDefinition.advisory-not-count.Response": {
+        "additionalProperties": false,
+        "description": "The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.AdvisoryNeedsCountOfCases",
+            "description": "The rule fixed_warn_only grades an advisory gate's finding count, a signal of kind count_of_cases, and its score steps to the first whole count above the baseline; another kind was declared, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "advisory-not-count",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.AdvisoryNeedsCountOfCases.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.advisory-not-finding-unit.Response": {
+        "additionalProperties": false,
+        "description": "The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and defined(unit) and unit != {finding})` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.AdvisoryNeedsFindingUnit",
+            "description": "The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "advisory-not-finding-unit",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.AdvisoryNeedsFindingUnit.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.advisory-not-fixed.Response": {
+        "additionalProperties": false,
+        "description": "The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.AdvisoryNeedsFixedBaseline",
+            "description": "The rule fixed_warn_only grades an advisory gate's count against the definition's fixed baseline, and evaluation.baselines is not fixed alone; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "advisory-not-fixed",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.AdvisoryNeedsFixedBaseline.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
       "thalamus.definition.ProposeDefinition.already-defined.Response": {
         "additionalProperties": false,
         "description": "The id is taken; nothing changed. Taken when a record already carries the identity the request would create, and no input-guarded refusal applies.",
@@ -4270,11 +4432,11 @@
       },
       "thalamus.definition.ProposeDefinition.thresholds-unused.Response": {
         "additionalProperties": false,
-        "description": "A warn or crit line was declared under producer_mapped; nothing was proposed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input.",
+        "description": "A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing was proposed. Taken when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input.",
         "properties": {
           "error": {
             "const": "thalamus.definition.ThresholdsUnused",
-            "description": "The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
+            "description": "The rule producer_mapped grades by evaluation.mapping alone, and fixed_warn_only by its fixed baseline alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
             "type": "string"
           },
           "outcome": {
@@ -4530,6 +4692,96 @@
           "author"
         ],
         "additionalProperties": false
+      },
+      "thalamus.definition.ReviseDefinition.advisory-not-count.Response": {
+        "additionalProperties": false,
+        "description": "The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.AdvisoryNeedsCountOfCases",
+            "description": "The rule fixed_warn_only grades an advisory gate's finding count, a signal of kind count_of_cases, and its score steps to the first whole count above the baseline; another kind was declared, so nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "advisory-not-count",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.AdvisoryNeedsCountOfCases.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.advisory-not-finding-unit.Response": {
+        "additionalProperties": false,
+        "description": "The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and unit != {finding})` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.AdvisoryNeedsFindingUnit",
+            "description": "The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "advisory-not-finding-unit",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.AdvisoryNeedsFindingUnit.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.advisory-not-fixed.Response": {
+        "additionalProperties": false,
+        "description": "The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.AdvisoryNeedsFixedBaseline",
+            "description": "The rule fixed_warn_only grades an advisory gate's count against the definition's fixed baseline, and evaluation.baselines is not fixed alone; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "advisory-not-fixed",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.AdvisoryNeedsFixedBaseline.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
       },
       "thalamus.definition.ReviseDefinition.fixed-number-missing.Response": {
         "additionalProperties": false,
@@ -4934,11 +5186,11 @@
       },
       "thalamus.definition.ReviseDefinition.thresholds-unused.Response": {
         "additionalProperties": false,
-        "description": "A warn or crit line was declared under producer_mapped; nothing changed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input.",
+        "description": "A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing changed. Taken when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input.",
         "properties": {
           "error": {
             "const": "thalamus.definition.ThresholdsUnused",
-            "description": "The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
+            "description": "The rule producer_mapped grades by evaluation.mapping alone, and fixed_warn_only by its fixed baseline alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
             "type": "string"
           },
           "outcome": {
@@ -5083,7 +5335,7 @@
       },
       "thalamus.definition.ThresholdsUnused.Error": {
         "title": "ThresholdsUnused payload",
-        "description": "The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
+        "description": "The rule producer_mapped grades by evaluation.mapping alone, and fixed_warn_only by its fixed baseline alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.",
         "x-ess-name": "thalamus.definition.ThresholdsUnused",
         "x-ess-kind": "error-payload",
         "type": "object",

@@ -29,15 +29,19 @@ pub enum RuleId {
     /// A verdict a producer gave in its own vocabulary, mapped by `evaluation.mapping`
     /// ([`mapped`], design § 2.3).
     ProducerMapped,
+    /// An advisory gate's finding count against its `fixed` baseline: `WARN` above it, never
+    /// `CRIT` ([`warn_only`], design § 11 D12).
+    FixedWarnOnly,
 }
 
 impl RuleId {
     /// Every rule, in the order an error lists them.
-    pub const ALL: [RuleId; 4] = [
+    pub const ALL: [RuleId; 5] = [
         RuleId::RatioVsPooledBaseline,
         RuleId::HigherIsWorse,
         RuleId::LowerIsWorse,
         RuleId::ProducerMapped,
+        RuleId::FixedWarnOnly,
     ];
 
     /// The id as a definition writes it.
@@ -48,6 +52,7 @@ impl RuleId {
             RuleId::HigherIsWorse => "higher_is_worse",
             RuleId::LowerIsWorse => "lower_is_worse",
             RuleId::ProducerMapped => mapped::ID,
+            RuleId::FixedWarnOnly => warn_only::ID,
         }
     }
 
@@ -62,6 +67,9 @@ impl RuleId {
             RuleId::HigherIsWorse => (Direction::HigherIsWorse, Events::Plain),
             RuleId::LowerIsWorse => (Direction::LowerIsWorse, Events::Plain),
             RuleId::ProducerMapped => return Ok(Prepared::Mapped(mapped::Rule::new(evaluation))),
+            // The baseline is the line; the lines and baselines this rule never reads are refused
+            // on propose, revise and load (`warn_only::thresholds_unused`, `baseline_not_fixed`).
+            RuleId::FixedWarnOnly => return Ok(Prepared::WarnOnly(warn_only::Rule)),
         };
         threshold::Rule::new(self.as_str(), direction, events, evaluation)
             .map(|rule| Prepared::Threshold(Box::new(rule)))
@@ -113,6 +121,8 @@ pub enum Prepared {
     Threshold(Box<threshold::Rule>),
     /// The [`mapped`] rule.
     Mapped(mapped::Rule),
+    /// The [`warn_only`] rule.
+    WarnOnly(warn_only::Rule),
 }
 
 impl Prepared {
@@ -125,6 +135,7 @@ impl Prepared {
             // A sample with producer text is graded by `grading::grade` through the mapping; one
             // without is never graded on its number.
             Prepared::Mapped(rule) => rule.without_text(),
+            Prepared::WarnOnly(rule) => rule.decide(value, baseline),
         }
     }
 
@@ -142,6 +153,9 @@ impl Prepared {
             Prepared::Threshold(rule) => rule.escalate(value, bound, baseline, n),
             // A bound is no producer value, whatever text the sample records.
             Prepared::Mapped(_) => None,
+            // A partial read escalates only to `CRIT` (design § 3.1 rule 4), which this rule
+            // never grades.
+            Prepared::WarnOnly(_) => None,
         }
     }
 }

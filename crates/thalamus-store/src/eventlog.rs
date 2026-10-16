@@ -83,12 +83,26 @@ pub const LOCATOR_UNUSABLE: &str = "thalamus.store.locator-unusable";
 /// [`StoreError::Contended`].
 pub const CATCH_UP_ATTEMPTS: u32 = 64;
 
-/// How long an open keeps retrying while another opener holds the schema or projection lock.
+/// How long an open keeps retrying while another opener holds the schema, journal or projection
+/// lock.
 const OPEN_BUDGET: Duration = Duration::from_secs(30);
 /// The operation Eventlog's PostgreSQL provider names when a statement or a lock wait outlives
 /// its timeout (SQLSTATE 57014 or 55P03). Only that deadline is retried at open: a server that
 /// does not answer the connection fails at once.
 const LOCK_DEADLINE: &str = "database statement or lock";
+/// The messages SQLite gives a lock another connection holds: `SQLITE_BUSY` ("database is
+/// locked") and `SQLITE_LOCKED` ("database table is locked", "database schema is locked").
+/// Switching a new database file to WAL answers `SQLITE_BUSY` at once, without the busy handler,
+/// while another connection is switching it, so two processes opening a new store together meet
+/// it. Only these are retried at open, within [`OPEN_BUDGET`]; any other backend failure fails
+/// at once.
+const SQLITE_LOCK_MESSAGES: [&str; 3] = [
+    "database is locked",
+    "database table is locked",
+    "database schema is locked",
+];
+/// The pause before an SQLite open that met another opener's lock is tried again.
+const SQLITE_OPEN_PAUSE: Duration = Duration::from_millis(10);
 
 /// The table prefix in either database.
 const TABLE_PREFIX: &str = "thalamus";
@@ -111,6 +125,24 @@ pub enum Locator {
     Sqlite(PathBuf),
     /// The PostgreSQL provider, at this URL.
     Postgres(String),
+}
+
+impl Locator {
+    /// Whether the locator names an SQLite database file that is not there yet: a path
+    /// [`EventlogStore::open`] would accept and create, with nothing at it (not even a dangling
+    /// link). A read command answers such a store as empty without opening it, so reading creates
+    /// nothing. Every other locator, and a path that cannot be inspected, answers `false`: it is
+    /// opened, and refused there if it must be.
+    pub fn names_a_missing_sqlite_file(&self) -> bool {
+        let Self::Sqlite(path) = self else {
+            return false;
+        };
+        sqlite_file(path).is_ok()
+            && matches!(
+                path.symlink_metadata(),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound
+            )
+    }
 }
 
 impl FromStr for Locator {
@@ -446,8 +478,9 @@ impl EventlogStore {
     /// and no request for TLS; the tables are created when absent.
     ///
     /// Every open takes the database's schema and projection locks for a moment. An open that
-    /// waits past the lock timeout while other processes open the same database is tried again,
-    /// for up to 30 seconds.
+    /// waits past the lock timeout (PostgreSQL), or finds the database locked (SQLite: another
+    /// process setting up the same new file), while other processes open the same database is
+    /// tried again, for up to 30 seconds.
     ///
     /// # Errors
     ///
@@ -461,6 +494,13 @@ impl EventlogStore {
             match connect(&runtime, locator) {
                 Err(StoreError::Eventlog(EventLogError::Deadline { operation }))
                     if operation == LOCK_DEADLINE && started.elapsed() < OPEN_BUDGET => {}
+                Err(StoreError::Eventlog(EventLogError::Backend(message)))
+                    if matches!(locator, Locator::Sqlite(_))
+                        && SQLITE_LOCK_MESSAGES.contains(&message.as_str())
+                        && started.elapsed() < OPEN_BUDGET =>
+                {
+                    std::thread::sleep(SQLITE_OPEN_PAUSE);
+                }
                 answer => break answer?,
             }
         };

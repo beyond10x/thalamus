@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T14:14:42Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-vocabulary-mapping",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "coordinator verification, wave 20261015e",
+    "review": "review-result:adversary-m3-vocabulary-mapping-pass-2",
+    "outcome": "no-op"
+  }
+}

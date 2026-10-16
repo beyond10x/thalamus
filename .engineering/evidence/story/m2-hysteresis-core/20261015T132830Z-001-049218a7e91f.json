@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T13:28:30Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-hysteresis-core",
+  "kind": "story",
+  "revision": 13,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "coordinator verification, wave 20261015e",
+    "review": "review-result:adversary-m2-hysteresis-core-pass-2",
+    "outcome": "no-op"
+  }
+}

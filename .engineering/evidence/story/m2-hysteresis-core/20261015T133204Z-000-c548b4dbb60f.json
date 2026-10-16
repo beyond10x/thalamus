@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T13:32:04Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-hysteresis-core",
+  "kind": "story",
+  "revision": 13,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main 8f2e9b1"
+  }
+}

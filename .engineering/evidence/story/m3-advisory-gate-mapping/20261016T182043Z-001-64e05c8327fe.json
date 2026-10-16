@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-16T18:20:43Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-advisory-gate-mapping",
+  "kind": "story",
+  "revision": 11,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 7e9bc60 (b81175e + sources test): thalamus-core 289 passed 0 failed, clippy -D warnings and fmt --check exit 0; thalamus-sources clippy exit 0, 228 passed 0 failed; task drift, docs-generate and docs-check exit 0 (ess 0.60.0)"
+  }
+}

@@ -18,7 +18,7 @@
     },
     {
       "area": "Command line",
-      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). Each still exits 70, not implemented.",
+      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show and compare are implemented; rollup and flaps still exit 70, not implemented.",
       "href": "/docs/getting-started",
       "label": "A usage error exits 64, never a verdict code",
       "status": "shipped"
@@ -88,10 +88,10 @@
     },
     {
       "area": "Grading",
-      "detail": "Its finding count against a fixed baseline. Planned in story:m3-advisory-gate-mapping.",
+      "detail": "Its finding count against a fixed baseline, by the rule fixed_warn_only; no count printed is UNKNOWN.",
       "href": "/docs/concepts/verdicts#other-vocabularies",
       "label": "An advisory gate grades WARN, never CRIT",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Instances",
@@ -186,17 +186,17 @@
     },
     {
       "area": "Command line",
-      "detail": "eval grades stored samples once per definition revision; show exits with the worst current verdict. Planned in story:m1-cli-eval-show.",
-      "href": "/docs/concepts/verdicts",
+      "detail": "eval grades stored samples once per definition revision; show exits with the worst current verdict.",
+      "href": "/docs/concepts/verdicts#eval-and-show",
       "label": "thalamus eval and thalamus show",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Command line",
-      "detail": "Answers from stored samples. Planned in story:m2-compare.",
+      "detail": "Answers from stored samples.",
       "href": "/docs/concepts/baselines",
       "label": "thalamus compare --vs <offset>",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Command line",

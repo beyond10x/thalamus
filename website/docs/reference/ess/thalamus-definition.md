@@ -327,7 +327,7 @@ It takes:
 - `links` — `thalamus.definition.Links`
 - `author` — `thalamus.definition.Author`
 
-It has 13 outcomes.
+It has 16 outcomes.
 
 **`host-not-local`** — A host definition named a connection other than local; nothing was proposed. Taken when `(source.adapter == host and source.connection != local)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.HostConnectionNotLocal`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
@@ -349,7 +349,13 @@ It has 13 outcomes.
 
 **`mapping-unused`** — evaluation.mapping was declared under a rule other than producer_mapped; nothing was proposed. Taken when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.MappingUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
-**`thresholds-unused`** — A warn or crit line was declared under producer_mapped; nothing was proposed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+**`thresholds-unused`** — A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing was proposed. Taken when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-count`** — The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsCountOfCases`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-finding-unit`** — The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and defined(unit) and unit != {finding})` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFindingUnit`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-fixed`** — The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFixedBaseline`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`proposed`** — The definition exists at revision 1 and is Proposed. The default branch, taken when no other outcome's condition matched. It creates a `thalamus.definition.SignalDefinition`, which starts in `Proposed`. The new instance's identity is published as `signal_id` on `thalamus.definition.DefinitionProposed`. It emits `thalamus.definition.DefinitionProposed`. It sets `title` from `input.title`, `family` from `input.family`, `kind` from `input.kind`, `unit` from `input.unit`, `dimensions` from `input.dimensions`, `source` from `input.source`, `extractor` from `input.extractor`, `query` from `input.query`, `window` from `input.window`, `cadence` from `input.cadence`, `history` from `input.history`, `denominator` from `input.denominator`, `evaluation` from `input.evaluation`, `persistence` from `input.persistence`, `objective` from `input.objective`, `owner` from `input.owner`, `links` from `input.links`, `rev` from `"1"`, `revised_at` from `implementation-generated` and `revised_by` from `input.author`. A test reaches it by constructing an input that satisfies no other outcome's condition.
 
@@ -397,7 +403,7 @@ It takes:
 - `links` — `thalamus.definition.Links`
 - `author` — `thalamus.definition.Author`
 
-It has 14 outcomes.
+It has 17 outcomes.
 
 **`retired`** — The definition is retired; nothing changed. Taken when the existing subject's stored fields satisfy `state == Retired`. No entity in this specification changes. It reports `thalamus.definition.RetiredDefinition`, carrying `signal_id`. It emits nothing. A test establishes and independently observes the subject enum fact before selecting this branch.
 
@@ -421,7 +427,13 @@ It has 14 outcomes.
 
 **`mapping-unused`** — evaluation.mapping was declared under a rule other than producer_mapped; nothing changed. Taken when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.MappingUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
-**`thresholds-unused`** — A warn or crit line was declared under producer_mapped; nothing changed. Taken when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+**`thresholds-unused`** — A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing changed. Taken when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-count`** — The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsCountOfCases`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-finding-unit`** — The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and unit != {finding})` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFindingUnit`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-fixed`** — The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFixedBaseline`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`revised`** — The body is replaced and rev is one higher; evaluations already recorded keep the rev they name. The default branch, taken when no other outcome's condition matched. It changes a `thalamus.definition.SignalDefinition` without moving it along its lifecycle. The instance is the one named by the input field `signal_id`. It emits `thalamus.definition.DefinitionRevised`. It sets `title` from `input.title`, `family` from `input.family`, `kind` from `input.kind`, `unit` from `input.unit`, `dimensions` from `input.dimensions`, `source` from `input.source`, `extractor` from `input.extractor`, `query` from `input.query`, `window` from `input.window`, `cadence` from `input.cadence`, `history` from `input.history`, `denominator` from `input.denominator`, `evaluation` from `input.evaluation`, `persistence` from `input.persistence`, `objective` from `input.objective`, `owner` from `input.owner`, `links` from `input.links`, `rev` from `its previous value plus 1`, `revised_at` from `implementation-generated` and `revised_by` from `input.author`. A test reaches it by constructing an input that satisfies no other outcome's condition.
 
@@ -523,6 +535,42 @@ Emitted by `thalamus.definition.UnmuteDefinition` on its `unmuted` outcome.
 Nothing in this system reacts to it.
 
 ## Errors
+
+### `AdvisoryNeedsCountOfCases`
+
+The rule fixed_warn_only grades an advisory gate's finding count, a signal of kind count_of_cases, and its score steps to the first whole count above the baseline; another kind was declared, so nothing changed.
+
+It carries:
+
+- `signal_id` — `thalamus.definition.SignalId`
+
+Reported by `thalamus.definition.ProposeDefinition` on its `advisory-not-count` outcome.
+
+Reported by `thalamus.definition.ReviseDefinition` on its `advisory-not-count` outcome.
+
+### `AdvisoryNeedsFindingUnit`
+
+The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.
+
+It carries:
+
+- `signal_id` — `thalamus.definition.SignalId`
+
+Reported by `thalamus.definition.ProposeDefinition` on its `advisory-not-finding-unit` outcome.
+
+Reported by `thalamus.definition.ReviseDefinition` on its `advisory-not-finding-unit` outcome.
+
+### `AdvisoryNeedsFixedBaseline`
+
+The rule fixed_warn_only grades an advisory gate's count against the definition's fixed baseline, and evaluation.baselines is not fixed alone; nothing changed.
+
+It carries:
+
+- `signal_id` — `thalamus.definition.SignalId`
+
+Reported by `thalamus.definition.ProposeDefinition` on its `advisory-not-fixed` outcome.
+
+Reported by `thalamus.definition.ReviseDefinition` on its `advisory-not-fixed` outcome.
 
 ### `DefinitionExists`
 
@@ -702,7 +750,7 @@ Reported by `thalamus.definition.ReviseDefinition` on its `rolling-n-unused` out
 
 ### `ThresholdsUnused`
 
-The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.
+The rule producer_mapped grades by evaluation.mapping alone, and fixed_warn_only by its fixed baseline alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.
 
 It carries:
 
@@ -749,4 +797,4 @@ It may invoke [`UnmuteDefinition`](#unmutedefinition).
 
 ---
 
-Generated from thalamus v1 · model digest `b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a` · contract digest `slice-sha256/2:f9a6ca68485304f8d0a7029560a9442df92aa6a9524b1520dc6ca2932d3454dc`. Do not edit this file; change the specification and regenerate it with `task generate`.
+Generated from thalamus v1 · model digest `6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd` · contract digest `slice-sha256/2:daa7db996f35c710efcb05d004e08c1e714bc1280c92757d61c6c5cf41f4b68a`. Do not edit this file; change the specification and regenerate it with `task generate`.

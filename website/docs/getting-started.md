@@ -78,8 +78,8 @@ Options:
 Every subcommand not yet implemented exits 70:
 
 ```console
-$ ./target/debug/thalamus eval
-thalamus eval: not implemented
+$ ./target/debug/thalamus compare
+thalamus compare: not implemented
 $ echo $?
 70
 ```
@@ -90,7 +90,9 @@ A usage error exits 64, never one of the verdict ladder's exit codes (0 to 3):
 $ ./target/debug/thalamus show --bogus
 error: unexpected argument '--bogus' found
 
-Usage: thalamus show
+  tip: to pass '--bogus' as a value, use '-- --bogus'
+
+Usage: thalamus show [OPTIONS] [SIGNAL_ID]
 
 For more information, try '--help'.
 $ echo $?

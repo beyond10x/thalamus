@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-16T21:08:17Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-cli-eval-show",
+  "kind": "story",
+  "revision": 9,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 911f466: thalamus-cli 66 passed 0 failed 1 ignored (eval_show 9, adv_eval_show_p1 7, adv_eval_show_p2 6 among them); thalamus-core and thalamus-pipeline tests exit 0; clippy -D warnings and fmt --check exit 0 on cli, pipeline, core; thalamus-store 54 passed at 8e742af (task test-postgres); task docs-check exit 0 (ess 0.60.0)"
+  }
+}

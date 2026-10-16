@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-hysteresis-core
 kind: story
-status: active
+status: implemented
 title: Settle verdict changes with k/m persistence in thalamus-core
 relations:
 - decomposes: epic:history-and-transitions
@@ -13,10 +13,11 @@ scope:
   path: crates/thalamus-core/src/hysteresis.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/hysteresis.rs
-revision: 13
+revision: 14
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T12:33:40Z", actor: "human:timo", revision: 12, decided_on: {"recorded":{"review_outcome":3}}}
 - {from: "proposed", to: "active", at: "2026-10-15T12:33:40Z", actor: "human:timo", revision: 13, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "active", to: "implemented", at: "2026-10-15T13:32:04Z", actor: "human:timo", revision: 14, decided_on: {"recorded":{"test_result":1,"review_outcome":7}}}
 ---
 ## Context
 

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-15T20:32:17Z",
+  "actor": "human:timo",
+  "artifact": "story:m1-cli-sample",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check (ess 0.60.0)",
+    "reference": "task check on main 87919ea: 77 lanes ok, 0 failed"
+  }
+}

@@ -404,7 +404,25 @@ errors:
         type: thalamus.definition.SignalId
 
   - name: thalamus.definition.ThresholdsUnused
-    summary: The rule producer_mapped grades by evaluation.mapping alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.
+    summary: The rule producer_mapped grades by evaluation.mapping alone, and fixed_warn_only by its fixed baseline alone, and evaluation.warn or evaluation.crit is declared; a line nothing reads is not kept, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.AdvisoryNeedsFixedBaseline
+    summary: The rule fixed_warn_only grades an advisory gate's count against the definition's fixed baseline, and evaluation.baselines is not fixed alone; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.AdvisoryNeedsCountOfCases
+    summary: The rule fixed_warn_only grades an advisory gate's finding count, a signal of kind count_of_cases, and its score steps to the first whole count above the baseline; another kind was declared, so nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.AdvisoryNeedsFindingUnit
+    summary: The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.
     fields:
       - name: signal_id
         type: thalamus.definition.SignalId
@@ -613,13 +631,49 @@ commands:
       - name: thresholds-unused
         when:
           all:
-            - evaluation.rule == "producer_mapped"
+            - any: ['evaluation.rule == "producer_mapped"', 'evaluation.rule == "fixed_warn_only"']
             - any: ["defined(evaluation.warn)", "defined(evaluation.crit)"]
         error: thalamus.definition.ThresholdsUnused
         payload:
           thalamus.definition.ThresholdsUnused:
             signal_id: input.signal_id
-        summary: A warn or crit line was declared under producer_mapped; nothing was proposed.
+        summary: A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing was proposed.
+      - name: advisory-not-count
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - kind != count_of_cases
+        error: thalamus.definition.AdvisoryNeedsCountOfCases
+        payload:
+          thalamus.definition.AdvisoryNeedsCountOfCases:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing was proposed.
+      - name: advisory-not-finding-unit
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - defined(unit)
+            - unit != "{finding}"
+        error: thalamus.definition.AdvisoryNeedsFindingUnit
+        payload:
+          thalamus.definition.AdvisoryNeedsFindingUnit:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing was proposed.
+      # UNMAPPED: an empty evaluation.baselines is not fixed alone either: the rule has no baseline
+      # to grade against. Guarding it with a second child (`forall: {in: evaluation.baselines, as:
+      # b, that: b != fixed}`) leaves that child unwitnessed (ESS-SYNTH-022). The behaviour selects
+      # this outcome for it; held by
+      # crates/thalamus-core/tests/advisory_gate.rs::advisory_lines_and_baselines_are_refused_on_propose_and_revise.
+      - name: advisory-not-fixed
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - exists: {in: evaluation.baselines, as: b, that: b != fixed}
+        error: thalamus.definition.AdvisoryNeedsFixedBaseline
+        payload:
+          thalamus.definition.AdvisoryNeedsFixedBaseline:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing was proposed.
       - name: proposed
         creates: thalamus.definition.SignalDefinition
         instance: signal_id
@@ -822,13 +876,48 @@ commands:
       - name: thresholds-unused
         when:
           all:
-            - evaluation.rule == "producer_mapped"
+            - any: ['evaluation.rule == "producer_mapped"', 'evaluation.rule == "fixed_warn_only"']
             - any: ["defined(evaluation.warn)", "defined(evaluation.crit)"]
         error: thalamus.definition.ThresholdsUnused
         payload:
           thalamus.definition.ThresholdsUnused:
             signal_id: input.signal_id
-        summary: A warn or crit line was declared under producer_mapped; nothing changed.
+        summary: A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing changed.
+      - name: advisory-not-count
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - kind != count_of_cases
+        error: thalamus.definition.AdvisoryNeedsCountOfCases
+        payload:
+          thalamus.definition.AdvisoryNeedsCountOfCases:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing changed.
+      - name: advisory-not-finding-unit
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - unit != "{finding}"
+        error: thalamus.definition.AdvisoryNeedsFindingUnit
+        payload:
+          thalamus.definition.AdvisoryNeedsFindingUnit:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing changed.
+      # UNMAPPED: an empty evaluation.baselines is not fixed alone either: the rule has no baseline
+      # to grade against. Guarding it with a second child (`forall: {in: evaluation.baselines, as:
+      # b, that: b != fixed}`) leaves that child unwitnessed (ESS-SYNTH-022). The behaviour selects
+      # this outcome for it; held by
+      # crates/thalamus-core/tests/advisory_gate.rs::advisory_lines_and_baselines_are_refused_on_propose_and_revise.
+      - name: advisory-not-fixed
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - exists: {in: evaluation.baselines, as: b, that: b != fixed}
+        error: thalamus.definition.AdvisoryNeedsFixedBaseline
+        payload:
+          thalamus.definition.AdvisoryNeedsFixedBaseline:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing changed.
       - name: revised
         updates: thalamus.definition.SignalDefinition
         instance: signal_id
