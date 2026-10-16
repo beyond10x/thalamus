@@ -37,7 +37,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use thalamus_core::behaviour::definition::{HOST_ADAPTER, LOCAL_CONNECTION};
 use thalamus_model::definition::SignalDefinitionData;
@@ -173,8 +173,14 @@ impl Machine for Rooted {
     fn mount_point(&self, path: &str) -> io::Result<bool> {
         use std::os::unix::fs::MetadataExt;
         let at = self.resolve(path);
-        let held = std::fs::metadata(&at)?;
-        if !held.is_dir() {
+        if Path::new(path)
+            .components()
+            .any(|c| matches!(c, Component::CurDir | Component::ParentDir))
+        {
+            return Ok(false);
+        }
+        let held = std::fs::symlink_metadata(&at)?;
+        if held.file_type().is_symlink() || !held.is_dir() {
             return Ok(false);
         }
         if path == "/" {
@@ -489,25 +495,31 @@ fn disks<M: Machine>(
         .collect()
 }
 
-/// One spelling of a mount: repeated slashes collapse into one and a trailing slash is dropped,
-/// so `//` is `/` and `/data/` is `/data`.
+/// One spelling of a mount: repeated slashes collapse into one, `.` components and a trailing
+/// slash are dropped, so `//` is `/`, `/data/` is `/data` and `/proc/.` is `/proc`. `..` stays and
+/// is refused by [`mount_point`].
 fn normalise(mount: &str) -> String {
-    let mut spelled = String::with_capacity(mount.len());
-    for c in mount.chars() {
-        if !(c == '/' && spelled.ends_with('/')) {
-            spelled.push(c);
-        }
+    let joined = mount
+        .split('/')
+        .filter(|part| !part.is_empty() && *part != ".")
+        .collect::<Vec<_>>()
+        .join("/");
+    if mount.starts_with('/') {
+        format!("/{joined}")
+    } else {
+        joined
     }
-    if spelled.len() > 1 && spelled.ends_with('/') {
-        spelled.pop();
-    }
-    spelled
 }
 
 /// `Ok` when `mount` is an absolute path the machine answers is a mount point.
 fn mount_point(machine: &impl Machine, mount: &str) -> Result<(), String> {
     if !mount.starts_with('/') {
         return Err(format!("mount {mount:?} is not an absolute path"));
+    }
+    if mount.split('/').any(|part| part == "..") {
+        return Err(format!(
+            "mount {mount} has a `..` component: name the mount point itself"
+        ));
     }
     match machine.mount_point(mount) {
         Ok(true) => Ok(()),
@@ -530,6 +542,11 @@ fn space_free(machine: &impl Machine, mount: &str) -> Result<Known, String> {
     if space.fragment == 0 {
         return Err(format!(
             "statvfs of mount {mount} reports a block size of 0"
+        ));
+    }
+    if space.blocks == 0 {
+        return Err(format!(
+            "statvfs of mount {mount} reports a file system of 0 blocks"
         ));
     }
     let bytes = space

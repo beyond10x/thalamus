@@ -152,7 +152,8 @@ connection `local` is refused too.
 
 A floor is a threshold, so it lives in the instance's definition, never in thalamus. It is said
 with the lines every definition has: grade lower-is-worse against the fixed number, and put the
-CRIT line at the floor itself (synthetic numbers):
+CRIT line at the floor itself. A reading at or under a line is on it, so a reading exactly at the
+floor is a CRIT breach (synthetic numbers):
 
 ```yaml
 kind: gauge

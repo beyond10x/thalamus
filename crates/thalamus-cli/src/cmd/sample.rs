@@ -13,7 +13,8 @@
 //! where `<dims>` is `key=value` joined by `,` (`-` when the series has none) and `<line>` is the
 //! grader's statement of the line crossed (`150000000000 <= 1 x 200000000000`), and the same as
 //! `breaches` in `--format json`. A floor of free space is `rule: lower_is_worse`, `baselines:
-//! [fixed]`, `fixed` the floor and `crit: {x: 1}`. No evaluation is recorded (that is `thalamus
+//! [fixed]`, `fixed` the floor, `warn: {x: ...}` and `crit: {x: 1}` (a threshold rule needs both
+//! lines); a reading at or under a line is on it, so a reading at the floor is a CRIT breach. No evaluation is recorded (that is `thalamus
 //! eval`'s), an unknown reading is never a breach and never OK, and a breach leaves the exit code
 //! as it was: a breach is not a failure of the run.
 //!
