@@ -3,8 +3,8 @@
     "suite_version": "ess-conformance/46",
     "system": "thalamus",
     "specification_version": "v1",
-    "spec_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
-    "contract_digest": "093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061",
+    "spec_digest": "9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832",
+    "contract_digest": "e31e759ce615e6d5358d020e748a76c36fee60b1207d5e97f762de8391357b06",
     "scenario_initial_state": "empty"
   },
   "scenarios": {
@@ -9156,24 +9156,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048598"
+              "value": "author-1048599"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048599S"
+              "value": "PT1048600S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048599.0,
-                "since": "denominator.since-1048598",
-                "unit": "denominator.unit-1048598"
+                "min_n": 1048600.0,
+                "since": "denominator.since-1048599",
+                "unit": "denominator.unit-1048599"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048598"
+                "dimensionsj0i1048599"
               ]
             },
             "evaluation": {
@@ -9181,92 +9181,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048599.0,
-                  "min_events": 1048599.0,
-                  "x": 1048599.0
+                  "abs": 1048600.0,
+                  "min_events": 1048600.0,
+                  "x": 1048600.0
                 },
-                "min_trend_window": "PT1048599S",
-                "rule": "evaluation.rule-1048598",
+                "min_trend_window": "PT1048600S",
+                "rule": "evaluation.rule-1048599",
                 "warn": {
-                  "abs": 1048599.0,
-                  "min_events": 1048599.0,
-                  "x": 1048599.0
+                  "abs": 1048600.0,
+                  "min_events": 1048600.0,
+                  "x": 1048600.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048598"
+              "value": "extractor-1048599"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048598"
+              "value": "familyi1048599"
             },
             "history": {
               "kind": "literal",
-              "value": "source"
+              "value": "store"
             },
             "kind": {
               "kind": "literal",
-              "value": "gauge"
+              "value": "count_of_cases"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048598"
+                  "links.components.0-1048599"
                 ],
                 "issues": [
-                  "links.issues.0-1048598"
+                  "links.issues.0-1048599"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048598"
+                "objective": "objective-1048599"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048598"
+              "value": "owner-1048599"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048599.0,
-                "k_crit": 1048599.0,
-                "m": 1048599.0
+                "k": 1048600.0,
+                "k_crit": 1048600.0,
+                "m": 1048600.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048598": "query.0-1048598"
+                "query-1048599": "query.0-1048599"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048598"
+              "value": "signal_idh1048599"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048598",
-                "connection": "source.connection-1048598"
+                "adapter": "sourcejadapteri1048599",
+                "connection": "source.connection-1048599"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048598"
+              "value": "title-1048599"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048598"
+              "value": "unit-1048599"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048599S"
+              "value": "PT1048600S"
             }
           }
         },
@@ -9279,7 +9279,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048599",
+          "instance": "signal-definition-1048600",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -9294,7 +9294,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048599"
+              "instance": "signal-definition-1048600"
             }
           },
           "shape": {
@@ -9602,7 +9602,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048598"
+              "value": "signal_idh1048599"
             },
             "source": {
               "kind": "literal",
@@ -9636,7 +9636,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.FixedNumberMissing",
           "fields": {
-            "signal_id": "signal_idh1048598"
+            "signal_id": "signal_idh1048599"
           }
         },
         {
@@ -10225,24 +10225,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048599"
+              "value": "author-1048600"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048600S"
+              "value": "PT1048601S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048600.0,
-                "since": "denominator.since-1048599",
-                "unit": "denominator.unit-1048599"
+                "min_n": 1048601.0,
+                "since": "denominator.since-1048600",
+                "unit": "denominator.unit-1048600"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048599"
+                "dimensionsj0i1048600"
               ]
             },
             "evaluation": {
@@ -10250,92 +10250,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048600.0,
-                  "min_events": 1048600.0,
-                  "x": 1048600.0
+                  "abs": 1048601.0,
+                  "min_events": 1048601.0,
+                  "x": 1048601.0
                 },
-                "min_trend_window": "PT1048600S",
-                "rule": "evaluation.rule-1048599",
+                "min_trend_window": "PT1048601S",
+                "rule": "evaluation.rule-1048600",
                 "warn": {
-                  "abs": 1048600.0,
-                  "min_events": 1048600.0,
-                  "x": 1048600.0
+                  "abs": 1048601.0,
+                  "min_events": 1048601.0,
+                  "x": 1048601.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048599"
+              "value": "extractor-1048600"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048599"
+              "value": "familyi1048600"
             },
             "history": {
               "kind": "literal",
-              "value": "store"
+              "value": "source"
             },
             "kind": {
               "kind": "literal",
-              "value": "count_of_cases"
+              "value": "gauge"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048599"
+                  "links.components.0-1048600"
                 ],
                 "issues": [
-                  "links.issues.0-1048599"
+                  "links.issues.0-1048600"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048599"
+                "objective": "objective-1048600"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048599"
+              "value": "owner-1048600"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048600.0,
-                "k_crit": 1048600.0,
-                "m": 1048600.0
+                "k": 1048601.0,
+                "k_crit": 1048601.0,
+                "m": 1048601.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048599": "query.0-1048599"
+                "query-1048600": "query.0-1048600"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048599"
+              "value": "signal_idh1048600"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048599",
-                "connection": "source.connection-1048599"
+                "adapter": "sourcejadapteri1048600",
+                "connection": "source.connection-1048600"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048599"
+              "value": "title-1048600"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048599"
+              "value": "unit-1048600"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048600S"
+              "value": "PT1048601S"
             }
           }
         },
@@ -10348,7 +10348,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048600",
+          "instance": "signal-definition-1048601",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -10363,7 +10363,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048600"
+              "instance": "signal-definition-1048601"
             }
           },
           "shape": {
@@ -10670,7 +10670,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048599"
+              "value": "signal_idh1048600"
             },
             "source": {
               "kind": "literal",
@@ -10704,7 +10704,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.FixedNumberUnused",
           "fields": {
-            "signal_id": "signal_idh1048599"
+            "signal_id": "signal_idh1048600"
           }
         },
         {
@@ -10949,8 +10949,8 @@
         }
       ]
     },
-    "thalamus.definition.ProposeDefinition/outcome/instant-not-fixed": {
-      "purpose": "`thalamus.definition.ProposeDefinition` answers `instant-not-fixed` for an input that satisfies that branch's guard",
+    "thalamus.definition.ProposeDefinition/outcome/host-not-local": {
+      "purpose": "`thalamus.definition.ProposeDefinition` answers `host-not-local` for an input that satisfies that branch's guard",
       "steps": [
         {
           "step": "execute_command",
@@ -10982,9 +10982,7 @@
             "evaluation": {
               "kind": "literal",
               "value": {
-                "baselines": [
-                  "offset_1d"
-                ],
+                "baselines": [],
                 "crit": {
                   "abs": 1.0,
                   "min_events": 1.0,
@@ -11013,7 +11011,7 @@
             },
             "kind": {
               "kind": "literal",
-              "value": "instant"
+              "value": "gauge"
             },
             "links": {
               "kind": "literal",
@@ -11057,7 +11055,7 @@
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapter",
+                "adapter": "host",
                 "connection": "source.connection"
               }
             },
@@ -11079,12 +11077,12 @@
           "step": "expect_outcome",
           "outcome": {
             "command": "thalamus.definition.ProposeDefinition",
-            "outcome": "instant-not-fixed"
+            "outcome": "host-not-local"
           }
         },
         {
           "step": "expect_error",
-          "error": "thalamus.definition.InstantNeedsFixedBaseline",
+          "error": "thalamus.definition.HostConnectionNotLocal",
           "fields": {
             "signal_id": "signal_id"
           }
@@ -11175,9 +11173,7 @@
             "evaluation": {
               "kind": "literal",
               "value": {
-                "baselines": [
-                  "offset_1d"
-                ],
+                "baselines": [],
                 "crit": {
                   "abs": 1.0,
                   "min_events": 1.0,
@@ -11211,7 +11207,7 @@
             },
             "kind": {
               "kind": "literal",
-              "value": "instant"
+              "value": "gauge"
             },
             "links": {
               "kind": "literal",
@@ -11255,7 +11251,7 @@
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapter",
+                "adapter": "host",
                 "connection": "source.connection"
               }
             },
@@ -11277,12 +11273,435 @@
           "step": "expect_outcome",
           "outcome": {
             "command": "thalamus.definition.ProposeDefinition",
-            "outcome": "instant-not-fixed"
+            "outcome": "host-not-local"
           }
         },
         {
           "step": "expect_error",
-          "error": "thalamus.definition.InstantNeedsFixedBaseline",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_id"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "producer_mapped",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_id"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_id"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "mapping": {
+                  "evaluation.mapping": "OK"
+                },
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_id"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_id"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "mapping": {
+                  "evaluation.mapping": "OK"
+                },
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "producer_mapped",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_id"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
           "fields": {
             "signal_id": "signal_id"
           }
@@ -11670,6 +12089,386 @@
             "evaluation": {
               "kind": "literal",
               "value": {
+                "baselines": [],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "min_trend_window": "PT1S",
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048595"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_idh1048595"
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "query_view",
+          "view": "thalamus.definition.Definitions"
+        },
+        {
+          "step": "expect_complete_subject_unchanged",
+          "view": "thalamus.definition.Definitions"
+        }
+      ],
+      "source": [
+        {
+          "kind": "type",
+          "name": "thalamus.definition.AdapterId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Author"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.BaselineKind"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.ConnectionId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.DenominatorSpec"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.EvaluationSpec"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.ExtractorId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Family"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.History"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Links"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Owner"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Persistence"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.QueryText"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.RuleId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.SignalId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.SignalKind"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Source"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Threshold"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Unit"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.dimension.DimensionKey"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.evaluation.Verdict"
+        },
+        {
+          "kind": "entity",
+          "name": "thalamus.definition.SignalDefinition"
+        },
+        {
+          "kind": "command",
+          "name": "thalamus.definition.ProposeDefinition"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "proposed"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "kind": "error",
+          "name": "thalamus.definition.HostConnectionNotLocal"
+        },
+        {
+          "kind": "view",
+          "name": "thalamus.definition.Definitions"
+        },
+        {
+          "kind": "actor",
+          "name": "thalamus.definition.InstanceOperator"
+        }
+      ]
+    },
+    "thalamus.definition.ProposeDefinition/outcome/instant-not-fixed": {
+      "purpose": "`thalamus.definition.ProposeDefinition` answers `instant-not-fixed` for an input that satisfies that branch's guard",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
                 "baselines": [
                   "offset_1d"
                 ],
@@ -11740,7 +12539,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048595"
+              "value": "signal_id"
             },
             "source": {
               "kind": "literal",
@@ -11774,7 +12573,695 @@
           "step": "expect_error",
           "error": "thalamus.definition.InstantNeedsFixedBaseline",
           "fields": {
-            "signal_id": "signal_idh1048595"
+            "signal_id": "signal_id"
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "mapping": {
+                  "evaluation.mapping": "OK"
+                },
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "instant"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_id"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "sourcejadapter",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "instant-not-fixed"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.InstantNeedsFixedBaseline",
+          "fields": {
+            "signal_id": "signal_id"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author-1048596"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1048597S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1048597.0,
+                "since": "denominator.since-1048596",
+                "unit": "denominator.unit-1048596"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0i1048596"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [],
+                "crit": {
+                  "abs": 1048597.0,
+                  "min_events": 1048597.0,
+                  "x": 1048597.0
+                },
+                "min_trend_window": "PT1048597S",
+                "rule": "evaluation.rule-1048596",
+                "warn": {
+                  "abs": 1048597.0,
+                  "min_events": 1048597.0,
+                  "x": 1048597.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor-1048596"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "familyi1048596"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "counter_increase"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0-1048596"
+                ],
+                "issues": [
+                  "links.issues.0-1048596"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective-1048596"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner-1048596"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1048597.0,
+                "k_crit": 1048597.0,
+                "m": 1048597.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query-1048596": "query.0-1048596"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048596"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "sourcejadapteri1048596",
+                "connection": "source.connection-1048596"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title-1048596"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit-1048596"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1048597S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "proposed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "signal-definition-1048597",
+          "entity": "thalamus.definition.SignalDefinition",
+          "event": "thalamus.definition.DefinitionProposed",
+          "field": "signal_id"
+        },
+        {
+          "step": "query_view",
+          "view": "thalamus.definition.Definitions"
+        },
+        {
+          "step": "snapshot_complete_subject",
+          "view": "thalamus.definition.Definitions",
+          "subject": {
+            "signal_id": {
+              "kind": "instance",
+              "instance": "signal-definition-1048597"
+            }
+          },
+          "shape": {
+            "identity_field": "signal_id",
+            "fields": [
+              {
+                "name": "signal_id",
+                "type": "thalamus.definition.SignalId"
+              },
+              {
+                "name": "title",
+                "type": "String"
+              },
+              {
+                "name": "family",
+                "type": "thalamus.definition.Family"
+              },
+              {
+                "name": "kind",
+                "type": "thalamus.definition.SignalKind"
+              },
+              {
+                "name": "unit",
+                "type": "Optional<thalamus.definition.Unit>"
+              },
+              {
+                "name": "dimensions",
+                "type": "Optional<List<thalamus.dimension.DimensionKey>>"
+              },
+              {
+                "name": "source",
+                "type": "thalamus.definition.Source"
+              },
+              {
+                "name": "extractor",
+                "type": "thalamus.definition.ExtractorId"
+              },
+              {
+                "name": "query",
+                "type": "Map<String, thalamus.definition.QueryText>"
+              },
+              {
+                "name": "window",
+                "type": "Duration"
+              },
+              {
+                "name": "cadence",
+                "type": "Duration"
+              },
+              {
+                "name": "history",
+                "type": "thalamus.definition.History"
+              },
+              {
+                "name": "denominator",
+                "type": "Optional<thalamus.definition.DenominatorSpec>"
+              },
+              {
+                "name": "objective",
+                "type": "Optional<Json>"
+              },
+              {
+                "name": "owner",
+                "type": "Optional<thalamus.definition.Owner>"
+              },
+              {
+                "name": "links",
+                "type": "thalamus.definition.Links"
+              },
+              {
+                "name": "rev",
+                "type": "Integer"
+              },
+              {
+                "name": "revised_at",
+                "type": "Timestamp"
+              },
+              {
+                "name": "revised_by",
+                "type": "thalamus.definition.Author"
+              },
+              {
+                "name": "mute_reason",
+                "type": "Optional<String>"
+              },
+              {
+                "name": "mute_until",
+                "type": "Optional<Timestamp>"
+              },
+              {
+                "name": "state",
+                "type": "thalamus.definition.SignalDefinition.State"
+              }
+            ],
+            "declarations": {
+              "thalamus.definition.AdapterId": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.Author": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.ConnectionId": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.DenominatorSpec": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "name": "unit",
+                    "type": "thalamus.definition.Unit"
+                  },
+                  {
+                    "name": "min_n",
+                    "type": "Integer"
+                  },
+                  {
+                    "name": "since",
+                    "type": "String"
+                  }
+                ]
+              },
+              "thalamus.definition.ExtractorId": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.Family": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.History": {
+                "kind": "enum",
+                "variants": [
+                  "source",
+                  "store"
+                ]
+              },
+              "thalamus.definition.Links": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "name": "components",
+                    "type": "List<String>"
+                  },
+                  {
+                    "name": "issues",
+                    "type": "List<String>"
+                  }
+                ]
+              },
+              "thalamus.definition.Owner": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.QueryText": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.SignalDefinition.State": {
+                "kind": "enum",
+                "variants": [
+                  "Active",
+                  "Muted",
+                  "Proposed",
+                  "Retired"
+                ]
+              },
+              "thalamus.definition.SignalId": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.definition.SignalKind": {
+                "kind": "enum",
+                "variants": [
+                  "gauge",
+                  "counter_increase",
+                  "ratio",
+                  "instant",
+                  "count_of_cases"
+                ]
+              },
+              "thalamus.definition.Source": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "name": "adapter",
+                    "type": "thalamus.definition.AdapterId"
+                  },
+                  {
+                    "name": "connection",
+                    "type": "thalamus.definition.ConnectionId"
+                  }
+                ]
+              },
+              "thalamus.definition.Unit": {
+                "kind": "newtype",
+                "of": "String"
+              },
+              "thalamus.dimension.DimensionKey": {
+                "kind": "newtype",
+                "of": "String"
+              }
+            }
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "min_trend_window": "PT1S",
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "instant"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048596"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "sourcejadapter",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "instant-not-fixed"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.InstantNeedsFixedBaseline",
+          "fields": {
+            "signal_id": "signal_idh1048596"
           }
         },
         {
@@ -12210,24 +13697,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048601"
+              "value": "author-1048602"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048602S"
+              "value": "PT1048603S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048602.0,
-                "since": "denominator.since-1048601",
-                "unit": "denominator.unit-1048601"
+                "min_n": 1048603.0,
+                "since": "denominator.since-1048602",
+                "unit": "denominator.unit-1048602"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048601"
+                "dimensionsj0i1048602"
               ]
             },
             "evaluation": {
@@ -12235,92 +13722,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048602.0,
-                  "min_events": 1048602.0,
-                  "x": 1048602.0
+                  "abs": 1048603.0,
+                  "min_events": 1048603.0,
+                  "x": 1048603.0
                 },
-                "min_trend_window": "PT1048602S",
-                "rule": "evaluation.rule-1048601",
+                "min_trend_window": "PT1048603S",
+                "rule": "evaluation.rule-1048602",
                 "warn": {
-                  "abs": 1048602.0,
-                  "min_events": 1048602.0,
-                  "x": 1048602.0
+                  "abs": 1048603.0,
+                  "min_events": 1048603.0,
+                  "x": 1048603.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048601"
+              "value": "extractor-1048602"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048601"
+              "value": "familyi1048602"
             },
             "history": {
               "kind": "literal",
-              "value": "store"
+              "value": "source"
             },
             "kind": {
               "kind": "literal",
-              "value": "counter_increase"
+              "value": "ratio"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048601"
+                  "links.components.0-1048602"
                 ],
                 "issues": [
-                  "links.issues.0-1048601"
+                  "links.issues.0-1048602"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048601"
+                "objective": "objective-1048602"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048601"
+              "value": "owner-1048602"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048602.0,
-                "k_crit": 1048602.0,
-                "m": 1048602.0
+                "k": 1048603.0,
+                "k_crit": 1048603.0,
+                "m": 1048603.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048601": "query.0-1048601"
+                "query-1048602": "query.0-1048602"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048601"
+              "value": "signal_idh1048602"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048601",
-                "connection": "source.connection-1048601"
+                "adapter": "sourcejadapteri1048602",
+                "connection": "source.connection-1048602"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048601"
+              "value": "title-1048602"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048601"
+              "value": "unit-1048602"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048602S"
+              "value": "PT1048603S"
             }
           }
         },
@@ -12333,7 +13820,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048602",
+          "instance": "signal-definition-1048603",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -12348,7 +13835,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048602"
+              "instance": "signal-definition-1048603"
             }
           },
           "shape": {
@@ -12644,7 +14131,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048601"
+              "value": "signal_idh1048602"
             },
             "source": {
               "kind": "literal",
@@ -12678,7 +14165,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.MappingMissing",
           "fields": {
-            "signal_id": "signal_idh1048601"
+            "signal_id": "signal_idh1048602"
           }
         },
         {
@@ -13127,24 +14614,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048602"
+              "value": "author-1048603"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048603S"
+              "value": "PT1048604S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048603.0,
-                "since": "denominator.since-1048602",
-                "unit": "denominator.unit-1048602"
+                "min_n": 1048604.0,
+                "since": "denominator.since-1048603",
+                "unit": "denominator.unit-1048603"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048602"
+                "dimensionsj0i1048603"
               ]
             },
             "evaluation": {
@@ -13152,92 +14639,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048603.0,
-                  "min_events": 1048603.0,
-                  "x": 1048603.0
+                  "abs": 1048604.0,
+                  "min_events": 1048604.0,
+                  "x": 1048604.0
                 },
-                "min_trend_window": "PT1048603S",
-                "rule": "evaluation.rule-1048602",
+                "min_trend_window": "PT1048604S",
+                "rule": "evaluation.rule-1048603",
                 "warn": {
-                  "abs": 1048603.0,
-                  "min_events": 1048603.0,
-                  "x": 1048603.0
+                  "abs": 1048604.0,
+                  "min_events": 1048604.0,
+                  "x": 1048604.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048602"
+              "value": "extractor-1048603"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048602"
+              "value": "familyi1048603"
             },
             "history": {
               "kind": "literal",
-              "value": "source"
+              "value": "store"
             },
             "kind": {
               "kind": "literal",
-              "value": "ratio"
+              "value": "gauge"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048602"
+                  "links.components.0-1048603"
                 ],
                 "issues": [
-                  "links.issues.0-1048602"
+                  "links.issues.0-1048603"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048602"
+                "objective": "objective-1048603"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048602"
+              "value": "owner-1048603"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048603.0,
-                "k_crit": 1048603.0,
-                "m": 1048603.0
+                "k": 1048604.0,
+                "k_crit": 1048604.0,
+                "m": 1048604.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048602": "query.0-1048602"
+                "query-1048603": "query.0-1048603"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048602"
+              "value": "signal_idh1048603"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048602",
-                "connection": "source.connection-1048602"
+                "adapter": "sourcejadapteri1048603",
+                "connection": "source.connection-1048603"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048602"
+              "value": "title-1048603"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048602"
+              "value": "unit-1048603"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048603S"
+              "value": "PT1048604S"
             }
           }
         },
@@ -13250,7 +14737,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048603",
+          "instance": "signal-definition-1048604",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -13265,7 +14752,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048603"
+              "instance": "signal-definition-1048604"
             }
           },
           "shape": {
@@ -13574,7 +15061,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048602"
+              "value": "signal_idh1048603"
             },
             "source": {
               "kind": "literal",
@@ -13608,7 +15095,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.MappingUnused",
           "fields": {
-            "signal_id": "signal_idh1048602"
+            "signal_id": "signal_idh1048603"
           }
         },
         {
@@ -14054,24 +15541,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048600"
+              "value": "author-1048601"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048601S"
+              "value": "PT1048602S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048601.0,
-                "since": "denominator.since-1048600",
-                "unit": "denominator.unit-1048600"
+                "min_n": 1048602.0,
+                "since": "denominator.since-1048601",
+                "unit": "denominator.unit-1048601"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048600"
+                "dimensionsj0i1048601"
               ]
             },
             "evaluation": {
@@ -14079,92 +15566,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048601.0,
-                  "min_events": 1048601.0,
-                  "x": 1048601.0
+                  "abs": 1048602.0,
+                  "min_events": 1048602.0,
+                  "x": 1048602.0
                 },
-                "min_trend_window": "PT1048601S",
-                "rule": "evaluation.rule-1048600",
+                "min_trend_window": "PT1048602S",
+                "rule": "evaluation.rule-1048601",
                 "warn": {
-                  "abs": 1048601.0,
-                  "min_events": 1048601.0,
-                  "x": 1048601.0
+                  "abs": 1048602.0,
+                  "min_events": 1048602.0,
+                  "x": 1048602.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048600"
+              "value": "extractor-1048601"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048600"
+              "value": "familyi1048601"
             },
             "history": {
               "kind": "literal",
-              "value": "source"
+              "value": "store"
             },
             "kind": {
               "kind": "literal",
-              "value": "gauge"
+              "value": "counter_increase"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048600"
+                  "links.components.0-1048601"
                 ],
                 "issues": [
-                  "links.issues.0-1048600"
+                  "links.issues.0-1048601"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048600"
+                "objective": "objective-1048601"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048600"
+              "value": "owner-1048601"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048601.0,
-                "k_crit": 1048601.0,
-                "m": 1048601.0
+                "k": 1048602.0,
+                "k_crit": 1048602.0,
+                "m": 1048602.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048600": "query.0-1048600"
+                "query-1048601": "query.0-1048601"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048600"
+              "value": "signal_idh1048601"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048600",
-                "connection": "source.connection-1048600"
+                "adapter": "sourcejadapteri1048601",
+                "connection": "source.connection-1048601"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048600"
+              "value": "title-1048601"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048600"
+              "value": "unit-1048601"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048601S"
+              "value": "PT1048602S"
             }
           }
         },
@@ -14177,7 +15664,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048601",
+          "instance": "signal-definition-1048602",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -14192,7 +15679,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048601"
+              "instance": "signal-definition-1048602"
             }
           },
           "shape": {
@@ -14498,7 +15985,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048600"
+              "value": "signal_idh1048601"
             },
             "source": {
               "kind": "literal",
@@ -14532,7 +16019,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.PersistenceTooSmall",
           "fields": {
-            "signal_id": "signal_idh1048600"
+            "signal_id": "signal_idh1048601"
           }
         },
         {
@@ -15621,24 +17108,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048596"
+              "value": "author-1048597"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048597S"
+              "value": "PT1048598S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048597.0,
-                "since": "denominator.since-1048596",
-                "unit": "denominator.unit-1048596"
+                "min_n": 1048598.0,
+                "since": "denominator.since-1048597",
+                "unit": "denominator.unit-1048597"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048596"
+                "dimensionsj0i1048597"
               ]
             },
             "evaluation": {
@@ -15646,92 +17133,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048597.0,
-                  "min_events": 1048597.0,
-                  "x": 1048597.0
+                  "abs": 1048598.0,
+                  "min_events": 1048598.0,
+                  "x": 1048598.0
                 },
-                "min_trend_window": "PT1048597S",
-                "rule": "evaluation.rule-1048596",
+                "min_trend_window": "PT1048598S",
+                "rule": "evaluation.rule-1048597",
                 "warn": {
-                  "abs": 1048597.0,
-                  "min_events": 1048597.0,
-                  "x": 1048597.0
+                  "abs": 1048598.0,
+                  "min_events": 1048598.0,
+                  "x": 1048598.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048596"
+              "value": "extractor-1048597"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048596"
+              "value": "familyi1048597"
             },
             "history": {
               "kind": "literal",
-              "value": "source"
+              "value": "store"
             },
             "kind": {
               "kind": "literal",
-              "value": "counter_increase"
+              "value": "ratio"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048596"
+                  "links.components.0-1048597"
                 ],
                 "issues": [
-                  "links.issues.0-1048596"
+                  "links.issues.0-1048597"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048596"
+                "objective": "objective-1048597"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048596"
+              "value": "owner-1048597"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048597.0,
-                "k_crit": 1048597.0,
-                "m": 1048597.0
+                "k": 1048598.0,
+                "k_crit": 1048598.0,
+                "m": 1048598.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048596": "query.0-1048596"
+                "query-1048597": "query.0-1048597"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048596"
+              "value": "signal_idh1048597"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048596",
-                "connection": "source.connection-1048596"
+                "adapter": "sourcejadapteri1048597",
+                "connection": "source.connection-1048597"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048596"
+              "value": "title-1048597"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048596"
+              "value": "unit-1048597"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048597S"
+              "value": "PT1048598S"
             }
           }
         },
@@ -15744,7 +17231,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048597",
+          "instance": "signal-definition-1048598",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -15759,7 +17246,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048597"
+              "instance": "signal-definition-1048598"
             }
           },
           "shape": {
@@ -16067,7 +17554,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048596"
+              "value": "signal_idh1048597"
             },
             "source": {
               "kind": "literal",
@@ -16101,7 +17588,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.RollingWindowMissing",
           "fields": {
-            "signal_id": "signal_idh1048596"
+            "signal_id": "signal_idh1048597"
           }
         },
         {
@@ -17246,24 +18733,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048597"
+              "value": "author-1048598"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048598S"
+              "value": "PT1048599S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048598.0,
-                "since": "denominator.since-1048597",
-                "unit": "denominator.unit-1048597"
+                "min_n": 1048599.0,
+                "since": "denominator.since-1048598",
+                "unit": "denominator.unit-1048598"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048597"
+                "dimensionsj0i1048598"
               ]
             },
             "evaluation": {
@@ -17271,92 +18758,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048598.0,
-                  "min_events": 1048598.0,
-                  "x": 1048598.0
+                  "abs": 1048599.0,
+                  "min_events": 1048599.0,
+                  "x": 1048599.0
                 },
-                "min_trend_window": "PT1048598S",
-                "rule": "evaluation.rule-1048597",
+                "min_trend_window": "PT1048599S",
+                "rule": "evaluation.rule-1048598",
                 "warn": {
-                  "abs": 1048598.0,
-                  "min_events": 1048598.0,
-                  "x": 1048598.0
+                  "abs": 1048599.0,
+                  "min_events": 1048599.0,
+                  "x": 1048599.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048597"
+              "value": "extractor-1048598"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048597"
+              "value": "familyi1048598"
             },
             "history": {
               "kind": "literal",
-              "value": "store"
+              "value": "source"
             },
             "kind": {
               "kind": "literal",
-              "value": "ratio"
+              "value": "gauge"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048597"
+                  "links.components.0-1048598"
                 ],
                 "issues": [
-                  "links.issues.0-1048597"
+                  "links.issues.0-1048598"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048597"
+                "objective": "objective-1048598"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048597"
+              "value": "owner-1048598"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048598.0,
-                "k_crit": 1048598.0,
-                "m": 1048598.0
+                "k": 1048599.0,
+                "k_crit": 1048599.0,
+                "m": 1048599.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048597": "query.0-1048597"
+                "query-1048598": "query.0-1048598"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048597"
+              "value": "signal_idh1048598"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048597",
-                "connection": "source.connection-1048597"
+                "adapter": "sourcejadapteri1048598",
+                "connection": "source.connection-1048598"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048597"
+              "value": "title-1048598"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048597"
+              "value": "unit-1048598"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048598S"
+              "value": "PT1048599S"
             }
           }
         },
@@ -17369,7 +18856,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048598",
+          "instance": "signal-definition-1048599",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -17384,7 +18871,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048598"
+              "instance": "signal-definition-1048599"
             }
           },
           "shape": {
@@ -17691,7 +19178,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048597"
+              "value": "signal_idh1048598"
             },
             "source": {
               "kind": "literal",
@@ -17725,7 +19212,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.RollingWindowUnused",
           "fields": {
-            "signal_id": "signal_idh1048597"
+            "signal_id": "signal_idh1048598"
           }
         },
         {
@@ -18174,24 +19661,24 @@
           "input": {
             "author": {
               "kind": "literal",
-              "value": "author-1048603"
+              "value": "author-1048604"
             },
             "cadence": {
               "kind": "literal",
-              "value": "PT1048604S"
+              "value": "PT1048605S"
             },
             "denominator": {
               "kind": "literal",
               "value": {
-                "min_n": 1048604.0,
-                "since": "denominator.since-1048603",
-                "unit": "denominator.unit-1048603"
+                "min_n": 1048605.0,
+                "since": "denominator.since-1048604",
+                "unit": "denominator.unit-1048604"
               }
             },
             "dimensions": {
               "kind": "literal",
               "value": [
-                "dimensionsj0i1048603"
+                "dimensionsj0i1048604"
               ]
             },
             "evaluation": {
@@ -18199,92 +19686,92 @@
               "value": {
                 "baselines": [],
                 "crit": {
-                  "abs": 1048604.0,
-                  "min_events": 1048604.0,
-                  "x": 1048604.0
+                  "abs": 1048605.0,
+                  "min_events": 1048605.0,
+                  "x": 1048605.0
                 },
-                "min_trend_window": "PT1048604S",
-                "rule": "evaluation.rule-1048603",
+                "min_trend_window": "PT1048605S",
+                "rule": "evaluation.rule-1048604",
                 "warn": {
-                  "abs": 1048604.0,
-                  "min_events": 1048604.0,
-                  "x": 1048604.0
+                  "abs": 1048605.0,
+                  "min_events": 1048605.0,
+                  "x": 1048605.0
                 }
               }
             },
             "extractor": {
               "kind": "literal",
-              "value": "extractor-1048603"
+              "value": "extractor-1048604"
             },
             "family": {
               "kind": "literal",
-              "value": "familyi1048603"
+              "value": "familyi1048604"
             },
             "history": {
               "kind": "literal",
-              "value": "store"
+              "value": "source"
             },
             "kind": {
               "kind": "literal",
-              "value": "gauge"
+              "value": "count_of_cases"
             },
             "links": {
               "kind": "literal",
               "value": {
                 "components": [
-                  "links.components.0-1048603"
+                  "links.components.0-1048604"
                 ],
                 "issues": [
-                  "links.issues.0-1048603"
+                  "links.issues.0-1048604"
                 ]
               }
             },
             "objective": {
               "kind": "literal",
               "value": {
-                "objective": "objective-1048603"
+                "objective": "objective-1048604"
               }
             },
             "owner": {
               "kind": "literal",
-              "value": "owner-1048603"
+              "value": "owner-1048604"
             },
             "persistence": {
               "kind": "literal",
               "value": {
-                "k": 1048604.0,
-                "k_crit": 1048604.0,
-                "m": 1048604.0
+                "k": 1048605.0,
+                "k_crit": 1048605.0,
+                "m": 1048605.0
               }
             },
             "query": {
               "kind": "literal",
               "value": {
-                "query-1048603": "query.0-1048603"
+                "query-1048604": "query.0-1048604"
               }
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048603"
+              "value": "signal_idh1048604"
             },
             "source": {
               "kind": "literal",
               "value": {
-                "adapter": "sourcejadapteri1048603",
-                "connection": "source.connection-1048603"
+                "adapter": "sourcejadapteri1048604",
+                "connection": "source.connection-1048604"
               }
             },
             "title": {
               "kind": "literal",
-              "value": "title-1048603"
+              "value": "title-1048604"
             },
             "unit": {
               "kind": "literal",
-              "value": "unit-1048603"
+              "value": "unit-1048604"
             },
             "window": {
               "kind": "literal",
-              "value": "PT1048604S"
+              "value": "PT1048605S"
             }
           }
         },
@@ -18297,7 +19784,7 @@
         },
         {
           "step": "capture_instance",
-          "instance": "signal-definition-1048604",
+          "instance": "signal-definition-1048605",
           "entity": "thalamus.definition.SignalDefinition",
           "event": "thalamus.definition.DefinitionProposed",
           "field": "signal_id"
@@ -18312,7 +19799,7 @@
           "subject": {
             "signal_id": {
               "kind": "instance",
-              "instance": "signal-definition-1048604"
+              "instance": "signal-definition-1048605"
             }
           },
           "shape": {
@@ -18621,7 +20108,7 @@
             },
             "signal_id": {
               "kind": "literal",
-              "value": "signal_idh1048603"
+              "value": "signal_idh1048604"
             },
             "source": {
               "kind": "literal",
@@ -18655,7 +20142,7 @@
           "step": "expect_error",
           "error": "thalamus.definition.ThresholdsUnused",
           "fields": {
-            "signal_id": "signal_idh1048603"
+            "signal_id": "signal_idh1048604"
           }
         },
         {
@@ -22349,6 +23836,1731 @@
         {
           "kind": "error",
           "name": "thalamus.definition.FixedNumberUnused"
+        },
+        {
+          "kind": "view",
+          "name": "thalamus.definition.Definitions"
+        },
+        {
+          "kind": "actor",
+          "name": "thalamus.definition.InstanceOperator"
+        }
+      ]
+    },
+    "thalamus.definition.ReviseDefinition/outcome/host-not-local": {
+      "purpose": "`thalamus.definition.ReviseDefinition` answers `host-not-local` for an input that satisfies that branch's guard",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ReviseDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "mapping": {
+                  "evaluation.mapping": "OK"
+                },
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_id"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "sourcejadapter",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "query_view",
+          "view": "thalamus.definition.Definitions"
+        },
+        {
+          "step": "expect_view",
+          "view": "thalamus.definition.Definitions",
+          "expectation": {
+            "expect": "excludes",
+            "fields": {
+              "signal_id": {
+                "kind": "literal",
+                "value": "signal_id"
+              }
+            }
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ReviseDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "min_trend_window": "PT1S",
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048576"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ReviseDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_idh1048576"
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ReviseDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "mapping": {
+                  "evaluation.mapping": "OK"
+                },
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048576"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ReviseDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_idh1048576"
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ReviseDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "producer_mapped",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048576"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ReviseDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_idh1048576"
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ReviseDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "mapping": {
+                  "evaluation.mapping": "OK"
+                },
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048576"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ReviseDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_idh1048576"
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ReviseDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [
+                  "offset_1d"
+                ],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "fixed": 1.0,
+                "mapping": {
+                  "evaluation.mapping": "OK"
+                },
+                "min_trend_window": "PT1S",
+                "rolling_n": 1.0,
+                "rule": "producer_mapped",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_idh1048576"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ReviseDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal",
+          "fields": {
+            "signal_id": "signal_idh1048576"
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ProposeDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "min_trend_window": "PT1S",
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "literal",
+              "value": "signal_id"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "sourcejadapter",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "proposed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "signal-definition",
+          "entity": "thalamus.definition.SignalDefinition",
+          "event": "thalamus.definition.DefinitionProposed",
+          "field": "signal_id"
+        },
+        {
+          "step": "query_view",
+          "view": "thalamus.definition.Definitions"
+        },
+        {
+          "step": "expect_view",
+          "view": "thalamus.definition.Definitions",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "signal_id": {
+                "kind": "instance",
+                "instance": "signal-definition"
+              },
+              "state": {
+                "kind": "literal",
+                "value": "Proposed"
+              }
+            }
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "thalamus.definition.ReviseDefinition",
+          "actor": "thalamus.definition.InstanceOperator",
+          "input": {
+            "author": {
+              "kind": "literal",
+              "value": "author"
+            },
+            "cadence": {
+              "kind": "literal",
+              "value": "PT1S"
+            },
+            "denominator": {
+              "kind": "literal",
+              "value": {
+                "min_n": 1.0,
+                "since": "denominator.since",
+                "unit": "denominator.unit"
+              }
+            },
+            "dimensions": {
+              "kind": "literal",
+              "value": [
+                "dimensionsj0"
+              ]
+            },
+            "evaluation": {
+              "kind": "literal",
+              "value": {
+                "baselines": [],
+                "crit": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                },
+                "min_trend_window": "PT1S",
+                "rule": "evaluation.rule",
+                "warn": {
+                  "abs": 1.0,
+                  "min_events": 1.0,
+                  "x": 1.0
+                }
+              }
+            },
+            "extractor": {
+              "kind": "literal",
+              "value": "extractor"
+            },
+            "family": {
+              "kind": "literal",
+              "value": "family"
+            },
+            "history": {
+              "kind": "literal",
+              "value": "source"
+            },
+            "kind": {
+              "kind": "literal",
+              "value": "gauge"
+            },
+            "links": {
+              "kind": "literal",
+              "value": {
+                "components": [
+                  "links.components.0"
+                ],
+                "issues": [
+                  "links.issues.0"
+                ]
+              }
+            },
+            "objective": {
+              "kind": "literal",
+              "value": {
+                "objective": "objective"
+              }
+            },
+            "owner": {
+              "kind": "literal",
+              "value": "owner"
+            },
+            "persistence": {
+              "kind": "literal",
+              "value": {
+                "k": 1.0,
+                "k_crit": 1.0,
+                "m": 1.0
+              }
+            },
+            "query": {
+              "kind": "literal",
+              "value": {
+                "query": "query.0"
+              }
+            },
+            "signal_id": {
+              "kind": "instance",
+              "instance": "signal-definition"
+            },
+            "source": {
+              "kind": "literal",
+              "value": {
+                "adapter": "host",
+                "connection": "source.connection"
+              }
+            },
+            "title": {
+              "kind": "literal",
+              "value": "title"
+            },
+            "unit": {
+              "kind": "literal",
+              "value": "unit"
+            },
+            "window": {
+              "kind": "literal",
+              "value": "PT1S"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "thalamus.definition.ReviseDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "thalamus.definition.HostConnectionNotLocal"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "step": "query_view",
+          "view": "thalamus.definition.Definitions"
+        },
+        {
+          "step": "expect_view",
+          "view": "thalamus.definition.Definitions",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "signal_id": {
+                "kind": "instance",
+                "instance": "signal-definition"
+              },
+              "state": {
+                "kind": "literal",
+                "value": "Proposed"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "type",
+          "name": "thalamus.definition.AdapterId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Author"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.BaselineKind"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.ConnectionId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.DenominatorSpec"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.EvaluationSpec"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.ExtractorId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Family"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.History"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Links"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Owner"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Persistence"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.QueryText"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.RuleId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.SignalId"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.SignalKind"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Source"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Threshold"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.definition.Unit"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.dimension.DimensionKey"
+        },
+        {
+          "kind": "type",
+          "name": "thalamus.evaluation.Verdict"
+        },
+        {
+          "kind": "command",
+          "name": "thalamus.definition.ProposeDefinition"
+        },
+        {
+          "kind": "command",
+          "name": "thalamus.definition.ReviseDefinition"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "thalamus.definition.ProposeDefinition",
+            "outcome": "proposed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "thalamus.definition.ReviseDefinition",
+            "outcome": "host-not-local"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.assertion.AssertionAnswered"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.assertion.AssertionAsked"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionActivated"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionMuted"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionProposed"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionRetired"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionRevised"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.definition.DefinitionUnmuted"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.dimension.DimensionRegistered"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.dimension.RegistryDeclared"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.evaluation.EvaluationRecorded"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.observation.SampleRecorded"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.rollup.RollupRecorded"
+        },
+        {
+          "kind": "event",
+          "name": "thalamus.transition.TransitionRecorded"
+        },
+        {
+          "kind": "error",
+          "name": "thalamus.definition.HostConnectionNotLocal"
         },
         {
           "kind": "view",

@@ -8,8 +8,8 @@
     "x-ess-provenance": {
       "system": "thalamus",
       "specification_version": "v1",
-      "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
-      "contract_digest": "slice-sha256/2:093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061"
+      "source_digest": "9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832",
+      "contract_digest": "slice-sha256/2:e31e759ce615e6d5358d020e748a76c36fee60b1207d5e97f762de8391357b06"
     },
     "x-ess-reached-by": "network"
   },
@@ -650,7 +650,7 @@
             }
           },
           "422": {
-            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `host-not-local`, `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
@@ -658,6 +658,7 @@
                     "mapping": {
                       "fixed-number-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-missing.Response",
                       "fixed-number-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.fixed-number-unused.Response",
+                      "host-not-local": "#/components/schemas/thalamus.definition.ProposeDefinition.host-not-local.Response",
                       "instant-not-fixed": "#/components/schemas/thalamus.definition.ProposeDefinition.instant-not-fixed.Response",
                       "mapping-missing": "#/components/schemas/thalamus.definition.ProposeDefinition.mapping-missing.Response",
                       "mapping-unused": "#/components/schemas/thalamus.definition.ProposeDefinition.mapping-unused.Response",
@@ -669,6 +670,9 @@
                     "propertyName": "outcome"
                   },
                   "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.host-not-local.Response"
+                    },
                     {
                       "$ref": "#/components/schemas/thalamus.definition.ProposeDefinition.instant-not-fixed.Response"
                     },
@@ -926,7 +930,7 @@
             }
           },
           "422": {
-            "description": "Outcomes `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
+            "description": "Outcomes `host-not-local`, `instant-not-fixed`, `rolling-n-missing`, `rolling-n-unused`, `fixed-number-missing`, `fixed-number-unused`, `persistence-below-one`, `mapping-missing`, `mapping-unused` and `thresholds-unused`: the request was understood and refused on domain grounds. The body names the declared error and carries whatever that error declares.",
             "content": {
               "application/json": {
                 "schema": {
@@ -934,6 +938,7 @@
                     "mapping": {
                       "fixed-number-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-missing.Response",
                       "fixed-number-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.fixed-number-unused.Response",
+                      "host-not-local": "#/components/schemas/thalamus.definition.ReviseDefinition.host-not-local.Response",
                       "instant-not-fixed": "#/components/schemas/thalamus.definition.ReviseDefinition.instant-not-fixed.Response",
                       "mapping-missing": "#/components/schemas/thalamus.definition.ReviseDefinition.mapping-missing.Response",
                       "mapping-unused": "#/components/schemas/thalamus.definition.ReviseDefinition.mapping-unused.Response",
@@ -945,6 +950,9 @@
                     "propertyName": "outcome"
                   },
                   "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.host-not-local.Response"
+                    },
                     {
                       "$ref": "#/components/schemas/thalamus.definition.ReviseDefinition.instant-not-fixed.Response"
                     },
@@ -3011,7 +3019,7 @@
       },
       "thalamus.definition.AdapterId": {
         "title": "AdapterId",
-        "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).",
+        "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events), or host, the one adapter that reads this machine's own kernel counters directly and takes no connection operation (design § 11 D46).",
         "x-ess-name": "thalamus.definition.AdapterId",
         "x-ess-kind": "newtype",
         "type": "string",
@@ -3043,7 +3051,7 @@
       },
       "thalamus.definition.ConnectionId": {
         "title": "ConnectionId",
-        "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential.",
+        "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection.",
         "x-ess-name": "thalamus.definition.ConnectionId",
         "x-ess-kind": "newtype",
         "type": "string",
@@ -3391,7 +3399,7 @@
       },
       "thalamus.definition.ExtractorId": {
         "title": "ExtractorId",
-        "description": "A built-in extractor (sql.ratio) or a plugin id.",
+        "description": "A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly four, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount) and host.cpu_temperature (unit Cel), and nothing else.",
         "x-ess-name": "thalamus.definition.ExtractorId",
         "x-ess-kind": "newtype",
         "type": "string"
@@ -3446,6 +3454,22 @@
           "source",
           "store"
         ]
+      },
+      "thalamus.definition.HostConnectionNotLocal.Error": {
+        "title": "HostConnectionNotLocal payload",
+        "description": "The host adapter reads only the machine thalamus runs on, through the reserved connection local, and another connection was named; nothing changed.",
+        "x-ess-name": "thalamus.definition.HostConnectionNotLocal",
+        "x-ess-kind": "error-payload",
+        "type": "object",
+        "properties": {
+          "signal_id": {
+            "$ref": "#/components/schemas/thalamus.definition.SignalId"
+          }
+        },
+        "required": [
+          "signal_id"
+        ],
+        "additionalProperties": false
       },
       "thalamus.definition.IncompleteDefinition.Error": {
         "title": "IncompleteDefinition payload",
@@ -3924,6 +3948,36 @@
           },
           "payload": {
             "$ref": "#/components/schemas/thalamus.definition.FixedNumberUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ProposeDefinition.host-not-local.Response": {
+        "additionalProperties": false,
+        "description": "A host definition named a connection other than local; nothing was proposed. Taken when `(source.adapter == host and source.connection != local)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.HostConnectionNotLocal",
+            "description": "The host adapter reads only the machine thalamus runs on, through the reserved connection local, and another connection was named; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "host-not-local",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.HostConnectionNotLocal.Error"
           },
           "published": {
             "description": "Every event this branch published, in publication order: its qualified name and its payload.",
@@ -4468,6 +4522,36 @@
           },
           "payload": {
             "$ref": "#/components/schemas/thalamus.definition.FixedNumberUnused.Error"
+          },
+          "published": {
+            "description": "Every event this branch published, in publication order: its qualified name and its payload.",
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "published",
+          "error",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "thalamus.definition.ReviseDefinition.host-not-local.Response": {
+        "additionalProperties": false,
+        "description": "A host definition named a connection other than local; nothing changed. Taken when `(source.adapter == host and source.connection != local)` holds of the input.",
+        "properties": {
+          "error": {
+            "const": "thalamus.definition.HostConnectionNotLocal",
+            "description": "The host adapter reads only the machine thalamus runs on, through the reserved connection local, and another connection was named; nothing changed.",
+            "type": "string"
+          },
+          "outcome": {
+            "const": "host-not-local",
+            "description": "Which declared outcome the command took."
+          },
+          "payload": {
+            "$ref": "#/components/schemas/thalamus.definition.HostConnectionNotLocal.Error"
           },
           "published": {
             "description": "Every event this branch published, in publication order: its qualified name and its payload.",
@@ -7817,7 +7901,7 @@
     },
     "thalamus.definition.AdapterId": {
       "title": "AdapterId",
-      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).",
+      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events), or host, the one adapter that reads this machine's own kernel counters directly and takes no connection operation (design § 11 D46).",
       "x-ess-name": "thalamus.definition.AdapterId",
       "x-ess-kind": "newtype",
       "type": "string",
@@ -7849,7 +7933,7 @@
     },
     "thalamus.definition.ConnectionId": {
       "title": "ConnectionId",
-      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential.",
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection.",
       "x-ess-name": "thalamus.definition.ConnectionId",
       "x-ess-kind": "newtype",
       "type": "string",
@@ -7935,7 +8019,7 @@
     },
     "thalamus.definition.ExtractorId": {
       "title": "ExtractorId",
-      "description": "A built-in extractor (sql.ratio) or a plugin id.",
+      "description": "A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly four, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount) and host.cpu_temperature (unit Cel), and nothing else.",
       "x-ess-name": "thalamus.definition.ExtractorId",
       "x-ess-kind": "newtype",
       "type": "string"

@@ -165,6 +165,13 @@
     },
     {
       "area": "Sources",
+      "detail": "This machine's CPU use, memory use, disk space and CPU temperature, read when sampled.",
+      "href": "/docs/concepts/signals#the-host-collector",
+      "label": "Host collector",
+      "status": "shipped"
+    },
+    {
+      "area": "Sources",
       "detail": "A pass over every source kind yields only ladder verdicts and exits with the worst one. Planned in story:m3-one-vocabulary-across-sources.",
       "href": "/docs/concepts/verdicts",
       "label": "One vocabulary across every source",

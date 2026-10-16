@@ -115,14 +115,14 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
-    "contract_digest": "slice-sha256/2:ffb64bed21fc003adb508759fbd4930baf88e67df1fbc3da005d4af840b50581",
+    "source_digest": "9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832",
+    "contract_digest": "slice-sha256/2:a3e1f999b5c45d8e9616099ff41070d95c72063514b6717d091d7db616618df8",
     "regenerate": "ess generate"
   },
   "$defs": {
     "thalamus.definition.AdapterId": {
       "title": "AdapterId",
-      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).",
+      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events), or host, the one adapter that reads this machine's own kernel counters directly and takes no connection operation (design § 11 D46).",
       "x-ess-name": "thalamus.definition.AdapterId",
       "x-ess-kind": "newtype",
       "type": "string",
@@ -154,7 +154,7 @@
     },
     "thalamus.definition.ConnectionId": {
       "title": "ConnectionId",
-      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential.",
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection.",
       "x-ess-name": "thalamus.definition.ConnectionId",
       "x-ess-kind": "newtype",
       "type": "string",
@@ -240,7 +240,7 @@
     },
     "thalamus.definition.ExtractorId": {
       "title": "ExtractorId",
-      "description": "A built-in extractor (sql.ratio) or a plugin id.",
+      "description": "A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly four, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount) and host.cpu_temperature (unit Cel), and nothing else.",
       "x-ess-name": "thalamus.definition.ExtractorId",
       "x-ess-kind": "newtype",
       "type": "string"

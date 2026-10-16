@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed
-// contract digest 093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061
+// model digest 9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832
+// contract digest e31e759ce615e6d5358d020e748a76c36fee60b1207d5e97f762de8391357b06
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! thalamus-service — the `thalamus-service` component of `thalamus` v1.
@@ -159,6 +159,7 @@ where
     pub fn propose_definition(&mut self, input: crate::definition::ProposeDefinition) -> Result<crate::definition::ProposeDefinitionOutcome, crate::obligation::UnmetObligation> {
         let outcome = self.behaviors.propose_definition(input)?;
         match &outcome {
+            crate::definition::ProposeDefinitionOutcome::HostNotLocal { .. } => {}
             crate::definition::ProposeDefinitionOutcome::InstantNotFixed { .. } => {}
             crate::definition::ProposeDefinitionOutcome::RollingNMissing { .. } => {}
             crate::definition::ProposeDefinitionOutcome::RollingNUnused { .. } => {}
@@ -202,6 +203,7 @@ where
         let outcome = self.behaviors.revise_definition(input)?;
         match &outcome {
             crate::definition::ReviseDefinitionOutcome::Retired { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::HostNotLocal { .. } => {}
             crate::definition::ReviseDefinitionOutcome::InstantNotFixed { .. } => {}
             crate::definition::ReviseDefinitionOutcome::RollingNMissing { .. } => {}
             crate::definition::ReviseDefinitionOutcome::RollingNUnused { .. } => {}

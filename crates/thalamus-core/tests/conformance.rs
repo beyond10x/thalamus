@@ -746,6 +746,9 @@ fn persistence_of(extra: &str) -> Option<Persistence> {
 fn proposed_refusal(answer: &ProposeDefinitionOutcome) -> Option<&'static str> {
     match answer {
         ProposeDefinitionOutcome::Proposed { .. } => None,
+        ProposeDefinitionOutcome::HostNotLocal { .. } => {
+            Some("thalamus.definition.HostConnectionNotLocal")
+        }
         ProposeDefinitionOutcome::InstantNotFixed { .. } => {
             Some("thalamus.definition.InstantNeedsFixedBaseline")
         }
@@ -781,6 +784,9 @@ fn proposed_refusal(answer: &ProposeDefinitionOutcome) -> Option<&'static str> {
 fn revised_refusal(answer: &ReviseDefinitionOutcome) -> Option<&'static str> {
     match answer {
         ReviseDefinitionOutcome::Revised { .. } => None,
+        ReviseDefinitionOutcome::HostNotLocal { .. } => {
+            Some("thalamus.definition.HostConnectionNotLocal")
+        }
         ReviseDefinitionOutcome::InstantNotFixed { .. } => {
             Some("thalamus.definition.InstantNeedsFixedBaseline")
         }

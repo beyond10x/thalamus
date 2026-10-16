@@ -9,17 +9,25 @@
 use thalamus_model::behaviour::{SignalDefinitionStorage, TryContext};
 use thalamus_model::definition::{
     AnySignalDefinition, BaselineKind, DefinitionExists, DefinitionProposed, DefinitionRevised,
-    EvaluationSpec, FixedNumberMissing, FixedNumberUnused, InstantNeedsFixedBaseline,
-    MappingMissing, MappingUnused, Persistence, PersistenceTooSmall, ProposeDefinition,
-    ProposeDefinitionOutcome, RetiredDefinition, ReviseDefinition, ReviseDefinitionOutcome,
-    RollingWindowMissing, RollingWindowUnused, SignalDefinition, SignalDefinitionData,
-    SignalDefinitionState, SignalKind, ThresholdsUnused, UnknownDefinition,
+    EvaluationSpec, FixedNumberMissing, FixedNumberUnused, HostConnectionNotLocal,
+    InstantNeedsFixedBaseline, MappingMissing, MappingUnused, Persistence, PersistenceTooSmall,
+    ProposeDefinition, ProposeDefinitionOutcome, RetiredDefinition, ReviseDefinition,
+    ReviseDefinitionOutcome, RollingWindowMissing, RollingWindowUnused, SignalDefinition,
+    SignalDefinitionData, SignalDefinitionState, SignalKind, Source, ThresholdsUnused,
+    UnknownDefinition,
 };
 use thalamus_model::obligation::UnmetObligation;
 use thalamus_model::primitives::Timestamp;
 
 const PROPOSE: &str = "thalamus.definition.ProposeDefinition";
 const REVISE: &str = "thalamus.definition.ReviseDefinition";
+
+/// The adapter id of the local host collector, the one source that reads this machine's own
+/// kernel counters and no Connectors operation (design § 11 D46).
+pub const HOST_ADAPTER: &str = "host";
+
+/// The connection id reserved for [`HOST_ADAPTER`]: the machine thalamus runs on, and no other.
+pub const LOCAL_CONNECTION: &str = "local";
 
 /// `thalamus.definition.ProposeDefinition`: the input-guarded refusals of [`input_refusal`], then
 /// `already-defined`, then `proposed` at revision 1, stamped with the command clock and the
@@ -38,10 +46,17 @@ where
     P: SignalDefinitionStorage + TryContext + ?Sized,
 {
     let now = ports.try_command_clock();
-    if let Some(refused) = input_refusal(input.kind, &input.evaluation, input.persistence.as_ref())
-    {
+    if let Some(refused) = input_refusal(
+        input.kind,
+        &input.source,
+        &input.evaluation,
+        input.persistence.as_ref(),
+    ) {
         let signal_id = input.signal_id;
         return Ok(match refused {
+            InputRefusal::HostNotLocal => ProposeDefinitionOutcome::HostNotLocal {
+                error: HostConnectionNotLocal { signal_id },
+            },
             InputRefusal::InstantNotFixed => ProposeDefinitionOutcome::InstantNotFixed {
                 error: InstantNeedsFixedBaseline { signal_id },
             },
@@ -139,10 +154,17 @@ where
     P: SignalDefinitionStorage + TryContext + ?Sized,
 {
     let now = ports.try_command_clock();
-    if let Some(refused) = input_refusal(input.kind, &input.evaluation, input.persistence.as_ref())
-    {
+    if let Some(refused) = input_refusal(
+        input.kind,
+        &input.source,
+        &input.evaluation,
+        input.persistence.as_ref(),
+    ) {
         let signal_id = input.signal_id;
         return Ok(match refused {
+            InputRefusal::HostNotLocal => ReviseDefinitionOutcome::HostNotLocal {
+                error: HostConnectionNotLocal { signal_id },
+            },
             InputRefusal::InstantNotFixed => ReviseDefinitionOutcome::InstantNotFixed {
                 error: InstantNeedsFixedBaseline { signal_id },
             },
@@ -241,6 +263,8 @@ where
 /// outcome. The definition loader (`crate::registry`) refuses the same.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InputRefusal {
+    /// `host-not-local`: a host source names a connection other than [`LOCAL_CONNECTION`].
+    HostNotLocal,
     /// `instant-not-fixed`.
     InstantNotFixed,
     /// `rolling-n-missing`: also an N below 1 (`UNMAPPED:` in `spec/domains/definition.yaml`).
@@ -267,10 +291,11 @@ pub enum InputRefusal {
 #[must_use]
 pub fn input_refusal(
     kind: SignalKind,
+    source: &Source,
     evaluation: &EvaluationSpec,
     persistence: Option<&Persistence>,
 ) -> Option<InputRefusal> {
-    input_refusals(kind, evaluation, persistence)
+    input_refusals(kind, source, evaluation, persistence)
         .into_iter()
         .next()
 }
@@ -278,6 +303,7 @@ pub fn input_refusal(
 /// Every input-guarded refusal of `ProposeDefinition` and `ReviseDefinition` whose guard holds,
 /// in their declaration order:
 ///
+/// - `host-not-local`: `source.adapter == "host" and source.connection != "local"`;
 /// - `instant-not-fixed`: `kind == instant and exists b in evaluation.baselines: b != fixed`;
 /// - `rolling-n-missing`: `exists b: b == rolling_median and not defined(evaluation.rolling_n)`,
 ///   and, beyond what ESS 0.60.0 can state, `rolling_median` with an N below 1 (design § 11 D25);
@@ -294,6 +320,7 @@ pub fn input_refusal(
 #[must_use]
 pub fn input_refusals(
     kind: SignalKind,
+    source: &Source,
     evaluation: &EvaluationSpec,
     persistence: Option<&Persistence>,
 ) -> Vec<InputRefusal> {
@@ -301,6 +328,10 @@ pub fn input_refusals(
     let rolling = names(BaselineKind::RollingMedian);
     let fixed = names(BaselineKind::Fixed);
     [
+        (
+            source.adapter.0 == HOST_ADAPTER && source.connection.0 != LOCAL_CONNECTION,
+            InputRefusal::HostNotLocal,
+        ),
         (
             kind == SignalKind::Instant
                 && evaluation

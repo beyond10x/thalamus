@@ -102,10 +102,11 @@ values come from, how it may be set, and optionally its parent key.
 
 ## Sources
 
-Every source is read through a [Connectors](https://beyond10x.github.io/connectors/)
+Every source but one is read through a [Connectors](https://beyond10x.github.io/connectors/)
 ([GitHub](https://github.com/beyond10x/connectors)) connection. thalamus invokes read operations
-only, never writes to a system it watches, and never sees a credential. Which adapters have
-shipped is on the [status page](/docs/status).
+only, never writes to a system it watches, and never sees a credential. The exception is the host
+collector, which reads the machine thalamus runs on directly (below). Which adapters have shipped
+is on the [status page](/docs/status).
 
 | source | reads |
 |---|---|
@@ -115,6 +116,30 @@ shipped is on the [status page](/docs/status).
 | Kubernetes | object counts, as instant samples with source-only dimensions |
 | Git hosting | repository records as counts and ratios |
 | HTTP probe | the availability of one Connectors read operation |
+| Host | this machine's CPU use, memory use, disk space and CPU temperature, no Connectors connection |
+
+### The host collector
+
+Source `{adapter: host, connection: local}` reads the machine thalamus runs on, and only when a
+definition is sampled: it is no service, timer or daemon, and nothing it starts outlives the read.
+It reads these four extractors and nothing else (design D46):
+
+| extractor | unit | reads | dimensions |
+|---|---|---|---|
+| `host.cpu_busy` | `1` | the `cpu` line of `/proc/stat`, twice, 250 ms apart: 1 − (Δidle + Δiowait) / Δtotal | none |
+| `host.memory_used` | `1` | `/proc/meminfo`: (MemTotal − MemAvailable) / MemTotal | none |
+| `host.disk_used` | `1` | `statvfs` of each mount point the `query` lists (every value one mount), used as `df` computes it | `mount` |
+| `host.cpu_temperature` | `Cel` | the hottest CPU sensor under `/sys/class/hwmon` (`coretemp`, `k10temp`, `zenpower`, `cpu_thermal`), else a `/sys/class/thermal` zone of type `x86_pkg_temp` or `cpu-thermal` | none |
+
+```yaml
+source: { adapter: host, connection: local }
+extractor: host.disk_used
+query: { root: /, data: /srv }
+```
+
+A missing file or field, a zero total, a mount that cannot be read and a machine with no CPU sensor
+read unknown, naming what was missing, never 0. A host definition naming any connection other
+than `local` is refused when it is proposed or revised, and reads unknown if one is loaded anyway.
 
 Producers that already speak another verdict vocabulary are mapped onto the ladder at the adapter;
 see [other vocabularies](./verdicts.md#other-vocabularies).
