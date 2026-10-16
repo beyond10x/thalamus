@@ -3,6 +3,7 @@
 pub mod adapter;
 pub mod connectors;
 pub mod git;
+pub mod host;
 pub mod http_probe;
 pub mod kubernetes;
 pub mod loki;
