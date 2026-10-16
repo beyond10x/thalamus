@@ -37,6 +37,7 @@ use thalamus_model::observation::{Bound, Reading, SeriesKey, SignalSampleData};
 use thalamus_model::primitives::Timestamp;
 use thalamus_pipeline::instance::LoadedInstance;
 use thalamus_store::eventlog::{EventlogStore, Locator, StoreError};
+use thalamus_store::range::SeriesRange;
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 
@@ -57,6 +58,8 @@ const RATIO_SCALE: usize = 18;
 
 /// The first instant a range read can name: every sample of a series is at or after it.
 const EARLIEST: &str = "0000-01-01T00:00:00Z";
+/// The last instant RFC 3339 can name.
+const LAST: &str = "9999-12-31T23:59:59.999999999Z";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum Format {
@@ -244,21 +247,27 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
             return ExitCode::from(EX_IOERR);
         }
     };
-    let store = match EventlogStore::open(&locator, instance.name()) {
-        Ok(store) => store,
-        Err(error) => {
-            eprintln!("thalamus compare: store refused: {}", refusal(&error));
-            return ExitCode::from(EX_IOERR);
+    // A read creates nothing: an instance whose store file does not exist yet holds no samples.
+    let range = if matches!(&locator, Locator::Sqlite(path) if !path.exists()) {
+        SeriesRange::default()
+    } else {
+        let store = match EventlogStore::open(&locator, instance.name()) {
+            Ok(store) => store,
+            Err(error) => {
+                eprintln!("thalamus compare: store refused: {}", refusal(&error));
+                return ExitCode::from(EX_IOERR);
+            }
+        };
+        // The range end is exclusive. The last RFC 3339 instant has no successor to name, so the
+        // range then ends at that instant itself.
+        let to = after(at.1).unwrap_or_else(|| Timestamp(LAST.to_owned()));
+        match quietly(|| store.series_range(&series, &Timestamp(EARLIEST.to_owned()), &to)) {
+            Ok(range) => range,
+            Err(_) => {
+                eprintln!("thalamus compare: the store cannot be read");
+                return ExitCode::from(EX_IOERR);
+            }
         }
-    };
-    let Some(to) = after(at.1) else {
-        eprintln!("thalamus compare: --at `{}` is past the last instant", at.0);
-        return ExitCode::from(EX_USAGE);
-    };
-    let read = quietly(|| store.series_range(&series, &Timestamp(EARLIEST.to_owned()), &to));
-    let Ok(range) = read else {
-        eprintln!("thalamus compare: the store cannot be read");
-        return ExitCode::from(EX_IOERR);
     };
 
     let samples: Vec<(i128, SignalSampleData)> = range
@@ -300,12 +309,17 @@ fn compare<'a>(
     };
     let target = now - i128::from(offset) * 1_000_000_000;
     let tolerance = i128::from(cadence) * 500_000_000;
-    let baseline = samples
-        .iter()
-        .filter(|(ts, _)| *ts < *now && (*ts - target).abs() <= tolerance)
-        .min_by_key(|(ts, _)| (*ts - target).abs())
-        .map(|(_, sample)| sample);
     let first = samples.first().map_or(*now, |(ts, _)| *ts);
+    // A slot before the series' first sample predates the series, whatever lies near it.
+    let baseline = if target < first {
+        None
+    } else {
+        samples
+            .iter()
+            .filter(|(ts, _)| *ts < *now && (*ts - target).abs() <= tolerance)
+            .min_by_key(|(ts, _)| (*ts - target).abs())
+            .map(|(_, sample)| sample)
+    };
     let unknown = unread("current", &current.reading).or_else(|| match baseline {
         None if target < first => Some(PREDATES.to_owned()),
         None => Some(NO_SAMPLE_AT_OFFSET.to_owned()),
