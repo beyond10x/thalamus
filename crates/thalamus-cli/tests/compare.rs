@@ -53,6 +53,18 @@ impl World {
         Self { root, next: 1 }
     }
 
+    /// Dates the gauge's series from its first stored sample, in this test's own copy of the
+    /// fixture, instead of the fixture's fixed `since`.
+    fn since_first_sample(&self) {
+        let path = self.instance().join("definitions/service.queue.depth.yaml");
+        let text = std::fs::read_to_string(&path).expect("read the gauge definition");
+        std::fs::write(
+            &path,
+            text.replace("since: 2026-01-01T00:00:00Z", "since: first_sample"),
+        )
+        .expect("write the gauge definition");
+    }
+
     fn instance(&self) -> PathBuf {
         self.root.join("instance")
     }
@@ -247,6 +259,7 @@ fn compare_missing_offset_sample_is_unknown_exit_3() {
 #[test]
 fn compare_offset_before_series_is_unknown() {
     let mut world = World::new("before_series");
+    world.since_first_sample();
     // The series starts five days before NOW: a week earlier it did not exist.
     world.store(DEPTH, &[], "2026-10-09T22:57:03Z", ok("41"));
     world.store(DEPTH, &[], NOW, ok("42"));

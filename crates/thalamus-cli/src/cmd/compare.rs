@@ -6,8 +6,10 @@
 //! The current sample is the newest stored sample of the series at or before `--at` (default:
 //! now). The baseline sample is the stored sample nearest to its `ts` minus the offset, within
 //! half the definition's cadence and before the current sample; for `7d` the weekday matches by
-//! construction. Both readings, the delta (current minus baseline) and the ratio (current over
-//! baseline, 18 fractional digits at most, the last rounded half away from zero) are printed.
+//! construction. A series begins at its definition's resolved `denominator.since` (the first stored
+//! sample when it declares none); a slot before that predates the series. Both readings, the delta
+//! (current minus baseline) and the ratio (current over baseline, 18 fractional digits at most,
+//! the last rounded half away from zero) are printed.
 //!
 //! Exit codes:
 //!
@@ -32,12 +34,12 @@ use serde_json::{Map, Value, json};
 use thalamus_core::behaviour::observation::Instant;
 use thalamus_core::ladder::EXIT_UNKNOWN;
 use thalamus_core::series::{admit_dims, series_key};
+use thalamus_core::since::resolve_since;
 use thalamus_model::dimension::DimensionValue;
 use thalamus_model::observation::{Bound, Reading, SeriesKey, SignalSampleData};
 use thalamus_model::primitives::Timestamp;
 use thalamus_pipeline::instance::LoadedInstance;
 use thalamus_store::eventlog::{EventlogStore, Locator, StoreError};
-use thalamus_store::range::SeriesRange;
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 
@@ -58,8 +60,9 @@ const RATIO_SCALE: usize = 18;
 
 /// The first instant a range read can name: every sample of a series is at or after it.
 const EARLIEST: &str = "0000-01-01T00:00:00Z";
-/// The last instant RFC 3339 can name.
-const LAST: &str = "9999-12-31T23:59:59.999999999Z";
+/// An instant after the last RFC 3339 instant in UTC: that instant's local time at the furthest
+/// offset, `-23:59`.
+const BEYOND_LAST: &str = "9999-12-31T23:59:59.999999999-23:59";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum Format {
@@ -209,14 +212,14 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
             return ExitCode::from(EX_DATAERR);
         }
     };
-    let Some(definition) = instance.instance().definition(&args.signal) else {
+    let Some(loaded) = instance.instance().definition(&args.signal) else {
         eprintln!(
             "thalamus compare: refused: `{}` names no definition of the instance",
             args.signal
         );
         return ExitCode::from(EX_DATAERR);
     };
-    let definition = definition.data();
+    let definition = loaded.data();
     let dims: BTreeMap<String, DimensionValue> = args
         .dims
         .iter()
@@ -248,8 +251,9 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
         }
     };
     // A read creates nothing: an instance whose store file does not exist yet holds no samples.
-    let range = if matches!(&locator, Locator::Sqlite(path) if !path.exists()) {
-        SeriesRange::default()
+    let stored: Vec<SignalSampleData> = if matches!(&locator, Locator::Sqlite(path) if !path.exists())
+    {
+        Vec::new()
     } else {
         let store = match EventlogStore::open(&locator, instance.name()) {
             Ok(store) => store,
@@ -258,11 +262,13 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
                 return ExitCode::from(EX_IOERR);
             }
         };
-        // The range end is exclusive. The last RFC 3339 instant has no successor to name, so the
-        // range then ends at that instant itself.
-        let to = after(at.1).unwrap_or_else(|| Timestamp(LAST.to_owned()));
-        match quietly(|| store.series_range(&series, &Timestamp(EARLIEST.to_owned()), &to)) {
-            Ok(range) => range,
+        // The range end is exclusive: it is the instant after `--at`. The last RFC 3339 instant
+        // has no successor in UTC, so the end is spelled with the furthest offset instead, which
+        // is later than it and still an instant.
+        let to = after(at.1).unwrap_or_else(|| Timestamp(BEYOND_LAST.to_owned()));
+        let from = Timestamp(EARLIEST.to_owned());
+        match quietly(|| store.series_range(&series, &from, &to)) {
+            Ok(range) => range.samples,
             Err(_) => {
                 eprintln!("thalamus compare: the store cannot be read");
                 return ExitCode::from(EX_IOERR);
@@ -270,13 +276,19 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
         }
     };
 
-    let samples: Vec<(i128, SignalSampleData)> = range
-        .samples
+    let mut samples: Vec<(i128, SignalSampleData)> = stored
         .into_iter()
         .filter_map(|sample| Some((nanos(&sample.ts.0)?, sample)))
         .filter(|(ts, _)| *ts <= at.1)
         .collect();
-    let comparison = compare(&samples, args.vs.seconds, cadence, &at.0);
+    samples.sort_by_key(|(ts, _)| *ts);
+    // The series begins at its definition's resolved `denominator.since` (design § 11 D18), the
+    // first stored sample when the definition declares none or none resolves.
+    let first_stored = samples.first().map(|(_, sample)| sample.ts.clone());
+    let began = resolve_since(loaded, &dims, instance.values(), first_stored.clone(), None)
+        .or(first_stored)
+        .and_then(|since| nanos(&since.0));
+    let comparison = compare(&samples, began, args.vs.seconds, cadence, &at.0);
     print(&series, args, &comparison);
     if comparison.unknown.is_some() {
         ExitCode::from(u8::try_from(EXIT_UNKNOWN).unwrap_or(3))
@@ -292,10 +304,12 @@ struct Comparison<'a> {
     unknown: Option<String>,
 }
 
-/// Compares the newest of `samples` (in `ts` order, none after `--at`) with the sample nearest to
+/// Compares the newest of `samples` (in `ts` order, none after `--at`; `began` is the instant the
+/// series begins at, design § 11 D18) with the sample nearest to
 /// its `ts` minus `offset` seconds, within half of `cadence` seconds and before it.
 fn compare<'a>(
     samples: &'a [(i128, SignalSampleData)],
+    began: Option<i128>,
     offset: i64,
     cadence: i64,
     at: &str,
@@ -309,9 +323,9 @@ fn compare<'a>(
     };
     let target = now - i128::from(offset) * 1_000_000_000;
     let tolerance = i128::from(cadence) * 500_000_000;
-    let first = samples.first().map_or(*now, |(ts, _)| *ts);
-    // A slot before the series' first sample predates the series, whatever lies near it.
-    let baseline = if target < first {
+    let began = began.unwrap_or(*now);
+    // A slot before the series' start predates the series, whatever lies near it.
+    let baseline = if target < began {
         None
     } else {
         samples
@@ -321,7 +335,7 @@ fn compare<'a>(
             .map(|(_, sample)| sample)
     };
     let unknown = unread("current", &current.reading).or_else(|| match baseline {
-        None if target < first => Some(PREDATES.to_owned()),
+        None if target < began => Some(PREDATES.to_owned()),
         None => Some(NO_SAMPLE_AT_OFFSET.to_owned()),
         Some(baseline) => unread("baseline", &baseline.reading),
     });
@@ -455,6 +469,7 @@ fn nanos(text: &str) -> Option<i128> {
 }
 
 /// The instant one nanosecond after `nanos`: the exclusive end of a range that holds `nanos`.
+/// `None` for the last RFC 3339 instant, which has no successor.
 fn after(nanos: i128) -> Option<Timestamp> {
     OffsetDateTime::from_unix_timestamp_nanos(nanos.checked_add(1)?)
         .ok()?
