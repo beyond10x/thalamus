@@ -270,6 +270,11 @@ impl Rule {
                 InputRefusal::MappingMissing => "thalamus.definition.MappingMissing",
                 InputRefusal::MappingUnused => "thalamus.definition.MappingUnused",
                 InputRefusal::ThresholdsUnused => "thalamus.definition.ThresholdsUnused",
+                InputRefusal::AdvisoryNotCount => "thalamus.definition.AdvisoryNeedsCountOfCases",
+                InputRefusal::AdvisoryNotFindingUnit => {
+                    "thalamus.definition.AdvisoryNeedsFindingUnit"
+                }
+                InputRefusal::AdvisoryNotFixed => "thalamus.definition.AdvisoryNeedsFixedBaseline",
             },
             Rule::Baseline { .. } => "baseline plan",
             Rule::UnregisteredDimension { .. } => "registered dimension",
@@ -380,7 +385,23 @@ impl fmt::Display for Rule {
                 InputRefusal::ThresholdsUnused => write!(
                     f,
                     "`{signal_id}` names the rule producer_mapped, which grades by evaluation.mapping \
-                     alone, and declares a warn or crit line nothing reads"
+                     alone, or fixed_warn_only, which grades by its fixed baseline alone, and \
+                     declares a warn or crit line nothing reads"
+                ),
+                InputRefusal::AdvisoryNotCount => write!(
+                    f,
+                    "`{signal_id}` names the rule fixed_warn_only, which grades an advisory gate's \
+                     finding count, and its kind is not count_of_cases"
+                ),
+                InputRefusal::AdvisoryNotFindingUnit => write!(
+                    f,
+                    "`{signal_id}` names the rule fixed_warn_only, which grades an advisory gate's \
+                     finding count, and its unit is not {{finding}}"
+                ),
+                InputRefusal::AdvisoryNotFixed => write!(
+                    f,
+                    "`{signal_id}` names the rule fixed_warn_only, which grades against the fixed \
+                     baseline only, and its evaluation.baselines is not fixed alone"
                 ),
             },
             Rule::Baseline { refusal } => write!(f, "the baseline is refused: {refusal}"),
@@ -1437,6 +1458,7 @@ impl Definition {
 
         for refusal in input_refusals(
             kind,
+            data.unit.as_ref(),
             &data.source,
             &data.evaluation,
             data.persistence.as_ref(),

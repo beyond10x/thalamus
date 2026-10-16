@@ -8,13 +8,14 @@
 
 use thalamus_model::behaviour::{SignalDefinitionStorage, TryContext};
 use thalamus_model::definition::{
+    AdvisoryNeedsCountOfCases, AdvisoryNeedsFindingUnit, AdvisoryNeedsFixedBaseline,
     AnySignalDefinition, BaselineKind, DefinitionExists, DefinitionProposed, DefinitionRevised,
     EvaluationSpec, FixedNumberMissing, FixedNumberUnused, HostConnectionNotLocal,
     InstantNeedsFixedBaseline, LocalConnectionNotHost, MappingMissing, MappingUnused, Persistence,
     PersistenceTooSmall, ProposeDefinition, ProposeDefinitionOutcome, RetiredDefinition,
     ReviseDefinition, ReviseDefinitionOutcome, RollingWindowMissing, RollingWindowUnused,
     SignalDefinition, SignalDefinitionData, SignalDefinitionState, SignalKind, Source,
-    ThresholdsUnused, UnknownDefinition,
+    ThresholdsUnused, Unit, UnknownDefinition,
 };
 use thalamus_model::obligation::UnmetObligation;
 use thalamus_model::primitives::Timestamp;
@@ -48,6 +49,7 @@ where
     let now = ports.try_command_clock();
     if let Some(refused) = input_refusal(
         input.kind,
+        input.unit.as_ref(),
         &input.source,
         &input.evaluation,
         input.persistence.as_ref(),
@@ -86,6 +88,17 @@ where
             },
             InputRefusal::ThresholdsUnused => ProposeDefinitionOutcome::ThresholdsUnused {
                 error: ThresholdsUnused { signal_id },
+            },
+            InputRefusal::AdvisoryNotCount => ProposeDefinitionOutcome::AdvisoryNotCount {
+                error: AdvisoryNeedsCountOfCases { signal_id },
+            },
+            InputRefusal::AdvisoryNotFindingUnit => {
+                ProposeDefinitionOutcome::AdvisoryNotFindingUnit {
+                    error: AdvisoryNeedsFindingUnit { signal_id },
+                }
+            }
+            InputRefusal::AdvisoryNotFixed => ProposeDefinitionOutcome::AdvisoryNotFixed {
+                error: AdvisoryNeedsFixedBaseline { signal_id },
             },
         });
     }
@@ -159,6 +172,7 @@ where
     let now = ports.try_command_clock();
     if let Some(refused) = input_refusal(
         input.kind,
+        Some(&input.unit),
         &input.source,
         &input.evaluation,
         input.persistence.as_ref(),
@@ -197,6 +211,17 @@ where
             },
             InputRefusal::ThresholdsUnused => ReviseDefinitionOutcome::ThresholdsUnused {
                 error: ThresholdsUnused { signal_id },
+            },
+            InputRefusal::AdvisoryNotCount => ReviseDefinitionOutcome::AdvisoryNotCount {
+                error: AdvisoryNeedsCountOfCases { signal_id },
+            },
+            InputRefusal::AdvisoryNotFindingUnit => {
+                ReviseDefinitionOutcome::AdvisoryNotFindingUnit {
+                    error: AdvisoryNeedsFindingUnit { signal_id },
+                }
+            }
+            InputRefusal::AdvisoryNotFixed => ReviseDefinitionOutcome::AdvisoryNotFixed {
+                error: AdvisoryNeedsFixedBaseline { signal_id },
             },
         });
     }
@@ -290,8 +315,15 @@ pub enum InputRefusal {
     MappingMissing,
     /// `mapping-unused`.
     MappingUnused,
-    /// `thresholds-unused`.
+    /// `thresholds-unused`: under `producer_mapped` or `fixed_warn_only`.
     ThresholdsUnused,
+    /// `advisory-not-count`.
+    AdvisoryNotCount,
+    /// `advisory-not-finding-unit`.
+    AdvisoryNotFindingUnit,
+    /// `advisory-not-fixed`: also an empty baseline list (`UNMAPPED:` in
+    /// `spec/domains/definition.yaml`).
+    AdvisoryNotFixed,
 }
 
 /// The first input-guarded refusal of `ProposeDefinition` and `ReviseDefinition` whose guard
@@ -299,11 +331,12 @@ pub enum InputRefusal {
 #[must_use]
 pub fn input_refusal(
     kind: SignalKind,
+    unit: Option<&Unit>,
     source: &Source,
     evaluation: &EvaluationSpec,
     persistence: Option<&Persistence>,
 ) -> Option<InputRefusal> {
-    input_refusals(kind, source, evaluation, persistence)
+    input_refusals(kind, unit, source, evaluation, persistence)
         .into_iter()
         .next()
 }
@@ -324,11 +357,20 @@ pub fn input_refusal(
 ///   and, beyond what ESS 0.60.0 can state, an empty mapping and one naming `N/A`
 ///   ([`crate::rules::mapped::mapping_missing`]);
 /// - `mapping-unused`: `defined(evaluation.mapping) and evaluation.rule != "producer_mapped"`;
-/// - `thresholds-unused`: `evaluation.rule == "producer_mapped" and (defined(evaluation.warn) or
-///   defined(evaluation.crit))`.
+/// - `thresholds-unused`: `(evaluation.rule == "producer_mapped" or evaluation.rule ==
+///   "fixed_warn_only") and (defined(evaluation.warn) or defined(evaluation.crit))`;
+/// - `advisory-not-count`: `evaluation.rule == "fixed_warn_only" and kind != count_of_cases`
+///   ([`crate::rules::warn_only::kind_not_count`]);
+/// - `advisory-not-finding-unit`: `evaluation.rule == "fixed_warn_only" and defined(unit) and
+///   unit != "{finding}"` ([`crate::rules::warn_only::unit_not_finding`]); a revision always
+///   declares its unit;
+/// - `advisory-not-fixed`: `evaluation.rule == "fixed_warn_only" and exists b in
+///   evaluation.baselines: b != fixed`, and, beyond what ESS 0.60.0 can state, an empty baseline
+///   list ([`crate::rules::warn_only::baseline_not_fixed`]).
 #[must_use]
 pub fn input_refusals(
     kind: SignalKind,
+    unit: Option<&Unit>,
     source: &Source,
     evaluation: &EvaluationSpec,
     persistence: Option<&Persistence>,
@@ -382,8 +424,21 @@ pub fn input_refusals(
             InputRefusal::MappingUnused,
         ),
         (
-            crate::rules::mapped::thresholds_unused(evaluation),
+            crate::rules::mapped::thresholds_unused(evaluation)
+                || crate::rules::warn_only::thresholds_unused(evaluation),
             InputRefusal::ThresholdsUnused,
+        ),
+        (
+            crate::rules::warn_only::kind_not_count(kind, evaluation),
+            InputRefusal::AdvisoryNotCount,
+        ),
+        (
+            crate::rules::warn_only::unit_not_finding(unit, evaluation),
+            InputRefusal::AdvisoryNotFindingUnit,
+        ),
+        (
+            crate::rules::warn_only::baseline_not_fixed(evaluation),
+            InputRefusal::AdvisoryNotFixed,
         ),
     ]
     .into_iter()

@@ -1275,8 +1275,8 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:f0dddd299b44e5925febff187cfd5241b7da34a2a45abbc5a80a08bf197f62e4",
-    "source_digest": "b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a",
+    "contract_digest": "slice-sha256/2:cab8c0d568af2ee98b0fe90728cbfdb9dc69104e9a02f7ffd5b7a110bcc527a3",
+    "source_digest": "6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd",
     "specification_version": "v1",
     "system": "thalamus"
   }

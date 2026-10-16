@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a
-// contract digest 468f6502d1569e62e77cf40bce974fd8ace2ccc86ced19dbf5164f2dcdb78110
+// model digest 6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd
+// contract digest 52593762eb7c5911c4f82160d91abef9b7c9217fd30b29c6b5cb7e3ac76f0515
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! HTTP/1.1, as much of it as a synthesised surface needs and no more.

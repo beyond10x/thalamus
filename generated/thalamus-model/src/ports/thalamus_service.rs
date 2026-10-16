@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a
-// contract digest 468f6502d1569e62e77cf40bce974fd8ace2ccc86ced19dbf5164f2dcdb78110
+// model digest 6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd
+// contract digest 52593762eb7c5911c4f82160d91abef9b7c9217fd30b29c6b5cb7e3ac76f0515
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! thalamus-service — the `thalamus-service` component of `thalamus` v1.
@@ -170,6 +170,9 @@ where
             crate::definition::ProposeDefinitionOutcome::MappingMissing { .. } => {}
             crate::definition::ProposeDefinitionOutcome::MappingUnused { .. } => {}
             crate::definition::ProposeDefinitionOutcome::ThresholdsUnused { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::AdvisoryNotCount { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::AdvisoryNotFindingUnit { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::AdvisoryNotFixed { .. } => {}
             crate::definition::ProposeDefinitionOutcome::Proposed { definition_proposed, .. } => {
                 self.outbox.push(PublishedEvent::DefinitionProposed(definition_proposed.clone()));
             }
@@ -215,6 +218,9 @@ where
             crate::definition::ReviseDefinitionOutcome::MappingMissing { .. } => {}
             crate::definition::ReviseDefinitionOutcome::MappingUnused { .. } => {}
             crate::definition::ReviseDefinitionOutcome::ThresholdsUnused { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::AdvisoryNotCount { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::AdvisoryNotFindingUnit { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::AdvisoryNotFixed { .. } => {}
             crate::definition::ReviseDefinitionOutcome::Revised { definition_revised, .. } => {
                 self.outbox.push(PublishedEvent::DefinitionRevised(definition_revised.clone()));
             }
