@@ -899,3 +899,35 @@ fn producer_text_round_trips_and_is_absent_when_none() {
         );
     }
 }
+
+/// Handles opening one new SQLite store at once, as two `thalamus eval` or `sample` processes
+/// started together do: each one opens. The first open of a file sets up its journal and its
+/// tables; an opener that meets another one doing so waits for it instead of failing. Every round
+/// starts on a file that does not exist yet, which is when the setup races.
+#[test]
+fn concurrent_sqlite_opens_of_a_new_store_all_succeed() {
+    use std::sync::{Arc, Barrier};
+    const OPENERS: usize = 8;
+    const ROUNDS: usize = 12;
+    let root = tempfile::tempdir().expect("tempdir");
+    let mut failed = Vec::new();
+    for round in 0..ROUNDS {
+        let locator = Locator::Sqlite(root.path().join(format!("round-{round}/store.sqlite")));
+        let start = Arc::new(Barrier::new(OPENERS));
+        let opens: Vec<_> = (0..OPENERS)
+            .map(|_| {
+                let (start, locator) = (Arc::clone(&start), locator.clone());
+                std::thread::spawn(move || {
+                    start.wait();
+                    EventlogStore::open(&locator, "concurrent-open").map(|_| ())
+                })
+            })
+            .collect();
+        for open in opens {
+            if let Err(error) = open.join().expect("no panic") {
+                failed.push(format!("round {round}: {error:?}"));
+            }
+        }
+    }
+    assert!(failed.is_empty(), "{}", failed.join("\n"));
+}

@@ -461,21 +461,25 @@ impl SourceReads {
 }
 
 /// The reading of `sample`'s series in the window `request` names, from the store: the newest
-/// stored sample of the series whose `ts` falls in the shifted window.
+/// stored sample of the series whose `ts` falls in the shifted window, after its start and at or
+/// before its end. A sample whose `ts` is the shifted window's start closes the slot before it
+/// (its own window ends there), so it is never the baseline: a missing slot is unknown.
 fn from_store(
     store: &EventlogStore,
     sample: &SignalSampleData,
     request: &WindowRequest,
 ) -> OffsetReading {
     let (start, end) = (&request.window.start, &request.window.end);
-    let in_window = Instant::parse(&end.0).map(|end| {
-        store
-            .series_range(&sample.series, start, &sample.ts)
-            .samples
-            .into_iter()
-            .rfind(|row| Instant::parse(&row.ts.0).is_some_and(|at| at <= end))
-    });
-    match in_window.flatten() {
+    let in_window = Instant::parse(&start.0)
+        .zip(Instant::parse(&end.0))
+        .and_then(|(after, end)| {
+            store
+                .series_range(&sample.series, start, &sample.ts)
+                .samples
+                .into_iter()
+                .rfind(|row| Instant::parse(&row.ts.0).is_some_and(|at| after < at && at <= end))
+        });
+    match in_window {
         Some(row) => OffsetReading {
             offset: request.offset,
             reading: row.reading,

@@ -162,6 +162,21 @@ pub(crate) struct Opened {
     pub(crate) name: String,
 }
 
+/// An instance and its store as a read command opens it: `None` when the locator names an
+/// SQLite file that does not exist yet, which reads as an empty store and is left uncreated.
+pub(crate) struct ForReading {
+    pub(crate) instance: LoadedInstance,
+    pub(crate) store: Option<EventlogStore>,
+    pub(crate) name: String,
+}
+
+/// An instance and the locator of its store, before the store is opened.
+struct Located {
+    instance: LoadedInstance,
+    locator: Locator,
+    name: String,
+}
+
 impl Opened {
     /// Loads the instance and opens its store, printing why not under `thalamus <command>`.
     ///
@@ -170,6 +185,50 @@ impl Opened {
     /// The exit code: 64 without an instance, 65 for an invalid one, 74 for a store that cannot
     /// be opened.
     pub(crate) fn open(command: &str, global: &Global) -> Result<Self, ExitCode> {
+        let Located {
+            instance,
+            locator,
+            name,
+        } = Located::load(command, global)?;
+        let store = open_store(command, &locator, &instance, &name)?;
+        Ok(Self {
+            instance,
+            store,
+            name,
+        })
+    }
+}
+
+impl ForReading {
+    /// As [`Opened::open`], for a command that only reads: a store whose SQLite file does not
+    /// exist is not opened, so the read creates neither the file nor its directory.
+    ///
+    /// # Errors
+    ///
+    /// The exit codes of [`Opened::open`].
+    pub(crate) fn open(command: &str, global: &Global) -> Result<Self, ExitCode> {
+        let Located {
+            instance,
+            locator,
+            name,
+        } = Located::load(command, global)?;
+        let store = if locator.names_a_missing_sqlite_file() {
+            None
+        } else {
+            Some(open_store(command, &locator, &instance, &name)?)
+        };
+        Ok(Self {
+            instance,
+            store,
+            name,
+        })
+    }
+}
+
+impl Located {
+    /// Loads the instance and parses its store's locator, printing why not under
+    /// `thalamus <command>`.
+    fn load(command: &str, global: &Global) -> Result<Self, ExitCode> {
         let Some(dir) = &global.instance else {
             eprintln!(
                 "thalamus {command}: no instance; give --instance <dir> or set THALAMUS_INSTANCE"
@@ -193,21 +252,28 @@ impl Opened {
             }
         };
         let name = describe(&locator);
-        match EventlogStore::open(&locator, instance.name()) {
-            Ok(store) => Ok(Self {
-                instance,
-                store,
-                name,
-            }),
-            Err(error) => {
-                eprintln!(
-                    "thalamus {command}: store {name} refused: {}",
-                    refusal(&error)
-                );
-                Err(ExitCode::from(EX_IOERR))
-            }
-        }
+        Ok(Self {
+            instance,
+            locator,
+            name,
+        })
     }
+}
+
+/// Opens the store `locator` names for `instance`, printing why not under `thalamus <command>`.
+fn open_store(
+    command: &str,
+    locator: &Locator,
+    instance: &LoadedInstance,
+    name: &str,
+) -> Result<EventlogStore, ExitCode> {
+    EventlogStore::open(locator, instance.name()).map_err(|error| {
+        eprintln!(
+            "thalamus {command}: store {name} refused: {}",
+            refusal(&error)
+        );
+        ExitCode::from(EX_IOERR)
+    })
 }
 
 /// Runs `work` with a panic hook that prints nothing, then restores the hook it replaced. A store

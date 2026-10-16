@@ -7,6 +7,9 @@
 //! is `N/A` or nothing is shown. A refusal exits with the codes of `thalamus sample`: 64 without
 //! an instance, 65 for an invalid instance or an unknown signal, 74 when the store cannot be
 //! opened or read.
+//!
+//! `show` only reads: when the SQLite file of the store does not exist yet, it answers as an
+//! empty store (nothing shown, exit 3) without opening it, so it creates no file.
 
 use std::cmp::Reverse;
 use std::process::ExitCode;
@@ -18,7 +21,7 @@ use thalamus_model::evaluation::{Baseline, SignalEvaluationData};
 use thalamus_model::observation::{Bound, Reading};
 use thalamus_pipeline::evaluate::verdict_name;
 
-use super::eval::{EX_DATAERR, EX_IOERR, Opened, quietly};
+use super::eval::{EX_DATAERR, EX_IOERR, ForReading, quietly};
 use crate::global::Global;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -46,11 +49,11 @@ struct Row {
 }
 
 pub fn run(global: &Global, args: &Args) -> ExitCode {
-    let Opened {
+    let ForReading {
         instance,
         store,
         name,
-    } = match Opened::open("show", global) {
+    } = match ForReading::open("show", global) {
         Ok(opened) => opened,
         Err(code) => return code,
     };
@@ -64,6 +67,10 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
         return ExitCode::from(EX_DATAERR);
     }
     let read = quietly(|| {
+        // A store that does not exist yet holds nothing: it shows as empty and is not created.
+        let Some(store) = &store else {
+            return Vec::new();
+        };
         let mut rows: Vec<Row> = store
             .newest_evaluations()
             .into_iter()
