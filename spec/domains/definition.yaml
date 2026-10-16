@@ -44,7 +44,7 @@ types:
     of: String
     alphabet: "abcdefghijklmnopqrstuvwxyz0123456789_"
     naming:
-      summary: The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).
+      summary: The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events), or host, the one adapter that reads this machine's own kernel counters directly and takes no connection operation (design § 11 D46).
 
   # UNMAPPED: "a connection id is never a credential" has no ESS construct (no secrecy or
   # classification on a type). The alphabet below keeps it an identifier; the rule itself is
@@ -54,7 +54,7 @@ types:
     of: String
     alphabet: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.:/"
     naming:
-      summary: A Connectors connection id. Thalamus holds no secret; the connection holds the credential.
+      summary: A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection; a source of any other adapter on connection local is refused.
 
   - name: thalamus.definition.Source
     kind: struct
@@ -70,7 +70,7 @@ types:
     kind: newtype
     of: String
     naming:
-      summary: A built-in extractor (sql.ratio) or a plugin id.
+      summary: A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly five, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount), host.disk_free (unit By, the bytes available to an unprivileged writer per listed mount) and host.cpu_temperature (unit Cel), and nothing else.
 
   - name: thalamus.definition.History
     kind: enum
@@ -343,6 +343,18 @@ errors:
       - name: signal_id
         type: thalamus.definition.SignalId
 
+  - name: thalamus.definition.HostConnectionNotLocal
+    summary: The host adapter reads only the machine thalamus runs on, through the reserved connection local, and another connection was named; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
+  - name: thalamus.definition.LocalConnectionNotHost
+    summary: The connection local is reserved for the host adapter, and a source of another adapter named it; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
   - name: thalamus.definition.InstantNeedsFixedBaseline
     summary: A signal of kind instant is graded against a fixed baseline only; another baseline was declared, so nothing changed.
     fields:
@@ -487,6 +499,26 @@ commands:
       - name: author
         type: thalamus.definition.Author
     outcomes:
+      - name: host-not-local
+        when:
+          all:
+            - source.adapter == "host"
+            - source.connection != "local"
+        error: thalamus.definition.HostConnectionNotLocal
+        payload:
+          thalamus.definition.HostConnectionNotLocal:
+            signal_id: input.signal_id
+        summary: A host definition named a connection other than local; nothing was proposed.
+      - name: local-not-host
+        when:
+          all:
+            - source.connection == "local"
+            - source.adapter != "host"
+        error: thalamus.definition.LocalConnectionNotHost
+        payload:
+          thalamus.definition.LocalConnectionNotHost:
+            signal_id: input.signal_id
+        summary: A source of an adapter other than host named the reserved connection local; nothing was proposed.
       - name: instant-not-fixed
         when:
           all:
@@ -679,6 +711,26 @@ commands:
           thalamus.definition.RetiredDefinition:
             signal_id: input.signal_id
         summary: The definition is retired; nothing changed.
+      - name: host-not-local
+        when:
+          all:
+            - source.adapter == "host"
+            - source.connection != "local"
+        error: thalamus.definition.HostConnectionNotLocal
+        payload:
+          thalamus.definition.HostConnectionNotLocal:
+            signal_id: input.signal_id
+        summary: A host definition named a connection other than local; nothing changed.
+      - name: local-not-host
+        when:
+          all:
+            - source.connection == "local"
+            - source.adapter != "host"
+        error: thalamus.definition.LocalConnectionNotHost
+        payload:
+          thalamus.definition.LocalConnectionNotHost:
+            signal_id: input.signal_id
+        summary: A source of an adapter other than host named the reserved connection local; nothing changed.
       - name: instant-not-fixed
         when:
           all:

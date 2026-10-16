@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-16T10:25:28Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-host-collector",
+  "kind": "story",
+  "revision": 12,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 952d032: cargo fmt --check, clippy -D warnings --all-targets and cargo test --locked --no-fail-fast of thalamus-sources and thalamus-cli exit 0 (adv_host_pass1 15, adv_host_pass2 7, adv_sample_breach_pass2 3, host and sample_breach passed); task docs-check exit 0; thalamus-core and thalamus-docs green at bb4b45d"
+  }
+}

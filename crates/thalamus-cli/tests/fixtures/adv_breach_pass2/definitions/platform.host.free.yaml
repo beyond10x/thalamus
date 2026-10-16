@@ -1,0 +1,24 @@
+id: platform.host.free
+title: Free space of this machine under an unreachable floor
+family: platform
+kind: gauge
+unit: By
+dimensions: [mount]
+source: { adapter: host, connection: local }
+extractor: host.disk_free
+query: { root: "/" }
+window: PT5M
+cadence: PT5M
+history: store
+denominator: { unit: "By", min_n: 0, since: 2026-01-01T00:00:00Z }
+evaluation:
+  rule: lower_is_worse
+  baselines: [fixed]
+  fixed: "1000000000000000000"
+  warn: { x: "1.25" }
+  crit: { x: "1" }
+owner: team:platform
+lifecycle: active
+rev: 1
+revised_at: 2026-10-02T00:00:00Z
+revised_by: operator
