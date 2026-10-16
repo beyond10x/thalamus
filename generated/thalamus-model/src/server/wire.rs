@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed
-// contract digest 093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061
+// model digest 99b2e1b31aebb3cdde7af7bb46be2ec80e4af2ccd183cd598985f3a30326c48f
+// contract digest 82328f7c71509b62eb250d7912f8913dadad64f2cf9aae2897c422dfba7f784c
 // do not edit: regenerate with `ess synthesize --layout crate`
 //! Every generated declaration, as JSON, in the renderings the published wire contracts fix.
 //!
@@ -1720,6 +1720,22 @@ pub fn encode_error_thalamus_assertion_unknown_assertion(value: &crate::assertio
     out.push('}');
 }
 
+/// Writes the declared error `thalamus.definition.AdvisoryNeedsCountOfCases` as JSON.
+pub fn encode_error_thalamus_definition_advisory_needs_count_of_cases(value: &crate::definition::AdvisoryNeedsCountOfCases, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
+/// Writes the declared error `thalamus.definition.AdvisoryNeedsFixedBaseline` as JSON.
+pub fn encode_error_thalamus_definition_advisory_needs_fixed_baseline(value: &crate::definition::AdvisoryNeedsFixedBaseline, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
 /// Writes the declared error `thalamus.definition.DefinitionExists` as JSON.
 pub fn encode_error_thalamus_definition_definition_exists(value: &crate::definition::DefinitionExists, out: &mut String) {
     out.push('{');
@@ -3293,6 +3309,34 @@ pub fn encode_outcome_thalamus_definition_propose_definition(value: &crate::defi
             encode_error_thalamus_definition_thresholds_unused(error, out);
             out.push('}');
         }
+        crate::definition::ProposeDefinitionOutcome::AdvisoryNotCount { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "advisory-not-count");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.AdvisoryNeedsCountOfCases");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_advisory_needs_count_of_cases(error, out);
+            out.push('}');
+        }
+        crate::definition::ProposeDefinitionOutcome::AdvisoryNotFixed { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "advisory-not-fixed");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.AdvisoryNeedsFixedBaseline");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_advisory_needs_fixed_baseline(error, out);
+            out.push('}');
+        }
         crate::definition::ProposeDefinitionOutcome::Proposed { definition_proposed } => {
             json::member(out, "outcome");
             json::push_text(out, "proposed");
@@ -3727,6 +3771,34 @@ pub fn encode_outcome_thalamus_definition_revise_definition(value: &crate::defin
             json::push_text(out, "thalamus.definition.ThresholdsUnused");
             json::member(out, "payload");
             encode_error_thalamus_definition_thresholds_unused(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::AdvisoryNotCount { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "advisory-not-count");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.AdvisoryNeedsCountOfCases");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_advisory_needs_count_of_cases(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::AdvisoryNotFixed { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "advisory-not-fixed");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.AdvisoryNeedsFixedBaseline");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_advisory_needs_fixed_baseline(error, out);
             out.push('}');
         }
         crate::definition::ReviseDefinitionOutcome::Revised { definition_revised } => {

@@ -175,11 +175,11 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/verdicts#other-vocabularies",
     ),
-    planned(
+    shipped(
         "Grading",
         "An advisory gate grades WARN, never CRIT",
-        "Its finding count against a fixed baseline.",
-        "story:m3-advisory-gate-mapping",
+        "Its finding count against a fixed baseline, by the rule fixed_warn_only; no count printed is UNKNOWN.",
+        Evidence::Test("crates/thalamus-core/tests/advisory_gate.rs::advisory_never_grades_crit"),
         "/docs/concepts/verdicts#other-vocabularies",
     ),
     shipped(

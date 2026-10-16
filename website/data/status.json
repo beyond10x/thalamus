@@ -88,10 +88,10 @@
     },
     {
       "area": "Grading",
-      "detail": "Its finding count against a fixed baseline. Planned in story:m3-advisory-gate-mapping.",
+      "detail": "Its finding count against a fixed baseline, by the rule fixed_warn_only; no count printed is UNKNOWN.",
       "href": "/docs/concepts/verdicts#other-vocabularies",
       "label": "An advisory gate grades WARN, never CRIT",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Instances",

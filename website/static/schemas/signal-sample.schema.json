@@ -73,8 +73,8 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
-    "contract_digest": "slice-sha256/2:d9e65f52be3dd5634108ec68664a3e6aa4d0bb89cd656c37fe003d2acc081f2b",
+    "source_digest": "99b2e1b31aebb3cdde7af7bb46be2ec80e4af2ccd183cd598985f3a30326c48f",
+    "contract_digest": "slice-sha256/2:c4f1823894eec981cfc7888ae713fe3e24551a09e62818cc944afa9d0db7c1ed",
     "regenerate": "ess generate"
   },
   "$defs": {

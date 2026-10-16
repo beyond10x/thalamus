@@ -768,6 +768,12 @@ fn proposed_refusal(answer: &ProposeDefinitionOutcome) -> Option<&'static str> {
         ProposeDefinitionOutcome::ThresholdsUnused { .. } => {
             Some("thalamus.definition.ThresholdsUnused")
         }
+        ProposeDefinitionOutcome::AdvisoryNotFixed { .. } => {
+            Some("thalamus.definition.AdvisoryNeedsFixedBaseline")
+        }
+        ProposeDefinitionOutcome::AdvisoryNotCount { .. } => {
+            Some("thalamus.definition.AdvisoryNeedsCountOfCases")
+        }
         ProposeDefinitionOutcome::PersistenceBelowOne { .. } => {
             Some("thalamus.definition.PersistenceTooSmall")
         }
@@ -802,6 +808,12 @@ fn revised_refusal(answer: &ReviseDefinitionOutcome) -> Option<&'static str> {
         ReviseDefinitionOutcome::MappingUnused { .. } => Some("thalamus.definition.MappingUnused"),
         ReviseDefinitionOutcome::ThresholdsUnused { .. } => {
             Some("thalamus.definition.ThresholdsUnused")
+        }
+        ReviseDefinitionOutcome::AdvisoryNotFixed { .. } => {
+            Some("thalamus.definition.AdvisoryNeedsFixedBaseline")
+        }
+        ReviseDefinitionOutcome::AdvisoryNotCount { .. } => {
+            Some("thalamus.definition.AdvisoryNeedsCountOfCases")
         }
         ReviseDefinitionOutcome::PersistenceBelowOne { .. } => {
             Some("thalamus.definition.PersistenceTooSmall")

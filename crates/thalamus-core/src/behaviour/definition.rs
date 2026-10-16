@@ -8,12 +8,13 @@
 
 use thalamus_model::behaviour::{SignalDefinitionStorage, TryContext};
 use thalamus_model::definition::{
-    AnySignalDefinition, BaselineKind, DefinitionExists, DefinitionProposed, DefinitionRevised,
-    EvaluationSpec, FixedNumberMissing, FixedNumberUnused, InstantNeedsFixedBaseline,
-    MappingMissing, MappingUnused, Persistence, PersistenceTooSmall, ProposeDefinition,
-    ProposeDefinitionOutcome, RetiredDefinition, ReviseDefinition, ReviseDefinitionOutcome,
-    RollingWindowMissing, RollingWindowUnused, SignalDefinition, SignalDefinitionData,
-    SignalDefinitionState, SignalKind, ThresholdsUnused, UnknownDefinition,
+    AdvisoryNeedsCountOfCases, AdvisoryNeedsFixedBaseline, AnySignalDefinition, BaselineKind,
+    DefinitionExists, DefinitionProposed, DefinitionRevised, EvaluationSpec, FixedNumberMissing,
+    FixedNumberUnused, InstantNeedsFixedBaseline, MappingMissing, MappingUnused, Persistence,
+    PersistenceTooSmall, ProposeDefinition, ProposeDefinitionOutcome, RetiredDefinition,
+    ReviseDefinition, ReviseDefinitionOutcome, RollingWindowMissing, RollingWindowUnused,
+    SignalDefinition, SignalDefinitionData, SignalDefinitionState, SignalKind, ThresholdsUnused,
+    UnknownDefinition,
 };
 use thalamus_model::obligation::UnmetObligation;
 use thalamus_model::primitives::Timestamp;
@@ -68,6 +69,12 @@ where
             },
             InputRefusal::ThresholdsUnused => ProposeDefinitionOutcome::ThresholdsUnused {
                 error: ThresholdsUnused { signal_id },
+            },
+            InputRefusal::AdvisoryNotCount => ProposeDefinitionOutcome::AdvisoryNotCount {
+                error: AdvisoryNeedsCountOfCases { signal_id },
+            },
+            InputRefusal::AdvisoryNotFixed => ProposeDefinitionOutcome::AdvisoryNotFixed {
+                error: AdvisoryNeedsFixedBaseline { signal_id },
             },
         });
     }
@@ -170,6 +177,12 @@ where
             InputRefusal::ThresholdsUnused => ReviseDefinitionOutcome::ThresholdsUnused {
                 error: ThresholdsUnused { signal_id },
             },
+            InputRefusal::AdvisoryNotCount => ReviseDefinitionOutcome::AdvisoryNotCount {
+                error: AdvisoryNeedsCountOfCases { signal_id },
+            },
+            InputRefusal::AdvisoryNotFixed => ReviseDefinitionOutcome::AdvisoryNotFixed {
+                error: AdvisoryNeedsFixedBaseline { signal_id },
+            },
         });
     }
     let Some(held) = SignalDefinitionStorage::get(ports, &input.signal_id) else {
@@ -258,8 +271,13 @@ pub enum InputRefusal {
     MappingMissing,
     /// `mapping-unused`.
     MappingUnused,
-    /// `thresholds-unused`.
+    /// `thresholds-unused`: under `producer_mapped` or `fixed_warn_only`.
     ThresholdsUnused,
+    /// `advisory-not-count`.
+    AdvisoryNotCount,
+    /// `advisory-not-fixed`: also an empty baseline list (`UNMAPPED:` in
+    /// `spec/domains/definition.yaml`).
+    AdvisoryNotFixed,
 }
 
 /// The first input-guarded refusal of `ProposeDefinition` and `ReviseDefinition` whose guard
@@ -289,8 +307,13 @@ pub fn input_refusal(
 ///   and, beyond what ESS 0.60.0 can state, an empty mapping and one naming `N/A`
 ///   ([`crate::rules::mapped::mapping_missing`]);
 /// - `mapping-unused`: `defined(evaluation.mapping) and evaluation.rule != "producer_mapped"`;
-/// - `thresholds-unused`: `evaluation.rule == "producer_mapped" and (defined(evaluation.warn) or
-///   defined(evaluation.crit))`.
+/// - `thresholds-unused`: `(evaluation.rule == "producer_mapped" or evaluation.rule ==
+///   "fixed_warn_only") and (defined(evaluation.warn) or defined(evaluation.crit))`;
+/// - `advisory-not-count`: `evaluation.rule == "fixed_warn_only" and kind != count_of_cases`
+///   ([`crate::rules::warn_only::kind_not_count`]);
+/// - `advisory-not-fixed`: `evaluation.rule == "fixed_warn_only" and exists b in
+///   evaluation.baselines: b != fixed`, and, beyond what ESS 0.60.0 can state, an empty baseline
+///   list ([`crate::rules::warn_only::baseline_not_fixed`]).
 #[must_use]
 pub fn input_refusals(
     kind: SignalKind,
@@ -338,8 +361,17 @@ pub fn input_refusals(
             InputRefusal::MappingUnused,
         ),
         (
-            crate::rules::mapped::thresholds_unused(evaluation),
+            crate::rules::mapped::thresholds_unused(evaluation)
+                || crate::rules::warn_only::thresholds_unused(evaluation),
             InputRefusal::ThresholdsUnused,
+        ),
+        (
+            crate::rules::warn_only::kind_not_count(kind, evaluation),
+            InputRefusal::AdvisoryNotCount,
+        ),
+        (
+            crate::rules::warn_only::baseline_not_fixed(evaluation),
+            InputRefusal::AdvisoryNotFixed,
         ),
     ]
     .into_iter()
