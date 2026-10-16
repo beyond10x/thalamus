@@ -64,10 +64,10 @@ stored sample again, once, at that revision.
 
 A baseline is read when the sample is graded. An `offset_*` baseline of a `history: source`
 definition is re-read from the source at the shifted time (one day earlier for `offset_1d`); one of
-a `history: store` definition reads the sample stored for that series in the same window at the
-offset: one whose time falls after the shifted window's start and at or before its end. A sample
-stamped exactly at the shifted start closes the slot before, so a missing slot leaves the baseline
-unknown. A series younger than its baseline grades `UNKNOWN`.
+a `history: store` definition reads the stored sample of that series nearest to the graded
+sample's time minus the offset, within half the definition's cadence (inclusive) and earlier than
+the graded sample, the rule `thalamus compare` uses. With none, the baseline is unknown (`no stored
+sample at offset`). A series younger than its baseline grades `UNKNOWN`.
 
 `thalamus eval` exits 0 when it recorded every evaluation that was due, or none was due; 65 when the
 instance is invalid or a definition or sample was refused; 74 when the store cannot be opened or
@@ -76,9 +76,10 @@ written. None of these is a verdict code.
 `thalamus show [<signal-id>] [--format text|json]` prints the current verdict of every series, its
 newest evaluation, worst first, with the sample's value, the baseline, the score and the reason. It
 exits with the ladder: `CRIT` 2, `WARN` 1, `UNKNOWN` 3, `OK` 0, and 3 when every shown verdict is
-`N/A` or nothing is shown. An unknown signal exits 65, a store that cannot be read 74. `show` only
-reads: on an instance whose SQLite store does not exist yet it shows nothing, exits 3 and creates no
-file. The tests are in `crates/thalamus-cli/tests/eval_show.rs`.
+`N/A` or nothing is shown. An unknown signal exits 65, a store that cannot be read or written 74
+(a store file the user cannot write is unavailable, as for every command). `show` records nothing: on
+an instance whose SQLite store does not exist yet it shows nothing, exits 3 and creates no file. The tests are in
+`crates/thalamus-cli/tests/eval_show.rs`.
 
 ## How a reading is graded
 

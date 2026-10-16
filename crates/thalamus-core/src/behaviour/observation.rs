@@ -237,6 +237,11 @@ impl Instant {
     pub fn seconds(self) -> i64 {
         self.seconds
     }
+
+    /// The nanoseconds from 1970-01-01T00:00:00Z, the fraction kept.
+    pub fn nanoseconds(self) -> i128 {
+        i128::from(self.seconds) * 1_000_000_000 + i128::from(self.nanos)
+    }
 }
 
 /// Days from 1970-01-01 to the civil date.

@@ -40,8 +40,8 @@ use thalamus_model::evaluation::{
 use thalamus_model::observation::{
     Reading, RunId, SampleId, SeriesKey, SignalSampleData, SignalSampleSnapshot, UnreadReading,
 };
-use thalamus_model::primitives::Timestamp;
-use thalamus_sources::adapter::Read;
+use thalamus_model::primitives::{Duration, Timestamp};
+use thalamus_sources::adapter::{Read, window_ending};
 use thalamus_sources::connectors::Connectors;
 use thalamus_sources::registry;
 use thalamus_store::evaluations::DUPLICATE_EVALUATION;
@@ -312,7 +312,7 @@ fn evaluate_definition(
             .iter()
             .map(|request| match data.history {
                 History::Source => source.read(connectors, data, &sample, request),
-                History::Store => from_store(store, &sample, request),
+                History::Store => from_store(store, &data.cadence, &sample, request),
             })
             .collect();
         let age = series_age(store, &sample);
@@ -460,42 +460,47 @@ impl SourceReads {
     }
 }
 
-/// The reading of `sample`'s series in the window `request` names, from the store: the newest
-/// stored sample of the series whose `ts` falls in the shifted window, after its start and at or
-/// before its end. A sample whose `ts` is the shifted window's start closes the slot before it
-/// (its own window ends there), so it is never the baseline: a missing slot is unknown.
+/// The reading of `sample`'s series at the offset `request` names, from the store: the stored
+/// sample nearest to the sample's `ts` minus the offset, within half the definition's cadence
+/// (inclusive) and earlier than the sample (the rule `thalamus compare` reads). A slot before the
+/// series' first sample is no stored sample here; the series-age rule of the fold names it.
 fn from_store(
     store: &EventlogStore,
+    cadence: &Duration,
     sample: &SignalSampleData,
     request: &WindowRequest,
 ) -> OffsetReading {
-    let (start, end) = (&request.window.start, &request.window.end);
-    let in_window = Instant::parse(&start.0)
-        .zip(Instant::parse(&end.0))
-        .and_then(|(after, end)| {
-            store
-                .series_range(&sample.series, start, &sample.ts)
-                .samples
+    let nearest = Instant::parse(&sample.ts.0)
+        .zip(cadence_nanoseconds(cadence, &sample.ts))
+        .and_then(|(now, cadence)| {
+            let now = now.nanoseconds();
+            let target = now - i128::from(request.offset.seconds()) * 1_000_000_000;
+            series_samples(store, &sample.series)
+                .ok()?
                 .into_iter()
-                .rfind(|row| Instant::parse(&row.ts.0).is_some_and(|at| after < at && at <= end))
+                .filter_map(|row| Some((Instant::parse(&row.ts.0)?.nanoseconds(), row)))
+                .filter(|(at, _)| *at < now && (*at - target).abs() <= cadence / 2)
+                .min_by_key(|(at, _)| (*at - target).abs())
+                .map(|(_, row)| row)
         });
-    match in_window {
+    match nearest {
         Some(row) => OffsetReading {
             offset: request.offset,
             reading: row.reading,
             n: row.denominator.map(|denominator| denominator.n),
         },
-        None => unknown(
-            request.offset,
-            format!(
-                "no stored sample of series {} in the {} window {} to {}",
-                sample.series.0,
-                request.offset.label(),
-                start.0,
-                end.0
-            ),
-        ),
+        None => unknown(request.offset, NO_STORED_SAMPLE.to_owned()),
     }
+}
+
+/// Why a stored offset baseline is unknown when no stored sample lies at the offset.
+const NO_STORED_SAMPLE: &str = "no stored sample at offset";
+
+/// The length of `cadence` in nanoseconds, by placing it before `at`.
+fn cadence_nanoseconds(cadence: &Duration, at: &Timestamp) -> Option<i128> {
+    let window = window_ending(cadence, at).ok()?;
+    let start = Instant::parse(&window.start.0)?;
+    Some(Instant::parse(&at.0)?.nanoseconds() - start.nanoseconds())
 }
 
 fn unknown(offset: Offset, reason: String) -> OffsetReading {
