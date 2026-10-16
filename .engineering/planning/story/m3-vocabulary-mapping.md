@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-vocabulary-mapping
 kind: story
-status: active
+status: implemented
 title: Colour ladders, detector exits and blocking gate exits map onto the one verdict ladder
 relations:
 - decomposes: epic:source-adapters
@@ -31,10 +31,11 @@ scope:
   path: spec/domains/definition.yaml
 - confidence: inferred
   path: spec/suite.json
-revision: 5
+revision: 6
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T12:33:41Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-15T12:33:41Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "active", to: "implemented", at: "2026-10-15T14:22:07Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"test_result":1,"review_outcome":5}}}
 ---
 ## Context
 

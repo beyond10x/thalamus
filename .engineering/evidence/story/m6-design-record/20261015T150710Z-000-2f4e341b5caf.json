@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T15:07:10Z",
+  "actor": "human:timo",
+  "artifact": "story:m6-design-record",
+  "kind": "story",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "coordinator revision, epic:web-ui round 1",
+    "review": "review-result:m6-acceptance-round-1",
+    "outcome": "fixed"
+  }
+}

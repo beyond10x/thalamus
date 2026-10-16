@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-15T15:07:11Z",
+  "actor": "human:timo",
+  "artifact": "story:m6-web-types",
+  "kind": "story",
+  "revision": 4,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "coordinator revision, epic:web-ui round 1",
+    "review": "review-result:m6-design-round-1",
+    "outcome": "fixed"
+  }
+}

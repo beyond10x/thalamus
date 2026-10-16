@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-cli-sample
 kind: story
-status: active
+status: implemented
 title: thalamus sample records one sample per series of every Active definition of an instance
 relations:
 - decomposes: epic:signal-contract
@@ -25,10 +25,11 @@ scope:
   path: crates/thalamus-pipeline/src/instance.rs
 - confidence: inferred
   path: crates/thalamus-pipeline/src/sample.rs
-revision: 5
+revision: 8
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-15T13:17:35Z", actor: "human:timo", revision: 4}
 - {from: "proposed", to: "active", at: "2026-10-15T13:17:35Z", actor: "human:timo", revision: 5}
+- {from: "active", to: "implemented", at: "2026-10-15T20:32:17Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"review_outcome":6}}}
 ---
 ## Outcome
 
@@ -75,3 +76,7 @@ No `members` line, `lib.rs` module line or subcommand enum line: those are `stor
 ## Out of scope
 
 Grading and `show` (`story:m1-cli-eval-show`); the scheduler (M2); `define validate` and the other commands of design § 5.1.
+
+Coordinator note (wave 20261015e, after review-result:adversary-m3-vocabulary-mapping-pass-2): story:m3-vocabulary-mapping moves producer-value mapping to grading; `SignalSample` gains optional `text` (the producer value as printed), recorded under a `producer_mapped` definition. Whichever of this story and story:m3-vocabulary-mapping lands second wires `text` through `thalamus-pipeline/src/sample.rs` and adds a CLI test that a mapped sample stores its text.
+
+Acceptance amended (coordinator, wave 20261015e, review-result:adversary-m1-cli-sample-pass-1 finding 6): an unknown sample is stored in the design § 2.2 wire form, `{"quality":"unknown","value":{"reason":…}}`; "no `value` key" reads as "no number in `value`". Load-time rule check: every definition names a known rule kind; the rule's thresholds and baselines are checked for Active and Muted definitions only, since a Proposed draft may be incomplete.

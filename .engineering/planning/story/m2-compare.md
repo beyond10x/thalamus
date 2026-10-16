@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-compare
 kind: story
-status: draft
+status: implemented
 title: thalamus compare --vs <offset> answers from stored samples
 relations:
 - decomposes: epic:history-and-transitions
@@ -12,9 +12,17 @@ relations:
 scope:
 - confidence: inferred
   path: crates/thalamus-cli/src/cmd/compare.rs
+- confidence: cited
+  path: crates/thalamus-cli/tests/adv_compare_p1.rs
+- confidence: cited
+  path: crates/thalamus-cli/tests/adv_compare_p2.rs
 - confidence: inferred
   path: crates/thalamus-cli/tests/compare.rs
-revision: 6
+revision: 12
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T20:44:32Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-15T20:44:37Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-16T21:10:14Z", actor: "human:timo", revision: 12, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Context
 
@@ -44,3 +52,8 @@ Planned (inferred):
 ## Acceptance
 
 `cargo test -p thalamus-cli --test compare` passes the failing-first tests `compare_vs_7d_reads_stored_samples` (a store fixture, no source connection configured), `compare_missing_offset_sample_is_unknown_exit_3`, `compare_offset_before_series_is_unknown`, `compare_unknown_side_never_prints_a_number` and `compare_series_key_from_dims`.
+
+## Revision (adversary passes 1 and 2)
+
+- "The first sample of the series" in the output line means the start of the series as design line 115 and § 11 D18 define it: the definition's resolved `denominator.since`, and the first stored sample only when `since` is `first_sample` or absent (adversary pass 2, P2-F2, P2-F3).
+- A compare on an instance that has never sampled creates no store and answers as an empty one (pass 1, F3); a store the user cannot write is unavailable, exit 74, as for every command (pass 2, P2-F4).

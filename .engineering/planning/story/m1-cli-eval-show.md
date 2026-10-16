@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m1-cli-eval-show
 kind: story
-status: draft
+status: implemented
 title: thalamus eval grades stored samples once per revision; thalamus show exits with the worst current verdict
 relations:
 - decomposes: epic:signal-contract
@@ -14,13 +14,27 @@ scope:
   path: crates/thalamus-cli/src/cmd/eval.rs
 - confidence: inferred
   path: crates/thalamus-cli/src/cmd/show.rs
+- confidence: cited
+  path: crates/thalamus-cli/tests/adv_eval_show_p1.rs
+- confidence: cited
+  path: crates/thalamus-cli/tests/adv_eval_show_p2.rs
 - confidence: inferred
   path: crates/thalamus-cli/tests/eval_show.rs
 - confidence: inferred
   path: crates/thalamus-cli/tests/fixtures/eval_show
 - confidence: inferred
   path: crates/thalamus-pipeline/src/evaluate.rs
-revision: 4
+- confidence: cited
+  path: crates/thalamus-store/src/eventlog.rs
+- confidence: cited
+  path: crates/thalamus-store/tests/store.rs
+- confidence: cited
+  path: website/docs/concepts/verdicts.md
+revision: 10
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-15T20:44:32Z", actor: "human:timo", revision: 5}
+- {from: "proposed", to: "active", at: "2026-10-15T20:44:37Z", actor: "human:timo", revision: 6}
+- {from: "active", to: "implemented", at: "2026-10-16T21:10:14Z", actor: "human:timo", revision: 10, decided_on: {"recorded":{"test_result":1,"review_outcome":2}}}
 ---
 ## Outcome
 

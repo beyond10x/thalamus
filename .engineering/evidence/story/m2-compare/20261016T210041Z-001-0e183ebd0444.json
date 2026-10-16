@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-16T21:00:41Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-compare",
+  "kind": "story",
+  "revision": 11,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at f292f7b: thalamus-cli 72 passed 0 failed 1 ignored (compare 5, adv_compare_p1 11, adv_compare_p2 9 among them), clippy -D warnings and fmt --check exit 0; thalamus-docs 20 passed; task docs-check exit 0 (ess 0.60.0)"
+  }
+}
