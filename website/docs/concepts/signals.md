@@ -102,10 +102,11 @@ values come from, how it may be set, and optionally its parent key.
 
 ## Sources
 
-Every source is read through a [Connectors](https://beyond10x.github.io/connectors/)
+Every source but one is read through a [Connectors](https://beyond10x.github.io/connectors/)
 ([GitHub](https://github.com/beyond10x/connectors)) connection. thalamus invokes read operations
-only, never writes to a system it watches, and never sees a credential. Which adapters have
-shipped is on the [status page](/docs/status).
+only, never writes to a system it watches, and never sees a credential. The exception is the host
+collector, which reads the machine thalamus runs on directly (below). Which adapters have shipped
+is on the [status page](/docs/status).
 
 | source | reads |
 |---|---|
@@ -115,6 +116,71 @@ shipped is on the [status page](/docs/status).
 | Kubernetes | object counts, as instant samples with source-only dimensions |
 | Git hosting | repository records as counts and ratios |
 | HTTP probe | the availability of one Connectors read operation |
+| Host | this machine's CPU use, memory use, disk space (used share and free bytes) and CPU temperature, no Connectors connection |
+
+### The host collector
+
+Source `{adapter: host, connection: local}` reads the machine thalamus runs on, and only when a
+definition is sampled: it is no service, timer or daemon, and nothing it starts outlives the read.
+It reads these five extractors and nothing else (design D46):
+
+| extractor | unit | reads | dimensions |
+|---|---|---|---|
+| `host.cpu_busy` | `1` | the `cpu` line of `/proc/stat`, twice, 250 ms apart: 1 − (Δidle + Δiowait) / Δtotal | none |
+| `host.memory_used` | `1` | `/proc/meminfo`: (MemTotal − MemAvailable) / MemTotal | none |
+| `host.disk_used` | `1` | `statvfs` of each mount point the `query` lists (every value one mount), used as `df` computes it | `mount` |
+| `host.disk_free` | `By` | `statvfs` of each listed mount point: f_bavail × f_frsize, the bytes an unprivileged writer may still take (`df`'s Avail) | `mount` |
+| `host.cpu_temperature` | `Cel` | the hottest CPU sensor under `/sys/class/hwmon` (`coretemp`, `k10temp`, `zenpower`, `cpu_thermal`), else a `/sys/class/thermal` zone of type `x86_pkg_temp` or `cpu-thermal` | none |
+
+```yaml
+source: { adapter: host, connection: local }
+extractor: host.disk_used
+query: { root: /, data: /srv }
+```
+
+A missing file or field, a zero total, a CPU counter that went backwards, a mount that cannot be
+read, a listed path that is no mount point (a plain directory or a file) and a machine with no CPU
+sensor read unknown, naming what was wrong, never 0. A mount is spelled once: `//` is `/` and
+`/srv/` is `/srv`, and `mount` carries that spelling. A host read measures the machine now, so a
+window that does not end now (within 300 seconds of the machine's clock, as with
+`thalamus sample --at` in the past) reads unknown ("host reads only this moment"). A host
+definition naming any connection other than `local` is refused when it is proposed or revised,
+and reads unknown if one is loaded anyway; a definition of any other adapter naming the reserved
+connection `local` is refused too.
+
+#### A floor of free space
+
+A floor is a threshold, so it lives in the instance's definition, never in thalamus. It is said
+with the lines every definition has: grade lower-is-worse against the fixed number, and put the
+CRIT line at the floor itself. A reading at or under a line is on it, so a reading exactly at the
+floor is a CRIT breach (synthetic numbers):
+
+```yaml
+kind: gauge
+unit: By
+source: { adapter: host, connection: local }
+extractor: host.disk_free
+query: { root: / }
+evaluation:
+  rule: lower_is_worse
+  baselines: [fixed]
+  fixed: "200000000000"   # the floor, in bytes
+  warn: { x: "1.25" }     # WARN at or under 1.25 times the floor
+  crit: { x: "1" }        # CRIT at or under the floor
+```
+
+`thalamus sample` grades every sample it recorded whose definition is graded against `fixed`
+alone, since that needs no stored history, and prints each WARN or CRIT after the sample ids as one
+line, `breach <VERDICT> <signal> <dims> <value> <unit> <line>`:
+
+```text
+breach CRIT host.disk.free mount=/ 150000000000 By 150000000000 <= 1 x 200000000000
+```
+
+`--format json` carries the same under `breaches`, one object per breach with `verdict`,
+`sample_id`, `signal`, `series`, `dims`, `value`, `unit` and `line`. No evaluation is recorded, an
+unknown reading is never a breach and never OK, and the exit code is unchanged: a breach is not a
+failure of the run.
 
 Producers that already speak another verdict vocabulary are mapped onto the ladder at the adapter;
 see [other vocabularies](./verdicts.md#other-vocabularies).

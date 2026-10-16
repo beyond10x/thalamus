@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed
-// contract digest 093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061
+// model digest b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a
+// contract digest 468f6502d1569e62e77cf40bce974fd8ace2ccc86ced19dbf5164f2dcdb78110
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! The `thalamus-service` component of `thalamus` v1, on the wire.
@@ -69,7 +69,7 @@ pub const ROUTES: &[(&str, &str)] = &[
 /// Everything outside `runtime` is the same in every language this plan is emitted into, and
 /// `cargo xtask synth --check` starts both and compares them.
 pub const STARTUP: &[&str] = &[
-    "{\"log\":\"ess/1\",\"event\":\"system.starting\",\"system\":\"thalamus\",\"version\":\"v1\",\"model_digest\":\"73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed\",\"contract_digest\":\"093adf023da1db0be3662fe2c9b1542d25415a595e3023e37377255b2d0a3061\",\"components\":[\"thalamus-service\"],\"capabilities\":{\"generated\":169,\"obligations\":11,\"refused\":0}",
+    "{\"log\":\"ess/1\",\"event\":\"system.starting\",\"system\":\"thalamus\",\"version\":\"v1\",\"model_digest\":\"b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a\",\"contract_digest\":\"468f6502d1569e62e77cf40bce974fd8ace2ccc86ced19dbf5164f2dcdb78110\",\"components\":[\"thalamus-service\"],\"capabilities\":{\"generated\":171,\"obligations\":11,\"refused\":0}",
     "{\"log\":\"ess/1\",\"event\":\"surface.serving\",\"component\":\"thalamus-service\",\"reached_by\":\"network\",\"transport\":\"http/1.1\",\"routes\":31,\"paths\":[{\"method\":\"POST\",\"path\":\"/assertions/commands/answer\",\"serves\":\"command\",\"name\":\"thalamus.assertion.AnswerAssertion\"},{\"method\":\"POST\",\"path\":\"/assertions/commands/ask\",\"serves\":\"command\",\"name\":\"thalamus.assertion.AskAssertion\"},{\"method\":\"GET\",\"path\":\"/assertions/views/assertions\",\"serves\":\"view\",\"name\":\"thalamus.assertion.Assertions\"},{\"method\":\"GET\",\"path\":\"/assertions/views/open\",\"serves\":\"view\",\"name\":\"thalamus.assertion.OpenAssertions\"},{\"method\":\"POST\",\"path\":\"/definitions/commands/activate\",\"serves\":\"command\",\"name\":\"thalamus.definition.ActivateDefinition\"},{\"method\":\"POST\",\"path\":\"/definitions/commands/mute\",\"serves\":\"command\",\"name\":\"thalamus.definition.MuteDefinition\"},{\"method\":\"POST\",\"path\":\"/definitions/commands/propose\",\"serves\":\"command\",\"name\":\"thalamus.definition.ProposeDefinition\"},{\"method\":\"POST\",\"path\":\"/definitions/commands/retire\",\"serves\":\"command\",\"name\":\"thalamus.definition.RetireDefinition\"},{\"method\":\"POST\",\"path\":\"/definitions/commands/revise\",\"serves\":\"command\",\"name\":\"thalamus.definition.ReviseDefinition\"},{\"method\":\"POST\",\"path\":\"/definitions/commands/unmute\",\"serves\":\"command\",\"name\":\"thalamus.definition.UnmuteDefinition\"},{\"method\":\"GET\",\"path\":\"/definitions/views/active\",\"serves\":\"view\",\"name\":\"thalamus.definition.ActiveDefinitions\"},{\"method\":\"GET\",\"path\":\"/definitions/views/definitions\",\"serves\":\"view\",\"name\":\"thalamus.definition.Definitions\"},{\"method\":\"POST\",\"path\":\"/dimensions/commands/declare-registry\",\"serves\":\"command\",\"name\":\"thalamus.dimension.DeclareRegistry\"},{\"method\":\"POST\",\"path\":\"/dimensions/commands/register-dimension\",\"serves\":\"command\",\"name\":\"thalamus.dimension.RegisterDimension\"},{\"method\":\"GET\",\"path\":\"/dimensions/views/dimensions\",\"serves\":\"view\",\"name\":\"thalamus.dimension.Dimensions\"},{\"method\":\"GET\",\"path\":\"/dimensions/views/registries\",\"serves\":\"view\",\"name\":\"thalamus.dimension.Registries\"},{\"method\":\"GET\",\"path\":\"/docs\",\"serves\":\"documentation\",\"name\":\"docs\"},{\"method\":\"POST\",\"path\":\"/evaluations/commands/record\",\"serves\":\"command\",\"name\":\"thalamus.evaluation.RecordEvaluation\"},{\"method\":\"GET\",\"path\":\"/evaluations/views/evaluations\",\"serves\":\"view\",\"name\":\"thalamus.evaluation.Evaluations\"},{\"method\":\"GET\",\"path\":\"/evaluations/views/transitions\",\"serves\":\"view\",\"name\":\"thalamus.evaluation.VerdictChanges\"},{\"method\":\"GET\",\"path\":\"/evaluations/views/verdicts\",\"serves\":\"view\",\"name\":\"thalamus.evaluation.SeriesVerdicts\"},{\"method\":\"GET\",\"path\":\"/openapi.json\",\"serves\":\"contract\",\"name\":\"openapi\"},{\"method\":\"POST\",\"path\":\"/rollups/commands/record\",\"serves\":\"command\",\"name\":\"thalamus.rollup.RecordRollup\"},{\"method\":\"GET\",\"path\":\"/rollups/views/rollups\",\"serves\":\"view\",\"name\":\"thalamus.rollup.Rollups\"},{\"method\":\"GET\",\"path\":\"/rollups/views/series\",\"serves\":\"view\",\"name\":\"thalamus.rollup.SeriesRollups\"},{\"method\":\"POST\",\"path\":\"/samples/commands/record\",\"serves\":\"command\",\"name\":\"thalamus.observation.RecordSample\"},{\"method\":\"GET\",\"path\":\"/samples/views/samples\",\"serves\":\"view\",\"name\":\"thalamus.observation.Samples\"},{\"method\":\"GET\",\"path\":\"/samples/views/series\",\"serves\":\"view\",\"name\":\"thalamus.observation.SeriesSamples\"},{\"method\":\"POST\",\"path\":\"/transitions/commands/record\",\"serves\":\"command\",\"name\":\"thalamus.transition.RecordTransition\"},{\"method\":\"GET\",\"path\":\"/transitions/views/series\",\"serves\":\"view\",\"name\":\"thalamus.transition.SeriesTransitions\"},{\"method\":\"GET\",\"path\":\"/transitions/views/transitions\",\"serves\":\"view\",\"name\":\"thalamus.transition.Transitions\"}]",
     "{\"log\":\"ess/1\",\"event\":\"system.ready\",\"system\":\"thalamus\",\"surfaces\":1",
 ];
@@ -1079,6 +1079,30 @@ where
 fn answer_thalamus_definition_propose_definition(outcome: &crate::definition::ProposeDefinitionOutcome) -> (u16, String) {
     let mut body = String::from("{");
     let status = match outcome {
+        crate::definition::ProposeDefinitionOutcome::HostNotLocal { error, .. } => {
+            json::member(&mut body, "outcome");
+            json::push_text(&mut body, "host-not-local");
+            json::member(&mut body, "published");
+            body.push('[');
+            body.push(']');
+            json::member(&mut body, "error");
+            json::push_text(&mut body, "thalamus.definition.HostConnectionNotLocal");
+            json::member(&mut body, "payload");
+            wire::encode_error_thalamus_definition_host_connection_not_local(error, &mut body);
+            422
+        }
+        crate::definition::ProposeDefinitionOutcome::LocalNotHost { error, .. } => {
+            json::member(&mut body, "outcome");
+            json::push_text(&mut body, "local-not-host");
+            json::member(&mut body, "published");
+            body.push('[');
+            body.push(']');
+            json::member(&mut body, "error");
+            json::push_text(&mut body, "thalamus.definition.LocalConnectionNotHost");
+            json::member(&mut body, "payload");
+            wire::encode_error_thalamus_definition_local_connection_not_host(error, &mut body);
+            422
+        }
         crate::definition::ProposeDefinitionOutcome::InstantNotFixed { error, .. } => {
             json::member(&mut body, "outcome");
             json::push_text(&mut body, "instant-not-fixed");
@@ -1384,6 +1408,30 @@ fn answer_thalamus_definition_revise_definition(outcome: &crate::definition::Rev
             json::member(&mut body, "payload");
             wire::encode_error_thalamus_definition_retired_definition(error, &mut body);
             409
+        }
+        crate::definition::ReviseDefinitionOutcome::HostNotLocal { error, .. } => {
+            json::member(&mut body, "outcome");
+            json::push_text(&mut body, "host-not-local");
+            json::member(&mut body, "published");
+            body.push('[');
+            body.push(']');
+            json::member(&mut body, "error");
+            json::push_text(&mut body, "thalamus.definition.HostConnectionNotLocal");
+            json::member(&mut body, "payload");
+            wire::encode_error_thalamus_definition_host_connection_not_local(error, &mut body);
+            422
+        }
+        crate::definition::ReviseDefinitionOutcome::LocalNotHost { error, .. } => {
+            json::member(&mut body, "outcome");
+            json::push_text(&mut body, "local-not-host");
+            json::member(&mut body, "published");
+            body.push('[');
+            body.push(']');
+            json::member(&mut body, "error");
+            json::push_text(&mut body, "thalamus.definition.LocalConnectionNotHost");
+            json::member(&mut body, "payload");
+            wire::encode_error_thalamus_definition_local_connection_not_host(error, &mut body);
+            422
         }
         crate::definition::ReviseDefinitionOutcome::InstantNotFixed { error, .. } => {
             json::member(&mut body, "outcome");

@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-16T10:25:28Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-host-collector",
+  "kind": "story",
+  "revision": 12,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "corrections in 952d032",
+    "review": "review-result:adversary-m3-host-collector-pass-2",
+    "outcome": "fixed"
+  }
+}

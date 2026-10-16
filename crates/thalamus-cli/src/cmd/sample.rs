@@ -1,6 +1,23 @@
 //! `thalamus sample <signal-id>` and `thalamus sample --all --once`: one pass over the pipeline's
 //! read → sample half, printing the recorded sample ids.
 //!
+//! After a pass that recorded without a store failure, every recorded sample whose definition is
+//! graded against `fixed` alone (`evaluation.baselines: [fixed]`, so no stored history is needed)
+//! is graded through `thalamus_core::grading` against the definition's own number, and each WARN
+//! or CRIT is reported as a breach: one line on stdout after the sample ids,
+//!
+//! ```text
+//! breach <VERDICT> <signal> <dims> <value> <unit> <line>
+//! ```
+//!
+//! where `<dims>` is `key=value` joined by `,` (`-` when the series has none) and `<line>` is the
+//! grader's statement of the line crossed (`150000000000 <= 1 x 200000000000`), and the same as
+//! `breaches` in `--format json`. A floor of free space is `rule: lower_is_worse`, `baselines:
+//! [fixed]`, `fixed` the floor, `warn: {x: ...}` and `crit: {x: 1}` (a threshold rule needs both
+//! lines); a reading at or under a line is on it, so a reading at the floor is a CRIT breach. No evaluation is recorded (that is `thalamus
+//! eval`'s), an unknown reading is never a breach and never OK, and a breach leaves the exit code
+//! as it was: a breach is not a failure of the run.
+//!
 //! Exit codes, none of them a verdict ladder code (0 to 3, design § 2.3):
 //!
 //! | code | when |
@@ -21,7 +38,13 @@ use std::str::FromStr;
 use clap::{ArgGroup, ValueEnum};
 use eventlog_core::EventLogError;
 use serde_json::{Value, json};
+use thalamus_core::baseline;
 use thalamus_core::behaviour::observation::Instant;
+use thalamus_core::grading;
+use thalamus_model::behaviour::SignalSampleStorage;
+use thalamus_model::definition::BaselineKind;
+use thalamus_model::evaluation::Verdict;
+use thalamus_model::observation::{Reading, SampleId};
 use thalamus_model::primitives::Timestamp;
 use thalamus_pipeline::instance::LoadedInstance;
 use thalamus_pipeline::sample::{self, Pass, Producer};
@@ -163,7 +186,7 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
         Err(_) => Some("it failed during the pass".to_owned()),
     };
     if let Some(failure) = failure {
-        print(&pass, args.format);
+        print(&pass, &[], args.format);
         eprintln!(
             "thalamus sample: store {store}: {failure}; the {} sample(s) printed were recorded \
              under {} before it failed",
@@ -173,7 +196,17 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
         return ExitCode::from(EX_IOERR);
     }
 
-    print(&pass, args.format);
+    let breaches = match quietly(|| breaches(&pass, &instance, &opened)) {
+        Ok(breaches) => breaches,
+        Err(_) => {
+            eprintln!(
+                "thalamus sample: store {store}: the recorded samples could not be read back to \
+                 report breaches; the samples printed were recorded"
+            );
+            Vec::new()
+        }
+    };
+    print(&pass, &breaches, args.format);
     for refusal in &pass.refused {
         eprintln!("thalamus sample: refused: {refusal}");
     }
@@ -282,13 +315,101 @@ fn now() -> Option<Timestamp> {
     now.format(&Rfc3339).ok().map(Timestamp)
 }
 
-fn print(pass: &Pass, format: Format) {
+/// A recorded sample graded WARN or CRIT against its definition's fixed number.
+struct Breach {
+    verdict: &'static str,
+    sample_id: SampleId,
+    signal: String,
+    series: String,
+    dims: Vec<(String, String)>,
+    value: String,
+    unit: String,
+    line: String,
+}
+
+impl Breach {
+    /// The series' dimensions as `key=value` joined by `,`; `-` when it has none.
+    fn dims_text(&self) -> String {
+        if self.dims.is_empty() {
+            return "-".to_owned();
+        }
+        self.dims
+            .iter()
+            .map(|(key, value)| format!("{key}={value}"))
+            .collect::<Vec<_>>()
+            .join(",")
+    }
+}
+
+/// Every recorded sample of `pass` whose definition is graded against `fixed` alone and that
+/// grades WARN or CRIT, in the order recorded. A definition the grader refuses, and a verdict
+/// other than WARN or CRIT (`UNKNOWN` included), is no breach. Nothing is written.
+fn breaches(pass: &Pass, instance: &LoadedInstance, store: &EventlogStore) -> Vec<Breach> {
+    let mut found = Vec::new();
+    for recorded in &pass.recorded {
+        let Some(definition) = instance.instance().definition(&recorded.signal.0) else {
+            continue;
+        };
+        let definition = definition.data();
+        if definition.evaluation.baselines != [BaselineKind::Fixed] {
+            continue;
+        }
+        let Some(sample) = SignalSampleStorage::get(store, &recorded.sample_id) else {
+            continue;
+        };
+        let sample = sample.data;
+        let Ok(against) = baseline::fold(definition, &sample, &[], None) else {
+            continue;
+        };
+        let Ok(graded) = grading::grade(definition, &sample, &against) else {
+            continue;
+        };
+        let verdict = match graded.verdict {
+            Verdict::WARN => "WARN",
+            Verdict::CRIT => "CRIT",
+            Verdict::OK | Verdict::NA | Verdict::UNKNOWN => continue,
+        };
+        let value = match &sample.reading {
+            Reading::Ok(read) => read.value.0.clone(),
+            Reading::Partial(read) => read.value.0.clone(),
+            Reading::Unknown(_) => continue,
+        };
+        found.push(Breach {
+            verdict,
+            sample_id: recorded.sample_id.clone(),
+            signal: recorded.signal.0.clone(),
+            series: recorded.series.0.clone(),
+            dims: sample
+                .dims
+                .iter()
+                .map(|(key, value)| (key.clone(), value.0.clone()))
+                .collect(),
+            value,
+            unit: sample.unit.0.clone(),
+            line: graded.reason,
+        });
+    }
+    found
+}
+
+fn print(pass: &Pass, breaches: &[Breach], format: Format) {
     match format {
         Format::Text => {
             for recorded in &pass.recorded {
                 println!(
                     "{}\t{}\t{}",
                     recorded.sample_id.0, recorded.series.0, recorded.quality
+                );
+            }
+            for breach in breaches {
+                println!(
+                    "breach {} {} {} {} {} {}",
+                    breach.verdict,
+                    breach.signal,
+                    breach.dims_text(),
+                    breach.value,
+                    breach.unit,
+                    breach.line
                 );
             }
         }
@@ -306,9 +427,34 @@ fn print(pass: &Pass, format: Format) {
                 })
                 .collect();
             let refused: Vec<String> = pass.refused.iter().map(ToString::to_string).collect();
+            let breaches: Vec<Value> = breaches
+                .iter()
+                .map(|breach| {
+                    let dims: serde_json::Map<String, Value> = breach
+                        .dims
+                        .iter()
+                        .map(|(key, value)| (key.clone(), Value::String(value.clone())))
+                        .collect();
+                    json!({
+                        "verdict": breach.verdict,
+                        "sample_id": breach.sample_id.0,
+                        "signal": breach.signal,
+                        "series": breach.series,
+                        "dims": dims,
+                        "value": breach.value,
+                        "unit": breach.unit,
+                        "line": breach.line,
+                    })
+                })
+                .collect();
             println!(
                 "{}",
-                json!({"run_id": pass.run_id.0, "samples": samples, "refused": refused})
+                json!({
+                    "run_id": pass.run_id.0,
+                    "samples": samples,
+                    "refused": refused,
+                    "breaches": breaches,
+                })
             );
         }
     }

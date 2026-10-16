@@ -1,12 +1,12 @@
 {
   "format": "ess-types-report/3",
-  "source_digest": "73865b5d22d3d964014ec5c52cb6db35af4760818bbeefd77df0a2551b8fd3ed",
+  "source_digest": "b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a",
   "input": {
     "kind": "model",
     "system": "thalamus",
     "specification_version": "v1",
-    "contract_digest": "slice-sha256/2:bb08f1b4edacd382d391935fa4a5900d7af272862b7dfb6c0358d0217354bbe6",
-    "projection_digest": "92168e0fa7b7fdc4ff54a080ef0b21bef9891bb8ce0db2d9bdb610dc4774ad2b"
+    "contract_digest": "slice-sha256/2:f0dddd299b44e5925febff187cfd5241b7da34a2a45abbc5a80a08bf197f62e4",
+    "projection_digest": "ababcde71980261274e516eb463efb5a84fec827284f4baf13cc2c005843b7ed"
   },
   "generator_version": "0.60.0",
   "target": "rust",
