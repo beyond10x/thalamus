@@ -391,7 +391,10 @@ fn unknown_sample_shows_unknown_and_exits_3() {
     assert_eq!(row["verdict"], "UNKNOWN");
     assert_eq!(row["value"]["quality"], "unknown", "{row:#}");
     assert!(row["value"].get("value").is_none(), "no value: {row:#}");
-    assert!(row["score"].is_null(), "an UNKNOWN carries no score: {row:#}");
+    assert!(
+        row["score"].is_null(),
+        "an UNKNOWN carries no score: {row:#}"
+    );
     assert!(
         row["reason"]
             .as_str()
@@ -402,7 +405,10 @@ fn unknown_sample_shows_unknown_and_exits_3() {
     let out = world.thalamus(&["show"]);
     assert_eq!(out.status.code(), Some(3));
     let shown = text(&out.stdout);
-    assert!(shown.contains("UNKNOWN") && shown.contains(MISSES), "{shown}");
+    assert!(
+        shown.contains("UNKNOWN") && shown.contains(MISSES),
+        "{shown}"
+    );
 
     let stored = world.evaluations();
     assert_eq!(stored.len(), 1);
@@ -421,11 +427,19 @@ fn eval_twice_records_each_sample_once_per_rev() {
     let run = world.sample(DEPTH, T_UNIX);
 
     let recorded = world.eval(&["--run", &run]);
-    assert_eq!(recorded.len(), 1, "only the samples of {run}: {recorded:#?}");
+    assert_eq!(
+        recorded.len(),
+        1,
+        "only the samples of {run}: {recorded:#?}"
+    );
     assert_eq!(recorded[0]["verdict"], "OK");
 
     let recorded = world.eval(&[DEPTH]);
-    assert_eq!(recorded.len(), 1, "the sample not yet graded: {recorded:#?}");
+    assert_eq!(
+        recorded.len(),
+        1,
+        "the sample not yet graded: {recorded:#?}"
+    );
 
     let again = world.eval(&[]);
     assert!(again.is_empty(), "a second run records nothing: {again:#?}");
@@ -437,7 +451,11 @@ fn eval_twice_records_each_sample_once_per_rev() {
 
     world.edit(DEPTH, |held| held.replace("rev: 1\n", "rev: 2\n"));
     let regraded = world.eval(&[]);
-    assert_eq!(regraded.len(), 2, "each sample again at rev 2: {regraded:#?}");
+    assert_eq!(
+        regraded.len(),
+        2,
+        "each sample again at rev 2: {regraded:#?}"
+    );
     assert!(world.eval(&[]).is_empty(), "and only once");
     let stored = world.evaluations();
     assert_eq!(stored.len(), 4);
@@ -493,7 +511,10 @@ fn offset_baseline_is_read_from_source_at_shifted_time() {
     let (code, shown) = world.show(&[RATIO]);
     assert_eq!(code, Some(0), "{shown:#?}");
     assert_eq!(verdicts(&shown), ["OK", "OK"]);
-    assert_eq!(shown[0]["baseline"]["reading"]["value"], "0.02", "{shown:#?}");
+    assert_eq!(
+        shown[0]["baseline"]["reading"]["value"], "0.02",
+        "{shown:#?}"
+    );
 }
 
 /// `history: store`: an offset baseline is the stored sample of the series at the offset, and
@@ -510,7 +531,11 @@ fn offset_baseline_of_store_history_is_read_from_the_store() {
     let sampled = world.invoked_at();
 
     world.eval(&[DEPTH_1D]);
-    assert_eq!(world.invoked_at(), sampled, "no source read for the baseline");
+    assert_eq!(
+        world.invoked_at(),
+        sampled,
+        "no source read for the baseline"
+    );
     let stored = world.evaluations();
     let row = stored
         .iter()
@@ -565,7 +590,10 @@ fn show_exits_with_worst_verdict() {
     let (code, shown) = world.show(&[]);
     assert_eq!(code, Some(1), "{shown:#?}");
     assert_eq!(verdicts(&shown), ["WARN"]);
-    assert!(shown[0]["score"].is_string(), "a WARN is scored: {shown:#?}");
+    assert!(
+        shown[0]["score"].is_string(),
+        "a WARN is scored: {shown:#?}"
+    );
     assert_eq!(shown[0]["value"]["value"], "500", "{shown:#?}");
 
     world.sample(DEPTH, T_UNIX);

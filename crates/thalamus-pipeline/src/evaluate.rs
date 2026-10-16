@@ -473,8 +473,7 @@ fn from_store(
             .series_range(&sample.series, start, &sample.ts)
             .samples
             .into_iter()
-            .filter(|row| Instant::parse(&row.ts.0).is_some_and(|at| at <= end))
-            .next_back()
+            .rfind(|row| Instant::parse(&row.ts.0).is_some_and(|at| at <= end))
     });
     match in_window.flatten() {
         Some(row) => OffsetReading {

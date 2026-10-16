@@ -10,14 +10,8 @@ source: spec/domains/evaluation.yaml (Verdict, SignalEvaluation), docs/design/th
 
 An **evaluation** ([`SignalEvaluation`](../reference/ess/thalamus-evaluation.md#signalevaluation))
 is one verdict over one sample, with the rule and the definition revision that decided it.
-
-:::caution[Planned]
-
-`thalamus-core` grades a reading against its baseline onto this ladder and computes a pass's exit
-code. Recording evaluations from a sampling pass (`thalamus eval`) is planned; see the
-[status page](/docs/status).
-
-:::
+`thalamus eval` records evaluations of stored samples and `thalamus show` reads them; see
+[eval and show](#eval-and-show).
 
 ## The ladder
 
@@ -57,6 +51,31 @@ order in which signals were read.
 | `baseline` | the [baseline](./baselines.md) the sample was compared with: its kind, its offsets and its own reading |
 | `prev` | the previous raw verdict of the same series, so a change is visible without a second read |
 | `definition_rev` | the revision that decided it. At most one evaluation per sample and revision: re-grading after a threshold change writes a new evaluation and leaves the old one |
+
+## Eval and show
+
+`thalamus eval [<signal-id>] [--run <run-id>] [--format text|json]` grades every stored sample that
+has no evaluation at its definition's current revision, for every `Active` or `Muted` definition
+(or the one named), and records one evaluation per sample with an `evl_` id. It prints one line per
+recorded evaluation: id, series and verdict. A second run over the same samples records nothing:
+at most one evaluation per sample and revision. A new revision of the definition grades every
+stored sample again, once, at that revision.
+`prev` is the verdict of the newest earlier evaluation of the same series.
+
+A baseline is read when the sample is graded. An `offset_*` baseline of a `history: source`
+definition is re-read from the source at the shifted time (one day earlier for `offset_1d`); one of
+a `history: store` definition reads the samples stored for that series at the offset. A series
+younger than its baseline grades `UNKNOWN`.
+
+`thalamus eval` exits 0 when it recorded every evaluation that was due, or none was due; 65 when the
+instance is invalid or a definition or sample was refused; 74 when the store cannot be opened or
+written. None of these is a verdict code.
+
+`thalamus show [<signal-id>] [--format text|json]` prints the current verdict of every series, its
+newest evaluation, worst first, with the sample's value, the baseline, the score and the reason. It
+exits with the ladder: `CRIT` 2, `WARN` 1, `UNKNOWN` 3, `OK` 0, and 3 when every shown verdict is
+`N/A` or nothing is shown. An unknown signal exits 65, a store that cannot be read 74. The tests are
+in `crates/thalamus-cli/tests/eval_show.rs`.
 
 ## How a reading is graded
 
