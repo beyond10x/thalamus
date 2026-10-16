@@ -10,11 +10,11 @@ use thalamus_model::behaviour::{SignalDefinitionStorage, TryContext};
 use thalamus_model::definition::{
     AnySignalDefinition, BaselineKind, DefinitionExists, DefinitionProposed, DefinitionRevised,
     EvaluationSpec, FixedNumberMissing, FixedNumberUnused, HostConnectionNotLocal,
-    InstantNeedsFixedBaseline, MappingMissing, MappingUnused, Persistence, PersistenceTooSmall,
-    ProposeDefinition, ProposeDefinitionOutcome, RetiredDefinition, ReviseDefinition,
-    ReviseDefinitionOutcome, RollingWindowMissing, RollingWindowUnused, SignalDefinition,
-    SignalDefinitionData, SignalDefinitionState, SignalKind, Source, ThresholdsUnused,
-    UnknownDefinition,
+    InstantNeedsFixedBaseline, LocalConnectionNotHost, MappingMissing, MappingUnused, Persistence,
+    PersistenceTooSmall, ProposeDefinition, ProposeDefinitionOutcome, RetiredDefinition,
+    ReviseDefinition, ReviseDefinitionOutcome, RollingWindowMissing, RollingWindowUnused,
+    SignalDefinition, SignalDefinitionData, SignalDefinitionState, SignalKind, Source,
+    ThresholdsUnused, UnknownDefinition,
 };
 use thalamus_model::obligation::UnmetObligation;
 use thalamus_model::primitives::Timestamp;
@@ -56,6 +56,9 @@ where
         return Ok(match refused {
             InputRefusal::HostNotLocal => ProposeDefinitionOutcome::HostNotLocal {
                 error: HostConnectionNotLocal { signal_id },
+            },
+            InputRefusal::LocalNotHost => ProposeDefinitionOutcome::LocalNotHost {
+                error: LocalConnectionNotHost { signal_id },
             },
             InputRefusal::InstantNotFixed => ProposeDefinitionOutcome::InstantNotFixed {
                 error: InstantNeedsFixedBaseline { signal_id },
@@ -165,6 +168,9 @@ where
             InputRefusal::HostNotLocal => ReviseDefinitionOutcome::HostNotLocal {
                 error: HostConnectionNotLocal { signal_id },
             },
+            InputRefusal::LocalNotHost => ReviseDefinitionOutcome::LocalNotHost {
+                error: LocalConnectionNotHost { signal_id },
+            },
             InputRefusal::InstantNotFixed => ReviseDefinitionOutcome::InstantNotFixed {
                 error: InstantNeedsFixedBaseline { signal_id },
             },
@@ -265,6 +271,8 @@ where
 pub enum InputRefusal {
     /// `host-not-local`: a host source names a connection other than [`LOCAL_CONNECTION`].
     HostNotLocal,
+    /// `local-not-host`: a source of another adapter names the reserved [`LOCAL_CONNECTION`].
+    LocalNotHost,
     /// `instant-not-fixed`.
     InstantNotFixed,
     /// `rolling-n-missing`: also an N below 1 (`UNMAPPED:` in `spec/domains/definition.yaml`).
@@ -304,6 +312,7 @@ pub fn input_refusal(
 /// in their declaration order:
 ///
 /// - `host-not-local`: `source.adapter == "host" and source.connection != "local"`;
+/// - `local-not-host`: `source.connection == "local" and source.adapter != "host"`;
 /// - `instant-not-fixed`: `kind == instant and exists b in evaluation.baselines: b != fixed`;
 /// - `rolling-n-missing`: `exists b: b == rolling_median and not defined(evaluation.rolling_n)`,
 ///   and, beyond what ESS 0.60.0 can state, `rolling_median` with an N below 1 (design § 11 D25);
@@ -331,6 +340,10 @@ pub fn input_refusals(
         (
             source.adapter.0 == HOST_ADAPTER && source.connection.0 != LOCAL_CONNECTION,
             InputRefusal::HostNotLocal,
+        ),
+        (
+            source.connection.0 == LOCAL_CONNECTION && source.adapter.0 != HOST_ADAPTER,
+            InputRefusal::LocalNotHost,
         ),
         (
             kind == SignalKind::Instant

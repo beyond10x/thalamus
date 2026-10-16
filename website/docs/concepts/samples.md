@@ -16,7 +16,8 @@ and never changed. Grading it is a separate record, the [evaluation](./verdicts.
 `thalamus sample --all --once` does so for every `Active` definition of the instance, all under one
 run id. An unreadable source is recorded as an `unknown` sample, and the command exits 0. An invalid
 instance, or a definition that is not `Active`, exits 65 and records nothing; a store that cannot be
-opened exits 74.
+opened exits 74. A sample under a definition's fixed floor is printed as a `breach` line after the
+sample ids, without changing the exit code; see [a floor of free space](./signals.md#a-floor-of-free-space).
 
 :::caution[Planned]
 

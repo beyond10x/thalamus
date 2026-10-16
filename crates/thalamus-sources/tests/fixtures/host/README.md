@@ -7,4 +7,4 @@ under in place of `/`: `proc/stat`, `proc/meminfo`, `sys/class/hwmon/*` and
 - `proc/stat.after` is the second read of `proc/stat` (the test machine answers it on the second
   read; the collector itself never names it).
 - `statvfs` stands in for the `statvfs(3)` call: one line per mount point,
-  `<mount> <f_blocks> <f_bfree> <f_bavail>`. A mount it does not list does not exist.
+  `<mount> <f_blocks> <f_bfree> <f_bavail> <f_frsize>`. A mount it does not list does not exist.

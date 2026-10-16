@@ -1,5 +1,6 @@
-//! The local host collector: CPU use, memory use, disk space and CPU temperature of the machine
-//! thalamus runs on, read from its kernel interfaces when a definition is sampled.
+//! The local host collector: CPU use, memory use, disk space (used share and free bytes) and CPU
+//! temperature of the machine thalamus runs on, read from its kernel interfaces when a definition
+//! is sampled.
 //!
 //! It is the one source that takes no Connectors operation (design § 5.2, § 11 D46): reading this
 //! machine's own counters holds no secret and writes nothing. Its source is `{adapter: host,
@@ -12,14 +13,27 @@
 //! | [`CPU_BUSY`] | `1` | the `cpu` line of `/proc/stat`, twice, [`INTERVAL`] apart: 1 − (Δidle + Δiowait) / Δtotal | none |
 //! | [`MEMORY_USED`] | `1` | `/proc/meminfo`: (MemTotal − MemAvailable) / MemTotal | none |
 //! | [`DISK_USED`] | `1` | `statvfs` of each mount point the definition's `query` lists (every value one mount): (f_blocks − f_bfree) / (f_blocks − f_bfree + f_bavail), as `df` computes it | `mount` |
+//! | [`DISK_FREE`] | `By` | `statvfs` of each listed mount point: f_bavail × f_frsize, the bytes an unprivileged writer may still take (`df`'s Avail) | `mount` |
 //! | [`CPU_TEMPERATURE`] | `Cel` | the hottest `temp*_input` of a CPU sensor under `/sys/class/hwmon` ([`CPU_SENSORS`]), else of a `/sys/class/thermal` zone of a CPU type ([`CPU_ZONES`]); millidegrees ÷ 1000 | none |
 //!
 //! Δtotal sums user, nice, system, idle, iowait, irq, softirq and steal; guest and guest_nice are
-//! already inside user and nice. A missing file, a missing field, a zero total, a mount that cannot
-//! be read and a machine with no CPU sensor read `unknown` naming what was missing, never 0. `raw`
-//! is the producer's text: the two `cpu` lines, the two meminfo lines, the three `statvfs` counts,
-//! the millidegree string. Nothing else is read: no process list, no network, no load average, no
-//! other `/proc` or `/sys` path. The reads go through a [`Machine`]; tests hand it a fixture tree.
+//! already inside user and nice. A missing file, a missing field, a zero total, a counter of the
+//! `cpu` line that went backwards, a busy share outside [0, 1], a mount that cannot be read, a
+//! listed path that is no mount point (a plain directory or a file, whose `statvfs` would answer
+//! the file system holding it) and a machine with no CPU sensor read `unknown` naming what was
+//! wrong, never 0. A mount is spelled once: repeated slashes collapse and a trailing slash is
+//! dropped before the listed mounts are deduplicated, and `dims.mount` carries that spelling.
+//!
+//! A host read measures the machine as it is now, so it can describe only the window ending now:
+//! a window end farther than [`MOMENT_TOLERANCE_S`] seconds from the machine's clock reads
+//! `unknown` with [`NOT_THIS_MOMENT`]. A disk definition's mounts are checked first, so each
+//! listed mount keeps its own series and its own reason.
+//!
+//! `raw` is the producer's text: the two `cpu` lines, the two meminfo lines, the three `statvfs`
+//! counts (`f_bavail` and `f_frsize` for free bytes), the millidegree string. Nothing else is
+//! read: no process list, no network, no load average, no other `/proc` or `/sys` path; a listed
+//! mount is only `stat`ed, with its parent, to tell a mount point. The reads go through a
+//! [`Machine`]; tests hand it a fixture tree and a stopped clock.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::io;
@@ -39,11 +53,20 @@ pub const CPU_BUSY: &str = "host.cpu_busy";
 pub const MEMORY_USED: &str = "host.memory_used";
 /// Disk space in use per listed mount, unit `1`.
 pub const DISK_USED: &str = "host.disk_used";
+/// Bytes free to an unprivileged writer per listed mount, unit `By`.
+pub const DISK_FREE: &str = "host.disk_free";
 /// The hottest CPU sensor, unit `Cel`.
 pub const CPU_TEMPERATURE: &str = "host.cpu_temperature";
 
 /// The reason of a host read whose connection is not [`LOCAL_CONNECTION`].
 pub const NOT_LOCAL: &str = "host reads only this machine (connection local)";
+
+/// The reason of a host read whose window does not end now.
+pub const NOT_THIS_MOMENT: &str = "host reads only this moment";
+
+/// How many seconds a window end may lie from the machine's clock and still be read as now: a
+/// pass reads its definitions one after another under one window end.
+pub const MOMENT_TOLERANCE_S: i64 = 300;
 
 /// The time between the two reads of `/proc/stat`.
 pub const INTERVAL: std::time::Duration = std::time::Duration::from_millis(250);
@@ -68,6 +91,8 @@ pub struct Space {
     pub free: u64,
     /// `f_bavail`: free blocks an unprivileged user may take.
     pub available: u64,
+    /// `f_frsize`: the size of one block, in bytes, as the counts above count it.
+    pub fragment: u64,
 }
 
 /// What the collector reads the machine through. Every path is absolute, as on the machine.
@@ -78,6 +103,12 @@ pub trait Machine {
     fn list(&self, dir: &str) -> io::Result<Vec<String>>;
     /// `statvfs` of `mount`.
     fn space(&self, mount: &str) -> io::Result<Space>;
+    /// Whether `path` is a mount point: a directory on another file system than its parent's,
+    /// or `/`. A plain directory or a file is not, so `statvfs` of it would answer the file system
+    /// that holds it.
+    fn mount_point(&self, path: &str) -> io::Result<bool>;
+    /// The machine's clock, in whole seconds since the Unix epoch.
+    fn now(&self) -> i64;
     /// Wait between the two reads of `/proc/stat`.
     fn pause(&self);
 }
@@ -87,14 +118,27 @@ pub trait Machine {
 pub struct Rooted {
     root: PathBuf,
     interval: std::time::Duration,
+    clock: Option<i64>,
 }
 
 impl Rooted {
-    /// The files under `root`, with `interval` between the two reads of `/proc/stat`.
+    /// The files under `root`, with `interval` between the two reads of `/proc/stat`, on the
+    /// system clock.
     pub fn new(root: impl AsRef<Path>, interval: std::time::Duration) -> Self {
         Rooted {
             root: root.as_ref().to_path_buf(),
             interval,
+            clock: None,
+        }
+    }
+
+    /// The same files on a clock stopped at `now`, Unix seconds: a fixture tree read as of the
+    /// moment its numbers describe.
+    #[must_use]
+    pub fn at(self, now: i64) -> Self {
+        Rooted {
+            clock: Some(now),
+            ..self
         }
     }
 
@@ -122,6 +166,31 @@ impl Machine for Rooted {
             blocks: held.f_blocks,
             free: held.f_bfree,
             available: held.f_bavail,
+            fragment: held.f_frsize,
+        })
+    }
+
+    fn mount_point(&self, path: &str) -> io::Result<bool> {
+        use std::os::unix::fs::MetadataExt;
+        let at = self.resolve(path);
+        let held = std::fs::metadata(&at)?;
+        if !held.is_dir() {
+            return Ok(false);
+        }
+        if path == "/" {
+            return Ok(true);
+        }
+        let parent = at.parent().map_or_else(|| at.clone(), Path::to_path_buf);
+        Ok(std::fs::metadata(parent)?.dev() != held.dev())
+    }
+
+    fn now(&self) -> i64 {
+        self.clock.unwrap_or_else(|| {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |since| {
+                    i64::try_from(since.as_secs()).unwrap_or(i64::MAX)
+                })
         })
     }
 
@@ -173,11 +242,12 @@ impl<M: Machine> Adapter for Host<M> {
         }
         let unit = match definition.extractor.0.as_str() {
             CPU_BUSY | MEMORY_USED | DISK_USED => "1",
+            DISK_FREE => "By",
             CPU_TEMPERATURE => "Cel",
             other => {
                 return nothing(format!(
                     "the host collector has no extractor {other}; it reads {CPU_BUSY}, \
-                     {MEMORY_USED}, {DISK_USED} and {CPU_TEMPERATURE}"
+                     {MEMORY_USED}, {DISK_USED}, {DISK_FREE} and {CPU_TEMPERATURE}"
                 ));
             }
         };
@@ -192,20 +262,34 @@ impl<M: Machine> Adapter for Host<M> {
         if let Err(why) = window_ending(&definition.window, end) {
             return nothing(why);
         }
-        let one = |answer: Result<Known, String>| vec![read_of(definition, end, answer)];
+        let moment = this_moment(&self.machine, end);
+        let one = |answer: fn(&M) -> Result<Known, String>| {
+            vec![read_of(
+                definition,
+                end,
+                moment.clone().and_then(|()| answer(&self.machine)),
+            )]
+        };
         Ok(match definition.extractor.0.as_str() {
-            CPU_BUSY => one(cpu_busy(&self.machine)),
-            MEMORY_USED => one(memory_used(&self.machine)),
-            CPU_TEMPERATURE => one(cpu_temperature(&self.machine)),
-            _ => disk_used(&self.machine, definition, end),
+            CPU_BUSY => one(cpu_busy),
+            MEMORY_USED => one(memory_used),
+            CPU_TEMPERATURE => one(cpu_temperature),
+            DISK_FREE => disks(&self.machine, definition, end, &moment, space_free),
+            _ => disks(&self.machine, definition, end, &moment, space_used),
         })
     }
 }
 
 /// A value read and the producer text it was read from.
 struct Known {
-    value: f64,
+    value: Value,
     raw: String,
+}
+
+/// A value as measured: a share or a temperature, or an exact count of bytes.
+enum Value {
+    Real(f64),
+    Count(u64),
 }
 
 /// The read of `answer`: `ok` with its value and raw text, or `unknown` with the reason.
@@ -215,14 +299,14 @@ fn read_of(
     answer: Result<Known, String>,
 ) -> Read {
     match answer {
-        Ok(known) if known.value.is_finite() => {
-            let mut read = unknown(definition, end, String::new());
-            read.reading = Reading::Ok(CompleteReading {
-                value: Decimal(render(known.value)),
-            });
-            read.raw = Some(known.raw);
-            read
-        }
+        Ok(Known {
+            value: Value::Count(n),
+            raw,
+        }) => ok(definition, end, n.to_string(), raw),
+        Ok(Known {
+            value: Value::Real(n),
+            raw,
+        }) if n.is_finite() => ok(definition, end, render(n), raw),
         Ok(known) => unknown(
             definition,
             end,
@@ -230,6 +314,33 @@ fn read_of(
         ),
         Err(why) => unknown(definition, end, why),
     }
+}
+
+fn ok(definition: &SignalDefinitionData, end: &Timestamp, value: String, raw: String) -> Read {
+    let mut read = unknown(definition, end, String::new());
+    read.reading = Reading::Ok(CompleteReading {
+        value: Decimal(value),
+    });
+    read.raw = Some(raw);
+    read
+}
+
+/// `Ok` when `end` is within [`MOMENT_TOLERANCE_S`] seconds of the machine's clock; otherwise
+/// the reason.
+fn this_moment(machine: &impl Machine, end: &Timestamp) -> Result<(), String> {
+    let end_s = thalamus_core::behaviour::observation::Instant::parse(&end.0)
+        .ok_or_else(|| format!("window end {} is not an RFC 3339 instant", end.0))?
+        .seconds();
+    let now = machine.now();
+    if end_s.abs_diff(now) > MOMENT_TOLERANCE_S.unsigned_abs() {
+        return Err(format!(
+            "{NOT_THIS_MOMENT}: the window ends at {}, {}s from the machine's clock, more than \
+             the {MOMENT_TOLERANCE_S}s a read of now may lie from it",
+            end.0,
+            end_s.saturating_sub(now)
+        ));
+    }
+    Ok(())
 }
 
 fn render(n: f64) -> String {
@@ -246,8 +357,9 @@ fn file(machine: &impl Machine, path: &str) -> Result<String, String> {
         .map_err(|e| format!("{path} could not be read: {e}"))
 }
 
-/// The `cpu` line of `/proc/stat`, as written, and its idle, iowait and total jiffies.
-fn cpu_line(machine: &impl Machine) -> Result<(String, u64, u64, u64), String> {
+/// The `cpu` line of `/proc/stat`, as written, and its first eight counters (user, nice, system,
+/// idle, iowait, irq, softirq, steal, as far as the line has them).
+fn cpu_line(machine: &impl Machine) -> Result<(String, Vec<u64>), String> {
     let text = file(machine, STAT)?;
     let line = text
         .lines()
@@ -266,30 +378,55 @@ fn cpu_line(machine: &impl Machine) -> Result<(String, u64, u64, u64), String> {
             fields.len()
         ));
     }
-    let total = fields
+    Ok((line.to_string(), fields))
+}
+
+fn total(fields: &[u64]) -> Result<u64, String> {
+    fields
         .iter()
         .try_fold(0u64, |sum, n| sum.checked_add(*n))
-        .ok_or_else(|| format!("the cpu line of {STAT} sums past a 64-bit count"))?;
-    Ok((line.to_string(), fields[3], fields[4], total))
+        .ok_or_else(|| format!("the cpu line of {STAT} sums past a 64-bit count"))
 }
 
 fn cpu_busy(machine: &impl Machine) -> Result<Known, String> {
-    let (before, idle0, iowait0, total0) = cpu_line(machine)?;
+    const NAMES: [&str; 8] = [
+        "user", "nice", "system", "idle", "iowait", "irq", "softirq", "steal",
+    ];
+    let (before, first) = cpu_line(machine)?;
     machine.pause();
-    let (after, idle1, iowait1, total1) = cpu_line(machine)?;
-    let delta = |a: u64, b: u64| {
-        b.checked_sub(a)
-            .ok_or_else(|| format!("a cpu counter of {STAT} went backwards between the two reads"))
-    };
-    let total = delta(total0, total1)?;
-    let waiting = delta(idle0, idle1)? + delta(iowait0, iowait1)?;
-    if total == 0 {
+    let (after, second) = cpu_line(machine)?;
+    if first.len() != second.len() {
+        return Err(format!(
+            "the cpu line of {STAT} has {} counters on the first read and {} on the second",
+            first.len(),
+            second.len()
+        ));
+    }
+    let deltas = first
+        .iter()
+        .zip(&second)
+        .zip(NAMES)
+        .map(|((a, b), name)| {
+            b.checked_sub(*a).ok_or_else(|| {
+                format!("the {name} counter of {STAT} went backwards between the two reads")
+            })
+        })
+        .collect::<Result<Vec<u64>, String>>()?;
+    let elapsed = total(&deltas)?;
+    let waiting = deltas[3] + deltas[4];
+    if elapsed == 0 {
         return Err(format!(
             "no CPU time passed between the two reads of {STAT} (a zero total)"
         ));
     }
+    let busy = 1.0 - waiting as f64 / elapsed as f64;
+    if !(0.0..=1.0).contains(&busy) {
+        return Err(format!(
+            "the cpu counters of {STAT} give a busy share of {busy}, outside 0 to 1"
+        ));
+    }
     Ok(Known {
-        value: 1.0 - waiting as f64 / total as f64,
+        value: Value::Real(busy),
         raw: format!("{before}\n{after}"),
     })
 }
@@ -317,41 +454,96 @@ fn memory_used(machine: &impl Machine) -> Result<Known, String> {
         .checked_sub(available)
         .ok_or_else(|| format!("MemAvailable of {MEMINFO} exceeds MemTotal"))?;
     Ok(Known {
-        value: used as f64 / total as f64,
+        value: Value::Real(used as f64 / total as f64),
         raw: format!("{total_line}\n{available_line}"),
     })
 }
 
-fn disk_used(
-    machine: &impl Machine,
+/// One read per mount the definition's `query` lists, each with `dims.mount` its normalised
+/// spelling: the mount is checked ([`mount_point`]), then the moment, then `measure` reads it.
+fn disks<M: Machine>(
+    machine: &M,
     definition: &SignalDefinitionData,
     end: &Timestamp,
+    moment: &Result<(), String>,
+    measure: fn(&M, &str) -> Result<Known, String>,
 ) -> Vec<Read> {
-    let mounts: BTreeSet<&str> = definition.query.values().map(|q| q.0.as_str()).collect();
+    let mounts: BTreeSet<String> = definition.query.values().map(|q| normalise(&q.0)).collect();
     if mounts.is_empty() {
         return vec![unknown(
             definition,
             end,
-            format!("{DISK_USED} lists no mount point in query"),
+            format!("{} lists no mount point in query", definition.extractor.0),
         )];
     }
     mounts
         .into_iter()
         .map(|mount| {
-            let mut read = read_of(definition, end, space_used(machine, mount));
-            read.dims = BTreeMap::from([("mount".to_string(), mount.to_string())]);
+            let answer = mount_point(machine, &mount)
+                .and_then(|()| moment.clone())
+                .and_then(|()| measure(machine, &mount));
+            let mut read = read_of(definition, end, answer);
+            read.dims = BTreeMap::from([("mount".to_string(), mount)]);
             read
         })
         .collect()
 }
 
-fn space_used(machine: &impl Machine, mount: &str) -> Result<Known, String> {
+/// One spelling of a mount: repeated slashes collapse into one and a trailing slash is dropped,
+/// so `//` is `/` and `/data/` is `/data`.
+fn normalise(mount: &str) -> String {
+    let mut spelled = String::with_capacity(mount.len());
+    for c in mount.chars() {
+        if !(c == '/' && spelled.ends_with('/')) {
+            spelled.push(c);
+        }
+    }
+    if spelled.len() > 1 && spelled.ends_with('/') {
+        spelled.pop();
+    }
+    spelled
+}
+
+/// `Ok` when `mount` is an absolute path the machine answers is a mount point.
+fn mount_point(machine: &impl Machine, mount: &str) -> Result<(), String> {
     if !mount.starts_with('/') {
         return Err(format!("mount {mount:?} is not an absolute path"));
     }
-    let space = machine
+    match machine.mount_point(mount) {
+        Ok(true) => Ok(()),
+        Ok(false) => Err(format!(
+            "{mount} is no mount point (a plain directory or a file): its statvfs would answer \
+             the file system that holds it"
+        )),
+        Err(e) => Err(format!("mount {mount} could not be read: {e}")),
+    }
+}
+
+fn statvfs(machine: &impl Machine, mount: &str) -> Result<Space, String> {
+    machine
         .space(mount)
-        .map_err(|e| format!("statvfs of mount {mount} failed: {e}"))?;
+        .map_err(|e| format!("statvfs of mount {mount} failed: {e}"))
+}
+
+fn space_free(machine: &impl Machine, mount: &str) -> Result<Known, String> {
+    let space = statvfs(machine, mount)?;
+    if space.fragment == 0 {
+        return Err(format!(
+            "statvfs of mount {mount} reports a block size of 0"
+        ));
+    }
+    let bytes = space
+        .available
+        .checked_mul(space.fragment)
+        .ok_or_else(|| format!("the free bytes of mount {mount} exceed a 64-bit count"))?;
+    Ok(Known {
+        value: Value::Count(bytes),
+        raw: format!("f_bavail={} f_frsize={}", space.available, space.fragment),
+    })
+}
+
+fn space_used(machine: &impl Machine, mount: &str) -> Result<Known, String> {
+    let space = statvfs(machine, mount)?;
     let used = space
         .blocks
         .checked_sub(space.free)
@@ -361,7 +553,7 @@ fn space_used(machine: &impl Machine, mount: &str) -> Result<Known, String> {
         .filter(|n| *n > 0)
         .ok_or_else(|| format!("statvfs of mount {mount} counts no usable block (a zero total)"))?;
     Ok(Known {
-        value: used as f64 / usable as f64,
+        value: Value::Real(used as f64 / usable as f64),
         raw: format!(
             "f_blocks={} f_bfree={} f_bavail={}",
             space.blocks, space.free, space.available
@@ -379,7 +571,7 @@ fn cpu_temperature(machine: &impl Machine) -> Result<Known, String> {
             })
             .max_by_key(|(milli, _)| *milli)
             .map(|(milli, raw)| Known {
-                value: milli as f64 / 1000.0,
+                value: Value::Real(milli as f64 / 1000.0),
                 raw,
             })
     };

@@ -24,6 +24,8 @@ use thalamus_sources::host::{Host, Machine, NOT_LOCAL, Rooted, Space};
 use thalamus_sources::registry::{self, SourceKind};
 
 const END: &str = "2026-10-14T22:57:03Z";
+/// [`END`] in Unix seconds: the fixture machine's clock.
+const END_UNIX: i64 = 1_792_018_623;
 
 /// A fixture root, read as the machine.
 struct Fixture {
@@ -80,9 +82,23 @@ impl Machine for Fixture {
                     blocks: n(1),
                     free: n(2),
                     available: n(3),
+                    fragment: n(4),
                 }
             })
             .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))
+    }
+
+    /// A mount point is a mount the fixture's `statvfs` table lists.
+    fn mount_point(&self, path: &str) -> io::Result<bool> {
+        let table = std::fs::read_to_string(self.root.join("statvfs"))?;
+        Ok(table
+            .lines()
+            .any(|line| line.split_whitespace().next() == Some(path)))
+    }
+
+    /// The fixture machine is read at [`END`].
+    fn now(&self) -> i64 {
+        END_UNIX
     }
 
     fn pause(&self) {}
@@ -336,8 +352,73 @@ fn unknown_mount_reads_unknown() {
     assert!(why.contains("mount"), "{why}");
 }
 
+#[test]
+fn disk_free_is_avail_bytes_per_listed_mount() {
+    // df's Avail column: f_bavail x f_frsize, the bytes an unprivileged writer may still take.
+    // /: 175 x 4096 = 716800; /data: 1500 x 1024 = 1536000.
+    let definition = definition("host.disk_free", "By", &[("root", "/"), ("data", "/data")]);
+    let (reads, asked) = read("busy", &definition);
+    let by_mount: BTreeMap<String, Read> = reads
+        .into_iter()
+        .map(|read| (read.dims["mount"].clone(), read))
+        .collect();
+    assert_eq!(
+        by_mount.keys().collect::<Vec<_>>(),
+        ["/", "/data"],
+        "one series per listed mount"
+    );
+    assert_eq!(by_mount["/"].reading, value("716800"));
+    assert_eq!(
+        by_mount["/"].raw.as_deref(),
+        Some("f_bavail=175 f_frsize=4096")
+    );
+    assert_eq!(by_mount["/data"].reading, value("1536000"));
+    for read in by_mount.values() {
+        assert_eq!(read.dims.len(), 1, "mount is the only dimension");
+        assert_provenance(read, &definition);
+    }
+    let mut asked = asked;
+    asked.sort();
+    assert_eq!(
+        asked,
+        ["statvfs /", "statvfs /data"],
+        "only statvfs is read"
+    );
+}
+
+#[test]
+fn disk_free_of_unknown_mount_reads_unknown() {
+    let definition = definition(
+        "host.disk_free",
+        "By",
+        &[("root", "/"), ("gone", "/not-mounted")],
+    );
+    let (reads, _) = read("busy", &definition);
+    let by_mount: BTreeMap<String, Read> = reads
+        .into_iter()
+        .map(|read| (read.dims["mount"].clone(), read))
+        .collect();
+    assert_eq!(by_mount["/"].reading, value("716800"));
+    let gone = &by_mount["/not-mounted"];
+    let why = reason(&gone.reading);
+    assert!(why.contains("/not-mounted"), "{why}");
+    assert_eq!(gone.raw, None, "an unknown mount is never 0 bytes free");
+    assert_provenance(gone, &definition);
+
+    // A free-space definition listing no mount reads one unknown, never an empty pass.
+    let no_mount = definition_without_query("host.disk_free");
+    let (reads, _) = read("busy", &no_mount);
+    let why = reason(&one(reads).reading).to_string();
+    assert!(why.contains("mount"), "{why}");
+}
+
 fn definition_without_query(extractor: &str) -> SignalDefinitionData {
-    definition(extractor, "1", &[])
+    let unit = if extractor == "host.disk_free" {
+        "By"
+    } else {
+        "1"
+    };
+    definition(extractor, unit, &[])
 }
 
 #[test]
@@ -346,12 +427,13 @@ fn connection_other_than_local_reads_unknown() {
         "host.cpu_busy",
         "host.memory_used",
         "host.disk_used",
+        "host.disk_free",
         "host.cpu_temperature",
     ] {
-        let unit = if extractor == "host.cpu_temperature" {
-            "Cel"
-        } else {
-            "1"
+        let unit = match extractor {
+            "host.cpu_temperature" => "Cel",
+            "host.disk_free" => "By",
+            _ => "1",
         };
         let mut definition = definition(extractor, unit, &[("root", "/")]);
         definition.source.connection = ConnectionId("forge-main".into());

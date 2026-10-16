@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832
-// contract digest e31e759ce615e6d5358d020e748a76c36fee60b1207d5e97f762de8391357b06
+// model digest b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a
+// contract digest 468f6502d1569e62e77cf40bce974fd8ace2ccc86ced19dbf5164f2dcdb78110
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! Signal definitions — `thalamus.definition`.
@@ -48,7 +48,7 @@ pub enum BaselineKind {
 
 /// ConnectionId — `thalamus.definition.ConnectionId`: a distinct wrapper around `String`.
 ///
-/// A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection.
+/// A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection; a source of any other adapter on connection local is refused.
 ///
 /// Every character is one of `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.:/`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -92,7 +92,7 @@ pub struct EvaluationSpec {
 
 /// ExtractorId — `thalamus.definition.ExtractorId`: a distinct wrapper around `String`.
 ///
-/// A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly four, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount) and host.cpu_temperature (unit Cel), and nothing else.
+/// A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly five, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount), host.disk_free (unit By, the bytes available to an unprivileged writer per listed mount) and host.cpu_temperature (unit Cel), and nothing else.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtractorId(pub String);
 
@@ -698,6 +698,13 @@ pub enum ProposeDefinitionOutcome {
         /// Why it was refused: `thalamus.definition.HostConnectionNotLocal`.
         error: HostConnectionNotLocal,
     },
+    /// `local-not-host` — when `(source.connection == local and source.adapter != host)`.
+    ///
+    /// A source of an adapter other than host named the reserved connection local; nothing was proposed.
+    LocalNotHost {
+        /// Why it was refused: `thalamus.definition.LocalConnectionNotHost`.
+        error: LocalConnectionNotHost,
+    },
     /// `instant-not-fixed` — when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`.
     ///
     /// An instant signal declared a baseline other than fixed; nothing was proposed.
@@ -885,6 +892,13 @@ pub enum ReviseDefinitionOutcome {
     HostNotLocal {
         /// Why it was refused: `thalamus.definition.HostConnectionNotLocal`.
         error: HostConnectionNotLocal,
+    },
+    /// `local-not-host` — when `(source.connection == local and source.adapter != host)`.
+    ///
+    /// A source of an adapter other than host named the reserved connection local; nothing changed.
+    LocalNotHost {
+        /// Why it was refused: `thalamus.definition.LocalConnectionNotHost`.
+        error: LocalConnectionNotHost,
     },
     /// `instant-not-fixed` — when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`.
     ///
@@ -1121,6 +1135,15 @@ pub struct InstantNeedsFixedBaseline {
     pub signal_id: SignalId,
 }
 
+/// The declared error `thalamus.definition.LocalConnectionNotHost`.
+///
+/// The connection local is reserved for the host adapter, and a source of another adapter named it; nothing changed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LocalConnectionNotHost {
+    /// `signal_id` — `thalamus.definition.SignalId`.
+    pub signal_id: SignalId,
+}
+
 /// The declared error `thalamus.definition.MappingMissing`.
 ///
 /// The rule producer_mapped grades a producer's own value through evaluation.mapping, and the definition declares no mapping onto OK, WARN, CRIT or UNKNOWN; nothing changed.
@@ -1316,7 +1339,7 @@ pub mod obligations {
     ///
     /// Why it is not generated: kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed`.
     ///
-    /// Contract: given `thalamus.definition.ProposeDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `proposed` otherwise, creates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionProposed`; `already-defined` for an identity a record already carries, error `thalamus.definition.DefinitionExists`.
+    /// Contract: given `thalamus.definition.ProposeDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `local-not-host` when `(source.connection == local and source.adapter != host)`, error `thalamus.definition.LocalConnectionNotHost`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `proposed` otherwise, creates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionProposed`; `already-defined` for an identity a record already carries, error `thalamus.definition.DefinitionExists`.
     pub trait ProposeDefinitionBehavior {
         /// Decides and enacts exactly one declared outcome of `thalamus.definition.ProposeDefinition`.
         ///
@@ -1340,7 +1363,7 @@ pub mod obligations {
     ///
     /// Why it is not generated: kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed`.
     ///
-    /// Contract: given `thalamus.definition.ReviseDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `retired` when the existing subject's stored fields satisfy `state == Retired`, error `thalamus.definition.RetiredDefinition`; `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `revised` otherwise, updates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionRevised`; `no-such-definition` for an identity no record carries, error `thalamus.definition.UnknownDefinition`.
+    /// Contract: given `thalamus.definition.ReviseDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `retired` when the existing subject's stored fields satisfy `state == Retired`, error `thalamus.definition.RetiredDefinition`; `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `local-not-host` when `(source.connection == local and source.adapter != host)`, error `thalamus.definition.LocalConnectionNotHost`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `(evaluation.rule == producer_mapped and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `revised` otherwise, updates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionRevised`; `no-such-definition` for an identity no record carries, error `thalamus.definition.UnknownDefinition`.
     pub trait ReviseDefinitionBehavior {
         /// Decides and enacts exactly one declared outcome of `thalamus.definition.ReviseDefinition`.
         ///

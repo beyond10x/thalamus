@@ -73,8 +73,8 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832",
-    "contract_digest": "slice-sha256/2:4a6ca99f73730b60a4011d72fd7d92d7d0a28bda1d052b61e943f1ee97671d7b",
+    "source_digest": "b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a",
+    "contract_digest": "slice-sha256/2:5a7bed69dc75f8891ab2352b28add9d0b33030d6de174a0faa048bb54d9b1fa4",
     "regenerate": "ess generate"
   },
   "$defs": {
@@ -88,7 +88,7 @@
     },
     "thalamus.definition.ConnectionId": {
       "title": "ConnectionId",
-      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection.",
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection; a source of any other adapter on connection local is refused.",
       "x-ess-name": "thalamus.definition.ConnectionId",
       "x-ess-kind": "newtype",
       "type": "string",

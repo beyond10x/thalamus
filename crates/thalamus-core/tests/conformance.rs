@@ -749,6 +749,9 @@ fn proposed_refusal(answer: &ProposeDefinitionOutcome) -> Option<&'static str> {
         ProposeDefinitionOutcome::HostNotLocal { .. } => {
             Some("thalamus.definition.HostConnectionNotLocal")
         }
+        ProposeDefinitionOutcome::LocalNotHost { .. } => {
+            Some("thalamus.definition.LocalConnectionNotHost")
+        }
         ProposeDefinitionOutcome::InstantNotFixed { .. } => {
             Some("thalamus.definition.InstantNeedsFixedBaseline")
         }
@@ -786,6 +789,9 @@ fn revised_refusal(answer: &ReviseDefinitionOutcome) -> Option<&'static str> {
         ReviseDefinitionOutcome::Revised { .. } => None,
         ReviseDefinitionOutcome::HostNotLocal { .. } => {
             Some("thalamus.definition.HostConnectionNotLocal")
+        }
+        ReviseDefinitionOutcome::LocalNotHost { .. } => {
+            Some("thalamus.definition.LocalConnectionNotHost")
         }
         ReviseDefinitionOutcome::InstantNotFixed { .. } => {
             Some("thalamus.definition.InstantNeedsFixedBaseline")

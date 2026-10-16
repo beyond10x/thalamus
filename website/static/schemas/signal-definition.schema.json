@@ -115,8 +115,8 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832",
-    "contract_digest": "slice-sha256/2:a3e1f999b5c45d8e9616099ff41070d95c72063514b6717d091d7db616618df8",
+    "source_digest": "b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a",
+    "contract_digest": "slice-sha256/2:6de70a65d7bba11a4c9f2ce911336ff5b17062fa72d9acc7ab5d93bafdf70304",
     "regenerate": "ess generate"
   },
   "$defs": {
@@ -154,7 +154,7 @@
     },
     "thalamus.definition.ConnectionId": {
       "title": "ConnectionId",
-      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection.",
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection; a source of any other adapter on connection local is refused.",
       "x-ess-name": "thalamus.definition.ConnectionId",
       "x-ess-kind": "newtype",
       "type": "string",
@@ -240,7 +240,7 @@
     },
     "thalamus.definition.ExtractorId": {
       "title": "ExtractorId",
-      "description": "A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly four, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount) and host.cpu_temperature (unit Cel), and nothing else.",
+      "description": "A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly five, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount), host.disk_free (unit By, the bytes available to an unprivileged writer per listed mount) and host.cpu_temperature (unit Cel), and nothing else.",
       "x-ess-name": "thalamus.definition.ExtractorId",
       "x-ess-kind": "newtype",
       "type": "string"

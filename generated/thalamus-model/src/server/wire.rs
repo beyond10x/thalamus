@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 9f981109ead94ade6b2b664c0234683eabf8a4e37dbb57b0fab92ac76ace7832
-// contract digest e31e759ce615e6d5358d020e748a76c36fee60b1207d5e97f762de8391357b06
+// model digest b40a14bce49e9e2836dc0e6b252937d178b3362dd200d747907375c0e882946a
+// contract digest 468f6502d1569e62e77cf40bce974fd8ace2ccc86ced19dbf5164f2dcdb78110
 // do not edit: regenerate with `ess synthesize --layout crate`
 //! Every generated declaration, as JSON, in the renderings the published wire contracts fix.
 //!
@@ -1776,6 +1776,14 @@ pub fn encode_error_thalamus_definition_instant_needs_fixed_baseline(value: &cra
     out.push('}');
 }
 
+/// Writes the declared error `thalamus.definition.LocalConnectionNotHost` as JSON.
+pub fn encode_error_thalamus_definition_local_connection_not_host(value: &crate::definition::LocalConnectionNotHost, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
 /// Writes the declared error `thalamus.definition.MappingMissing` as JSON.
 pub fn encode_error_thalamus_definition_mapping_missing(value: &crate::definition::MappingMissing, out: &mut String) {
     out.push('{');
@@ -3189,6 +3197,20 @@ pub fn encode_outcome_thalamus_definition_propose_definition(value: &crate::defi
             encode_error_thalamus_definition_host_connection_not_local(error, out);
             out.push('}');
         }
+        crate::definition::ProposeDefinitionOutcome::LocalNotHost { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "local-not-host");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.LocalConnectionNotHost");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_local_connection_not_host(error, out);
+            out.push('}');
+        }
         crate::definition::ProposeDefinitionOutcome::InstantNotFixed { error } => {
             json::member(out, "outcome");
             json::push_text(out, "instant-not-fixed");
@@ -3637,6 +3659,20 @@ pub fn encode_outcome_thalamus_definition_revise_definition(value: &crate::defin
             json::push_text(out, "thalamus.definition.HostConnectionNotLocal");
             json::member(out, "payload");
             encode_error_thalamus_definition_host_connection_not_local(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::LocalNotHost { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "local-not-host");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.LocalConnectionNotHost");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_local_connection_not_host(error, out);
             out.push('}');
         }
         crate::definition::ReviseDefinitionOutcome::InstantNotFixed { error } => {
