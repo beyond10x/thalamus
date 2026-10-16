@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 6f2e9f65e0ef065a249a30bb38bae16ef166a5b45577b7a8f20509f1f3eddea7
-// contract digest 067f632c99cd362c9c2d5e3d29f9b5d30e6604352424ed4eca28522b738edbee
+// model digest 6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd
+// contract digest 52593762eb7c5911c4f82160d91abef9b7c9217fd30b29c6b5cb7e3ac76f0515
 // do not edit: regenerate with `ess synthesize --layout crate`
 //! Every generated declaration, as JSON, in the renderings the published wire contracts fix.
 //!
@@ -1728,6 +1728,14 @@ pub fn encode_error_thalamus_definition_advisory_needs_count_of_cases(value: &cr
     out.push('}');
 }
 
+/// Writes the declared error `thalamus.definition.AdvisoryNeedsFindingUnit` as JSON.
+pub fn encode_error_thalamus_definition_advisory_needs_finding_unit(value: &crate::definition::AdvisoryNeedsFindingUnit, out: &mut String) {
+    out.push('{');
+    json::member(out, "signal_id");
+    encode_thalamus_definition_signal_id(&value.signal_id, out);
+    out.push('}');
+}
+
 /// Writes the declared error `thalamus.definition.AdvisoryNeedsFixedBaseline` as JSON.
 pub fn encode_error_thalamus_definition_advisory_needs_fixed_baseline(value: &crate::definition::AdvisoryNeedsFixedBaseline, out: &mut String) {
     out.push('{');
@@ -3367,6 +3375,20 @@ pub fn encode_outcome_thalamus_definition_propose_definition(value: &crate::defi
             encode_error_thalamus_definition_advisory_needs_count_of_cases(error, out);
             out.push('}');
         }
+        crate::definition::ProposeDefinitionOutcome::AdvisoryNotFindingUnit { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "advisory-not-finding-unit");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.AdvisoryNeedsFindingUnit");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_advisory_needs_finding_unit(error, out);
+            out.push('}');
+        }
         crate::definition::ProposeDefinitionOutcome::AdvisoryNotFixed { error } => {
             json::member(out, "outcome");
             json::push_text(out, "advisory-not-fixed");
@@ -3857,6 +3879,20 @@ pub fn encode_outcome_thalamus_definition_revise_definition(value: &crate::defin
             json::push_text(out, "thalamus.definition.AdvisoryNeedsCountOfCases");
             json::member(out, "payload");
             encode_error_thalamus_definition_advisory_needs_count_of_cases(error, out);
+            out.push('}');
+        }
+        crate::definition::ReviseDefinitionOutcome::AdvisoryNotFindingUnit { error } => {
+            json::member(out, "outcome");
+            json::push_text(out, "advisory-not-finding-unit");
+            json::member(out, "published");
+            out.push('[');
+            out.push(']');
+            json::member(out, "refusal");
+            out.push('{');
+            json::member(out, "error");
+            json::push_text(out, "thalamus.definition.AdvisoryNeedsFindingUnit");
+            json::member(out, "payload");
+            encode_error_thalamus_definition_advisory_needs_finding_unit(error, out);
             out.push('}');
         }
         crate::definition::ReviseDefinitionOutcome::AdvisoryNotFixed { error } => {

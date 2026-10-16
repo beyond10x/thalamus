@@ -327,7 +327,7 @@ It takes:
 - `links` — `thalamus.definition.Links`
 - `author` — `thalamus.definition.Author`
 
-It has 15 outcomes.
+It has 16 outcomes.
 
 **`host-not-local`** — A host definition named a connection other than local; nothing was proposed. Taken when `(source.adapter == host and source.connection != local)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.HostConnectionNotLocal`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
@@ -352,6 +352,8 @@ It has 15 outcomes.
 **`thresholds-unused`** — A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing was proposed. Taken when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`advisory-not-count`** — The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsCountOfCases`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-finding-unit`** — The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and defined(unit) and unit != {finding})` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFindingUnit`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`advisory-not-fixed`** — The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing was proposed. Taken when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFixedBaseline`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
@@ -401,7 +403,7 @@ It takes:
 - `links` — `thalamus.definition.Links`
 - `author` — `thalamus.definition.Author`
 
-It has 16 outcomes.
+It has 17 outcomes.
 
 **`retired`** — The definition is retired; nothing changed. Taken when the existing subject's stored fields satisfy `state == Retired`. No entity in this specification changes. It reports `thalamus.definition.RetiredDefinition`, carrying `signal_id`. It emits nothing. A test establishes and independently observes the subject enum fact before selecting this branch.
 
@@ -428,6 +430,8 @@ It has 16 outcomes.
 **`thresholds-unused`** — A warn or crit line was declared under producer_mapped or fixed_warn_only; nothing changed. Taken when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.ThresholdsUnused`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`advisory-not-count`** — The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsCountOfCases`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
+
+**`advisory-not-finding-unit`** — The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and unit != {finding})` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFindingUnit`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
 **`advisory-not-fixed`** — The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing changed. Taken when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))` holds of the input. No entity in this specification changes. It reports `thalamus.definition.AdvisoryNeedsFixedBaseline`, carrying `signal_id`. It emits nothing. A test reaches it by constructing an input that satisfies that condition.
 
@@ -543,6 +547,18 @@ It carries:
 Reported by `thalamus.definition.ProposeDefinition` on its `advisory-not-count` outcome.
 
 Reported by `thalamus.definition.ReviseDefinition` on its `advisory-not-count` outcome.
+
+### `AdvisoryNeedsFindingUnit`
+
+The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.
+
+It carries:
+
+- `signal_id` — `thalamus.definition.SignalId`
+
+Reported by `thalamus.definition.ProposeDefinition` on its `advisory-not-finding-unit` outcome.
+
+Reported by `thalamus.definition.ReviseDefinition` on its `advisory-not-finding-unit` outcome.
 
 ### `AdvisoryNeedsFixedBaseline`
 
@@ -781,4 +797,4 @@ It may invoke [`UnmuteDefinition`](#unmutedefinition).
 
 ---
 
-Generated from thalamus v1 · model digest `6f2e9f65e0ef065a249a30bb38bae16ef166a5b45577b7a8f20509f1f3eddea7` · contract digest `slice-sha256/2:c4783a9e65a720c10682f947900d9c6bcdc0724778debc4e0a923bb39b41f970`. Do not edit this file; change the specification and regenerate it with `task generate`.
+Generated from thalamus v1 · model digest `6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd` · contract digest `slice-sha256/2:daa7db996f35c710efcb05d004e08c1e714bc1280c92757d61c6c5cf41f4b68a`. Do not edit this file; change the specification and regenerate it with `task generate`.

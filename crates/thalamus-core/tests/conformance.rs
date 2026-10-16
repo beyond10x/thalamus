@@ -780,6 +780,9 @@ fn proposed_refusal(answer: &ProposeDefinitionOutcome) -> Option<&'static str> {
         ProposeDefinitionOutcome::AdvisoryNotCount { .. } => {
             Some("thalamus.definition.AdvisoryNeedsCountOfCases")
         }
+        ProposeDefinitionOutcome::AdvisoryNotFindingUnit { .. } => {
+            Some("thalamus.definition.AdvisoryNeedsFindingUnit")
+        }
         ProposeDefinitionOutcome::PersistenceBelowOne { .. } => {
             Some("thalamus.definition.PersistenceTooSmall")
         }
@@ -826,6 +829,9 @@ fn revised_refusal(answer: &ReviseDefinitionOutcome) -> Option<&'static str> {
         }
         ReviseDefinitionOutcome::AdvisoryNotCount { .. } => {
             Some("thalamus.definition.AdvisoryNeedsCountOfCases")
+        }
+        ReviseDefinitionOutcome::AdvisoryNotFindingUnit { .. } => {
+            Some("thalamus.definition.AdvisoryNeedsFindingUnit")
         }
         ReviseDefinitionOutcome::PersistenceBelowOne { .. } => {
             Some("thalamus.definition.PersistenceTooSmall")

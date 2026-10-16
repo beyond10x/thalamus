@@ -18,11 +18,11 @@ use thalamus_model::definition::obligations::{
     ProposeDefinitionBehavior, ReviseDefinitionBehavior,
 };
 use thalamus_model::definition::{
-    AdapterId, AdvisoryNeedsCountOfCases, AdvisoryNeedsFixedBaseline, Author, BaselineKind,
-    ConnectionId, DenominatorSpec, EvaluationSpec, ExtractorId, Family, History, Links, Owner,
-    ProposeDefinition, ProposeDefinitionOutcome, QueryText, ReviseDefinition,
-    ReviseDefinitionOutcome, RuleId, SignalDefinitionData, SignalId, SignalKind, Source, Threshold,
-    ThresholdsUnused, Unit,
+    AdapterId, AdvisoryNeedsCountOfCases, AdvisoryNeedsFindingUnit, AdvisoryNeedsFixedBaseline,
+    Author, BaselineKind, ConnectionId, DenominatorSpec, EvaluationSpec, ExtractorId, Family,
+    History, Links, Owner, ProposeDefinition, ProposeDefinitionOutcome, QueryText,
+    ReviseDefinition, ReviseDefinitionOutcome, RuleId, SignalDefinitionData, SignalId, SignalKind,
+    Source, Threshold, ThresholdsUnused, Unit,
 };
 use thalamus_model::evaluation::{Baseline, BaselineLabel, Verdict};
 use thalamus_model::observation::{
@@ -39,6 +39,11 @@ const THRESHOLDS_UNUSED: &str = "thalamus.definition.ThresholdsUnused";
 const NOT_FIXED: &str = "thalamus.definition.AdvisoryNeedsFixedBaseline";
 /// The refusal of a signal under the rule whose kind is not `count_of_cases`.
 const NOT_COUNT: &str = "thalamus.definition.AdvisoryNeedsCountOfCases";
+/// The refusal of a signal under the rule whose unit is not `{finding}`.
+const NOT_FINDING_UNIT: &str = "thalamus.definition.AdvisoryNeedsFindingUnit";
+/// Units other than `{finding}`, each a valid UCUM unit: another annotation, a near miss in case or
+/// number, a dimensionless 1 and a base unit.
+const OTHER_UNITS: [&str; 5] = ["{run}", "{Finding}", "{findings}", "1", "By"];
 /// Every kind but `count_of_cases`, as a definition file writes it.
 const OTHER_KINDS: [(&str, SignalKind); 4] = [
     ("gauge", SignalKind::Gauge),
@@ -344,6 +349,28 @@ fn advisory_non_count_kind_is_refused_at_load() {
     }
 }
 
+/// D12 fixes the unit beside the kind: an advisory gate counts findings, unit `{finding}`, so a
+/// signal under the rule with any other unit is refused at load (`advisory-not-finding-unit`),
+/// with everything else as the plain definition, so nothing else answers for it.
+#[test]
+fn advisory_non_finding_unit_is_refused_at_load() {
+    let plain = definition_file("fixed", "");
+    let finding = "unit: \"{finding}\"\n";
+    assert_eq!(plain.matches(finding).count(), 1, "{plain}");
+    for unit in OTHER_UNITS {
+        let text = plain.replace(finding, &format!("unit: \"{unit}\"\n"));
+        let errors = load(&text)
+            .err()
+            .unwrap_or_else(|| panic!("loads:\n{text}"));
+        assert!(
+            errors
+                .iter()
+                .any(|error| error.rule.name() == NOT_FINDING_UNIT),
+            "refused, but not as {NOT_FINDING_UNIT}: {errors:?}\n{text}"
+        );
+    }
+}
+
 // ---------------------------------------------------------------------------------------------
 // In ProposeDefinition and ReviseDefinition: the same refusals as the loader, through the one
 // `input_refusals` (design § 11 D29).
@@ -525,4 +552,46 @@ fn advisory_non_count_kind_is_refused_on_propose_and_revise() {
             "{kind:?}"
         );
     }
+}
+
+/// `ProposeDefinition` and `ReviseDefinition` refuse what the loader refuses: the rule under a
+/// unit other than `{finding}` is `advisory-not-finding-unit`, with nothing else wrong. A proposal
+/// that declares no unit is not refused by it: it cannot be activated before a revision declares
+/// one, and the revision is refused here.
+#[test]
+fn advisory_non_finding_unit_is_refused_on_propose_and_revise() {
+    let refused = || AdvisoryNeedsFindingUnit {
+        signal_id: SignalId(SIGNAL.into()),
+    };
+    for unit in OTHER_UNITS {
+        let mut generated = ports();
+        let mut proposed = propose(definition().evaluation);
+        proposed.unit = Some(Unit(unit.into()));
+        assert_eq!(
+            ProposeDefinitionBehavior::propose_definition(&mut generated, proposed)
+                .expect("propose answers"),
+            ProposeDefinitionOutcome::AdvisoryNotFindingUnit { error: refused() },
+            "{unit}"
+        );
+        let mut revised = revise(definition().evaluation);
+        revised.unit = Unit(unit.into());
+        assert_eq!(
+            ReviseDefinitionBehavior::revise_definition(&mut generated, revised)
+                .expect("revise answers"),
+            ReviseDefinitionOutcome::AdvisoryNotFindingUnit { error: refused() },
+            "{unit}"
+        );
+    }
+
+    let mut generated = ports();
+    let mut unitless = propose(definition().evaluation);
+    unitless.unit = None;
+    assert!(
+        matches!(
+            ProposeDefinitionBehavior::propose_definition(&mut generated, unitless)
+                .expect("propose answers"),
+            ProposeDefinitionOutcome::Proposed { .. }
+        ),
+        "a proposal without a unit is not refused as advisory-not-finding-unit"
+    );
 }

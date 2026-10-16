@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 6f2e9f65e0ef065a249a30bb38bae16ef166a5b45577b7a8f20509f1f3eddea7
-// contract digest 067f632c99cd362c9c2d5e3d29f9b5d30e6604352424ed4eca28522b738edbee
+// model digest 6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd
+// contract digest 52593762eb7c5911c4f82160d91abef9b7c9217fd30b29c6b5cb7e3ac76f0515
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! thalamus-service — the `thalamus-service` component of `thalamus` v1.
@@ -171,6 +171,7 @@ where
             crate::definition::ProposeDefinitionOutcome::MappingUnused { .. } => {}
             crate::definition::ProposeDefinitionOutcome::ThresholdsUnused { .. } => {}
             crate::definition::ProposeDefinitionOutcome::AdvisoryNotCount { .. } => {}
+            crate::definition::ProposeDefinitionOutcome::AdvisoryNotFindingUnit { .. } => {}
             crate::definition::ProposeDefinitionOutcome::AdvisoryNotFixed { .. } => {}
             crate::definition::ProposeDefinitionOutcome::Proposed { definition_proposed, .. } => {
                 self.outbox.push(PublishedEvent::DefinitionProposed(definition_proposed.clone()));
@@ -218,6 +219,7 @@ where
             crate::definition::ReviseDefinitionOutcome::MappingUnused { .. } => {}
             crate::definition::ReviseDefinitionOutcome::ThresholdsUnused { .. } => {}
             crate::definition::ReviseDefinitionOutcome::AdvisoryNotCount { .. } => {}
+            crate::definition::ReviseDefinitionOutcome::AdvisoryNotFindingUnit { .. } => {}
             crate::definition::ReviseDefinitionOutcome::AdvisoryNotFixed { .. } => {}
             crate::definition::ReviseDefinitionOutcome::Revised { definition_revised, .. } => {
                 self.outbox.push(PublishedEvent::DefinitionRevised(definition_revised.clone()));

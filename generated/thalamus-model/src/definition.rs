@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 6f2e9f65e0ef065a249a30bb38bae16ef166a5b45577b7a8f20509f1f3eddea7
-// contract digest 067f632c99cd362c9c2d5e3d29f9b5d30e6604352424ed4eca28522b738edbee
+// model digest 6f2848b89ff6190d89c005ba09023b83056dbdfb2fe499f9e414dc63d7d866bd
+// contract digest 52593762eb7c5911c4f82160d91abef9b7c9217fd30b29c6b5cb7e3ac76f0515
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! Signal definitions — `thalamus.definition`.
@@ -775,6 +775,13 @@ pub enum ProposeDefinitionOutcome {
         /// Why it was refused: `thalamus.definition.AdvisoryNeedsCountOfCases`.
         error: AdvisoryNeedsCountOfCases,
     },
+    /// `advisory-not-finding-unit` — when `(evaluation.rule == fixed_warn_only and defined(unit) and unit != {finding})`.
+    ///
+    /// The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing was proposed.
+    AdvisoryNotFindingUnit {
+        /// Why it was refused: `thalamus.definition.AdvisoryNeedsFindingUnit`.
+        error: AdvisoryNeedsFindingUnit,
+    },
     /// `advisory-not-fixed` — when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))`.
     ///
     /// The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing was proposed.
@@ -984,6 +991,13 @@ pub enum ReviseDefinitionOutcome {
         /// Why it was refused: `thalamus.definition.AdvisoryNeedsCountOfCases`.
         error: AdvisoryNeedsCountOfCases,
     },
+    /// `advisory-not-finding-unit` — when `(evaluation.rule == fixed_warn_only and unit != {finding})`.
+    ///
+    /// The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing changed.
+    AdvisoryNotFindingUnit {
+        /// Why it was refused: `thalamus.definition.AdvisoryNeedsFindingUnit`.
+        error: AdvisoryNeedsFindingUnit,
+    },
     /// `advisory-not-fixed` — when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))`.
     ///
     /// The rule fixed_warn_only was named with a baseline list that is not fixed alone; nothing changed.
@@ -1105,6 +1119,15 @@ pub struct DefinitionUnmuted {
 /// The rule fixed_warn_only grades an advisory gate's finding count, a signal of kind count_of_cases, and its score steps to the first whole count above the baseline; another kind was declared, so nothing changed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdvisoryNeedsCountOfCases {
+    /// `signal_id` — `thalamus.definition.SignalId`.
+    pub signal_id: SignalId,
+}
+
+/// The declared error `thalamus.definition.AdvisoryNeedsFindingUnit`.
+///
+/// The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AdvisoryNeedsFindingUnit {
     /// `signal_id` — `thalamus.definition.SignalId`.
     pub signal_id: SignalId,
 }
@@ -1385,7 +1408,7 @@ pub mod obligations {
     ///
     /// Why it is not generated: kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed`.
     ///
-    /// Contract: given `thalamus.definition.ProposeDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `local-not-host` when `(source.connection == local and source.adapter != host)`, error `thalamus.definition.LocalConnectionNotHost`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `advisory-not-count` when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)`, error `thalamus.definition.AdvisoryNeedsCountOfCases`; `advisory-not-fixed` when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.AdvisoryNeedsFixedBaseline`; `proposed` otherwise, creates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionProposed`; `already-defined` for an identity a record already carries, error `thalamus.definition.DefinitionExists`.
+    /// Contract: given `thalamus.definition.ProposeDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `local-not-host` when `(source.connection == local and source.adapter != host)`, error `thalamus.definition.LocalConnectionNotHost`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `advisory-not-count` when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)`, error `thalamus.definition.AdvisoryNeedsCountOfCases`; `advisory-not-finding-unit` when `(evaluation.rule == fixed_warn_only and defined(unit) and unit != {finding})`, error `thalamus.definition.AdvisoryNeedsFindingUnit`; `advisory-not-fixed` when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.AdvisoryNeedsFixedBaseline`; `proposed` otherwise, creates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionProposed`; `already-defined` for an identity a record already carries, error `thalamus.definition.DefinitionExists`.
     pub trait ProposeDefinitionBehavior {
         /// Decides and enacts exactly one declared outcome of `thalamus.definition.ProposeDefinition`.
         ///
@@ -1409,7 +1432,7 @@ pub mod obligations {
     ///
     /// Why it is not generated: kept an obligation by the guard `exists b in evaluation.baselines: (b != fixed)`, in `instant-not-fixed`.
     ///
-    /// Contract: given `thalamus.definition.ReviseDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `retired` when the existing subject's stored fields satisfy `state == Retired`, error `thalamus.definition.RetiredDefinition`; `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `local-not-host` when `(source.connection == local and source.adapter != host)`, error `thalamus.definition.LocalConnectionNotHost`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `advisory-not-count` when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)`, error `thalamus.definition.AdvisoryNeedsCountOfCases`; `advisory-not-fixed` when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.AdvisoryNeedsFixedBaseline`; `revised` otherwise, updates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionRevised`; `no-such-definition` for an identity no record carries, error `thalamus.definition.UnknownDefinition`.
+    /// Contract: given `thalamus.definition.ReviseDefinition` input, decide and enact exactly one outcome. Declared outcomes (declaration order, not selection precedence): `retired` when the existing subject's stored fields satisfy `state == Retired`, error `thalamus.definition.RetiredDefinition`; `host-not-local` when `(source.adapter == host and source.connection != local)`, error `thalamus.definition.HostConnectionNotLocal`; `local-not-host` when `(source.connection == local and source.adapter != host)`, error `thalamus.definition.LocalConnectionNotHost`; `instant-not-fixed` when `(kind == instant and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.InstantNeedsFixedBaseline`; `rolling-n-missing` when `(exists b in evaluation.baselines: (b == rolling_median) and not (defined(evaluation.rolling_n)))`, error `thalamus.definition.RollingWindowMissing`; `rolling-n-unused` when `(defined(evaluation.rolling_n) and forall b in evaluation.baselines: (b != rolling_median))`, error `thalamus.definition.RollingWindowUnused`; `fixed-number-missing` when `(exists b in evaluation.baselines: (b == fixed) and not (defined(evaluation.fixed)))`, error `thalamus.definition.FixedNumberMissing`; `fixed-number-unused` when `(defined(evaluation.fixed) and forall b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.FixedNumberUnused`; `persistence-below-one` when `(persistence.k < 1 or persistence.k_crit < 1 or persistence.m < 1)`, error `thalamus.definition.PersistenceTooSmall`; `mapping-missing` when `(evaluation.rule == producer_mapped and not (defined(evaluation.mapping)))`, error `thalamus.definition.MappingMissing`; `mapping-unused` when `(defined(evaluation.mapping) and evaluation.rule != producer_mapped)`, error `thalamus.definition.MappingUnused`; `thresholds-unused` when `((evaluation.rule == producer_mapped or evaluation.rule == fixed_warn_only) and (defined(evaluation.warn) or defined(evaluation.crit)))`, error `thalamus.definition.ThresholdsUnused`; `advisory-not-count` when `(evaluation.rule == fixed_warn_only and kind != count_of_cases)`, error `thalamus.definition.AdvisoryNeedsCountOfCases`; `advisory-not-finding-unit` when `(evaluation.rule == fixed_warn_only and unit != {finding})`, error `thalamus.definition.AdvisoryNeedsFindingUnit`; `advisory-not-fixed` when `(evaluation.rule == fixed_warn_only and exists b in evaluation.baselines: (b != fixed))`, error `thalamus.definition.AdvisoryNeedsFixedBaseline`; `revised` otherwise, updates `thalamus.definition.SignalDefinition`, emits `thalamus.definition.DefinitionRevised`; `no-such-definition` for an identity no record carries, error `thalamus.definition.UnknownDefinition`.
     pub trait ReviseDefinitionBehavior {
         /// Decides and enacts exactly one declared outcome of `thalamus.definition.ReviseDefinition`.
         ///

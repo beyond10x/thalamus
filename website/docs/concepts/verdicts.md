@@ -132,14 +132,15 @@ own reason, and a value the table does not list is `UNKNOWN`. A definition namin
 position: 0 at `OK`, 1 at `WARN`, 2 at `CRIT`.
 
 An advisory gate is graded by the rule `fixed_warn_only` instead: its finding count is an ordinary
-reading, compared exactly with the definition's `fixed` baseline; trailing fractional zeros do
-not count, so `3.000` is `3`. A count above it is `WARN`, scored 1. A count at or below it is
+reading, compared exactly with the definition's `fixed` baseline, at any size and any number of
+decimal places; trailing fractional zeros do not count, so `3.000` is `3`. A count above it is `WARN`, scored 1. A count at or below it is
 `OK`, scored `(count - baseline) / (first whole count above the baseline - baseline)`: 0 at the
 baseline, however large, and below 0 under it. The score is worked out exactly and rounded only at
-the end, to three decimal places. A count or baseline too long to compare or score exactly grades
-`UNKNOWN` with a reason. The rule has no CRIT line, so no count, however large, and no partial read
+the end, to three decimal places. A count or baseline that is not a decimal grades `UNKNOWN` with
+a reason. The rule has no CRIT line, so no count, however large, and no partial read
 grades `CRIT`. A partial read grades `UNKNOWN` (`partial read`). A gate that printed no count is an
 `unknown` reading and grades `UNKNOWN`, never `OK` as a count of 0 would. A definition naming
 `fixed_warn_only` is refused when it is proposed, revised or loaded if it has a `warn` or `crit`
-line (`thresholds-unused`), a kind other than `count_of_cases` (`advisory-not-count`) or a
-baseline list that is not `fixed` alone (`advisory-not-fixed`).
+line (`thresholds-unused`), a kind other than `count_of_cases` (`advisory-not-count`), a unit
+other than `{finding}` (`advisory-not-finding-unit`) or a baseline list that is not `fixed` alone
+(`advisory-not-fixed`).

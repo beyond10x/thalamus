@@ -421,6 +421,12 @@ errors:
       - name: signal_id
         type: thalamus.definition.SignalId
 
+  - name: thalamus.definition.AdvisoryNeedsFindingUnit
+    summary: The rule fixed_warn_only grades an advisory gate's finding count, unit {finding} (design § 11 D12), and another unit was declared; nothing changed.
+    fields:
+      - name: signal_id
+        type: thalamus.definition.SignalId
+
 events:
   - name: thalamus.definition.DefinitionProposed
     fields:
@@ -642,6 +648,17 @@ commands:
           thalamus.definition.AdvisoryNeedsCountOfCases:
             signal_id: input.signal_id
         summary: The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing was proposed.
+      - name: advisory-not-finding-unit
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - defined(unit)
+            - unit != "{finding}"
+        error: thalamus.definition.AdvisoryNeedsFindingUnit
+        payload:
+          thalamus.definition.AdvisoryNeedsFindingUnit:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing was proposed.
       # UNMAPPED: an empty evaluation.baselines is not fixed alone either: the rule has no baseline
       # to grade against. Guarding it with a second child (`forall: {in: evaluation.baselines, as:
       # b, that: b != fixed}`) leaves that child unwitnessed (ESS-SYNTH-022). The behaviour selects
@@ -876,6 +893,16 @@ commands:
           thalamus.definition.AdvisoryNeedsCountOfCases:
             signal_id: input.signal_id
         summary: The rule fixed_warn_only was named for a signal whose kind is not count_of_cases; nothing changed.
+      - name: advisory-not-finding-unit
+        when:
+          all:
+            - evaluation.rule == "fixed_warn_only"
+            - unit != "{finding}"
+        error: thalamus.definition.AdvisoryNeedsFindingUnit
+        payload:
+          thalamus.definition.AdvisoryNeedsFindingUnit:
+            signal_id: input.signal_id
+        summary: The rule fixed_warn_only was named for a signal whose unit is not {finding}; nothing changed.
       # UNMAPPED: an empty evaluation.baselines is not fixed alone either: the rule has no baseline
       # to grade against. Guarding it with a second child (`forall: {in: evaluation.baselines, as:
       # b, that: b != fixed}`) leaves that child unwitnessed (ESS-SYNTH-022). The behaviour selects

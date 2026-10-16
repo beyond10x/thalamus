@@ -271,6 +271,9 @@ impl Rule {
                 InputRefusal::MappingUnused => "thalamus.definition.MappingUnused",
                 InputRefusal::ThresholdsUnused => "thalamus.definition.ThresholdsUnused",
                 InputRefusal::AdvisoryNotCount => "thalamus.definition.AdvisoryNeedsCountOfCases",
+                InputRefusal::AdvisoryNotFindingUnit => {
+                    "thalamus.definition.AdvisoryNeedsFindingUnit"
+                }
                 InputRefusal::AdvisoryNotFixed => "thalamus.definition.AdvisoryNeedsFixedBaseline",
             },
             Rule::Baseline { .. } => "baseline plan",
@@ -389,6 +392,11 @@ impl fmt::Display for Rule {
                     f,
                     "`{signal_id}` names the rule fixed_warn_only, which grades an advisory gate's \
                      finding count, and its kind is not count_of_cases"
+                ),
+                InputRefusal::AdvisoryNotFindingUnit => write!(
+                    f,
+                    "`{signal_id}` names the rule fixed_warn_only, which grades an advisory gate's \
+                     finding count, and its unit is not {{finding}}"
                 ),
                 InputRefusal::AdvisoryNotFixed => write!(
                     f,
@@ -1450,6 +1458,7 @@ impl Definition {
 
         for refusal in input_refusals(
             kind,
+            data.unit.as_ref(),
             &data.source,
             &data.evaluation,
             data.persistence.as_ref(),
