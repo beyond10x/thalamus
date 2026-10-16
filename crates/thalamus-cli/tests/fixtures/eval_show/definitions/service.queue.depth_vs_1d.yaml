@@ -1,0 +1,23 @@
+id: service.queue.depth_vs_1d
+title: Messages waiting in the work queue, against the same time yesterday
+family: service
+kind: gauge
+unit: "{message}"
+dimensions: []
+source: { adapter: metrics, connection: metrics-main }
+extractor: promql.value
+query: { value: sum(queue_depth) }
+window: PT5M
+cadence: PT5M
+history: store
+denominator: { unit: "{message}", min_n: 0, since: 2026-01-01T00:00:00Z }
+evaluation:
+  rule: higher_is_worse
+  baselines: [offset_1d]
+  warn: { x: 2 }
+  crit: { x: 4 }
+owner: team:service
+lifecycle: active
+rev: 1
+revised_at: 2026-10-02T00:00:00Z
+revised_by: operator

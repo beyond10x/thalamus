@@ -11,12 +11,8 @@ source: spec/domains/evaluation.yaml (SignalEvaluation.score, Verdict.scored), d
 Every `OK`, `WARN` and `CRIT` evaluation records a **score**: where the value sits between its
 baseline and its thresholds.
 
-:::caution[Planned]
-
-`thalamus-core` computes the score when it grades a reading. Recording evaluations from a
-sampling pass (`thalamus eval`) is planned; see the [status page](/docs/status).
-
-:::
+`thalamus-core` computes the score when it grades a reading; `thalamus eval` records it with the
+evaluation and `thalamus show` prints it (see [eval and show](./verdicts.md#eval-and-show)).
 
 | value | position |
 |---|---|
