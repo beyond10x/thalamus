@@ -1,0 +1,4 @@
+registry_id: fixture
+title: Free-space floor fixture instance
+dimensions:
+  mount: { registry: open }

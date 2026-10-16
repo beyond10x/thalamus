@@ -268,6 +268,15 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#sources",
     ),
+    shipped(
+        "Sources",
+        "Host collector",
+        "This machine's CPU use, memory use, disk space and CPU temperature, read when sampled.",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/host.rs::cpu_busy_is_one_minus_idle_share_of_the_delta",
+        ),
+        "/docs/concepts/signals#the-host-collector",
+    ),
     planned(
         "Sources",
         "One vocabulary across every source",
