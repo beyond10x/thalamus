@@ -268,6 +268,15 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#sources",
     ),
+    shipped(
+        "Sources",
+        "Host collector",
+        "This machine's CPU use, memory use, disk space and CPU temperature, read when sampled.",
+        Evidence::Test(
+            "crates/thalamus-sources/tests/host.rs::cpu_busy_is_one_minus_idle_share_of_the_delta",
+        ),
+        "/docs/concepts/signals#the-host-collector",
+    ),
     planned(
         "Sources",
         "One vocabulary across every source",
@@ -275,11 +284,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m3-one-vocabulary-across-sources",
         "/docs/concepts/verdicts",
     ),
-    planned(
+    shipped(
         "Command line",
         "thalamus sample",
         "One sample per series of every Active definition of an instance.",
-        "story:m1-cli-sample",
+        Evidence::Test(
+            "crates/thalamus-cli/tests/sample.rs::sample_all_once_records_one_sample_per_series",
+        ),
         "/docs/concepts/samples",
     ),
     planned(

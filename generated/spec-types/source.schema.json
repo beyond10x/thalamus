@@ -133,7 +133,7 @@
       "x-ess-name": "thalamus.assertion.Within"
     },
     "thalamus.definition.AdapterId": {
-      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).",
+      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events), or host, the one adapter that reads this machine's own kernel counters directly and takes no connection operation (design § 11 D46).",
       "title": "AdapterId",
       "type": "string",
       "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyz0123456789_",
@@ -165,7 +165,7 @@
       "x-ess-name": "thalamus.definition.BaselineKind"
     },
     "thalamus.definition.ConnectionId": {
-      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential.",
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection; a source of any other adapter on connection local is refused.",
       "title": "ConnectionId",
       "type": "string",
       "x-ess-alphabet": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.:/",
@@ -362,7 +362,7 @@
       "x-ess-name": "thalamus.definition.EvaluationSpec"
     },
     "thalamus.definition.ExtractorId": {
-      "description": "A built-in extractor (sql.ratio) or a plugin id.",
+      "description": "A built-in extractor (sql.ratio) or a plugin id. The host adapter reads exactly five, host.cpu_busy, host.memory_used and host.disk_used (unit 1, disk per listed mount), host.disk_free (unit By, the bytes available to an unprivileged writer per listed mount) and host.cpu_temperature (unit Cel), and nothing else.",
       "title": "ExtractorId",
       "type": "string",
       "x-ess-kind": "newtype",
@@ -1275,8 +1275,8 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:9cdd9db42a0c900eb67b127b40e612b283f1d3e0cd56af0dae60f32a65da4eb9",
-    "source_digest": "99b2e1b31aebb3cdde7af7bb46be2ec80e4af2ccd183cd598985f3a30326c48f",
+    "contract_digest": "slice-sha256/2:df06161d3bb96da28df97079f791a81e4bcd53b0f77419041085c130ad740cca",
+    "source_digest": "6f2e9f65e0ef065a249a30bb38bae16ef166a5b45577b7a8f20509f1f3eddea7",
     "specification_version": "v1",
     "system": "thalamus"
   }

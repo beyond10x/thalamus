@@ -1,10 +1,10 @@
 //! Adversary case: the acceptance's stub contract, which `tests/cli.rs` does not assert. Each of
-//! the six subcommands exits 70 and says `not implemented`. Each owner story deletes its own line
+//! the stub subcommands exits 70 and says `not implemented`. Each owner story deletes its own line
 //! from `STUBS` when it replaces the stub.
 
 use std::process::Command;
 
-const STUBS: [&str; 6] = ["sample", "eval", "show", "compare", "rollup", "flaps"];
+const STUBS: [&str; 5] = ["eval", "show", "compare", "rollup", "flaps"];
 
 #[test]
 fn every_stub_subcommand_exits_70_saying_not_implemented() {

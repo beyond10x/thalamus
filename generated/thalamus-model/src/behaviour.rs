@@ -1,6 +1,6 @@
 // generated from thalamus v1
-// model digest 99b2e1b31aebb3cdde7af7bb46be2ec80e4af2ccd183cd598985f3a30326c48f
-// contract digest 82328f7c71509b62eb250d7912f8913dadad64f2cf9aae2897c422dfba7f784c
+// model digest 6f2e9f65e0ef065a249a30bb38bae16ef166a5b45577b7a8f20509f1f3eddea7
+// contract digest 067f632c99cd362c9c2d5e3d29f9b5d30e6604352424ed4eca28522b738edbee
 // do not edit: regenerate with `ess synthesize --layout crate`
 
 //! What the specification fully determines, generated: the behaviour of every command the plan

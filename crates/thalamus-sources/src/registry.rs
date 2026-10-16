@@ -11,7 +11,7 @@ use thalamus_model::primitives::Timestamp;
 
 use crate::adapter::{Adapter, Read, unknown};
 use crate::connectors::Connectors;
-use crate::{git, http_probe, kubernetes, loki, prometheus, sql, vocabulary};
+use crate::{git, host, http_probe, kubernetes, loki, prometheus, sql, vocabulary};
 
 /// The reason of a read whose adapter is not written yet.
 pub const NOT_IMPLEMENTED: &str = "adapter not implemented";
@@ -31,17 +31,20 @@ pub enum SourceKind {
     Git,
     /// `http_probe.`
     HttpProbe,
+    /// `host.`: this machine's own counters, no Connectors operation (design § 11 D46).
+    Host,
 }
 
 impl SourceKind {
     /// Every kind, in the order the registry tries their prefixes.
-    pub const ALL: [SourceKind; 6] = [
+    pub const ALL: [SourceKind; 7] = [
         SourceKind::Prometheus,
         SourceKind::Loki,
         SourceKind::Sql,
         SourceKind::Kubernetes,
         SourceKind::Git,
         SourceKind::HttpProbe,
+        SourceKind::Host,
     ];
 
     /// The extractor prefix this kind takes, dot included.
@@ -53,6 +56,7 @@ impl SourceKind {
             SourceKind::Kubernetes => "kubernetes.",
             SourceKind::Git => "git.",
             SourceKind::HttpProbe => "http_probe.",
+            SourceKind::Host => "host.",
         }
     }
 
@@ -65,6 +69,7 @@ impl SourceKind {
             SourceKind::Kubernetes => kubernetes::adapter(),
             SourceKind::Git => git::adapter(),
             SourceKind::HttpProbe => http_probe::adapter(),
+            SourceKind::Host => host::adapter(),
         }
     }
 }

@@ -73,14 +73,14 @@
   "x-ess-provenance": {
     "system": "thalamus",
     "specification_version": "v1",
-    "source_digest": "99b2e1b31aebb3cdde7af7bb46be2ec80e4af2ccd183cd598985f3a30326c48f",
-    "contract_digest": "slice-sha256/2:c4f1823894eec981cfc7888ae713fe3e24551a09e62818cc944afa9d0db7c1ed",
+    "source_digest": "6f2e9f65e0ef065a249a30bb38bae16ef166a5b45577b7a8f20509f1f3eddea7",
+    "contract_digest": "slice-sha256/2:cb9b131019762ff3f5bf148f16d7cd32dfe0840edfbff0e2c118afa5a7fc7648",
     "regenerate": "ess generate"
   },
   "$defs": {
     "thalamus.definition.AdapterId": {
       "title": "AdapterId",
-      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events).",
+      "description": "The source adapter that turns a connection operation into samples (sql, a metrics query, an orchestrator, version control, an HTTP probe, test-run events), or host, the one adapter that reads this machine's own kernel counters directly and takes no connection operation (design § 11 D46).",
       "x-ess-name": "thalamus.definition.AdapterId",
       "x-ess-kind": "newtype",
       "type": "string",
@@ -88,7 +88,7 @@
     },
     "thalamus.definition.ConnectionId": {
       "title": "ConnectionId",
-      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential.",
+      "description": "A Connectors connection id. Thalamus holds no secret; the connection holds the credential. The id local is reserved for the host adapter, which reads only the machine thalamus runs on and refuses every other connection; a source of any other adapter on connection local is refused.",
       "x-ess-name": "thalamus.definition.ConnectionId",
       "x-ess-kind": "newtype",
       "type": "string",

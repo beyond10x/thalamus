@@ -39,7 +39,7 @@ use thalamus_model::observation::{
 use thalamus_model::primitives::{Decimal, Duration, Timestamp};
 
 use crate::baseline::{self, Refusal};
-use crate::behaviour::definition::{InputRefusal, input_refusals};
+use crate::behaviour::definition::{HOST_ADAPTER, InputRefusal, LOCAL_CONNECTION, input_refusals};
 use crate::behaviour::observation::Instant;
 use crate::since::{Since, SinceRefusal, parse_since};
 use crate::unit::parse_ucum;
@@ -259,6 +259,8 @@ impl Rule {
             Rule::RatioUnit { .. } => "ratio unit",
             Rule::InstantNeedsFixed { .. } => "thalamus.definition.InstantNeedsFixedBaseline",
             Rule::Input { refusal, .. } => match refusal {
+                InputRefusal::HostNotLocal => "thalamus.definition.HostConnectionNotLocal",
+                InputRefusal::LocalNotHost => "thalamus.definition.LocalConnectionNotHost",
                 InputRefusal::InstantNotFixed => "thalamus.definition.InstantNeedsFixedBaseline",
                 InputRefusal::RollingNMissing => "thalamus.definition.RollingWindowMissing",
                 InputRefusal::RollingNUnused => "thalamus.definition.RollingWindowUnused",
@@ -331,6 +333,16 @@ impl fmt::Display for Rule {
                  another baseline"
             ),
             Rule::Input { signal_id, refusal } => match refusal {
+                InputRefusal::HostNotLocal => write!(
+                    f,
+                    "`{signal_id}` reads the host source, which reads only this machine \
+                     (connection {LOCAL_CONNECTION}); it names another connection"
+                ),
+                InputRefusal::LocalNotHost => write!(
+                    f,
+                    "`{signal_id}` names connection {LOCAL_CONNECTION}, which is reserved for the \
+                     {HOST_ADAPTER} source; it names another adapter"
+                ),
                 InputRefusal::InstantNotFixed => write!(
                     f,
                     "`{signal_id}` is of kind instant and is graded against fixed only"
@@ -1436,7 +1448,12 @@ impl Definition {
             mute_until,
         };
 
-        for refusal in input_refusals(kind, &data.evaluation, data.persistence.as_ref()) {
+        for refusal in input_refusals(
+            kind,
+            &data.source,
+            &data.evaluation,
+            data.persistence.as_ref(),
+        ) {
             if refusal != InputRefusal::InstantNotFixed {
                 errors.push(Rule::Input {
                     signal_id: data.signal_id.0.clone(),
