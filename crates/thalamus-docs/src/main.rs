@@ -8,6 +8,7 @@
 //! the status data from [`status::CAPABILITIES`], and the site's logo from `assets/logo.svg`.
 mod graph;
 mod reference;
+mod release;
 mod status;
 
 use std::{
@@ -70,6 +71,16 @@ enum Action {
         /// The full Git revision the site was built from.
         #[arg(long)]
         commit: String,
+    },
+    /// Fail when a release tag is not `v<workspace version>` or CHANGELOG.md has no non-empty
+    /// section for that version.
+    ReleaseCheck {
+        /// The release tag, `v<version>`.
+        #[arg(long)]
+        tag: String,
+        /// Repository root.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
     },
 }
 
@@ -487,6 +498,9 @@ fn main() -> ExitCode {
         Action::Generate { check, root, ess } => generate(&root, &ess, check),
         Action::Provenance { site, commit } => write_provenance(&site, &commit)
             .map(|()| println!("{}: bound to {commit}", site.display())),
+        Action::ReleaseCheck { tag, root } => {
+            release::check(&root, &tag).map(|()| println!("{tag}: release-check passed"))
+        }
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
