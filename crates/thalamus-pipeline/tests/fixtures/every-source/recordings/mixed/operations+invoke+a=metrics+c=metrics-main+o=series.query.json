@@ -1,0 +1,26 @@
+[
+  {
+    "input": {"query": "sum(increase(requests_failed_total[1h]))"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"metrics-main\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{},\"samples\":[[1792018623,\"1\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  },
+  {
+    "input": {"query": "sum(increase(requests_total[1h]))"},
+    "stdout": {
+      "ok": true,
+      "result": {
+        "adapter": "metrics",
+        "operation": "series.query",
+        "revision": "op-rev-1",
+        "result": "{\"result_type\":\"vector\",\"series_truncated\":false,\"complete\":true,\"warnings\":[],\"infos\":[],\"time_unix_s\":1792018623,\"provenance\":{\"instance\":\"metrics-main\",\"resource\":\"prometheus:query\",\"observed_at_unix_ms\":0,\"source_revision\":null},\"series\":[{\"labels\":{},\"samples\":[[1792018623,\"100\"]],\"samples_truncated\":false}]}"
+      }
+    }
+  }
+]

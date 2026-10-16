@@ -1,0 +1,4 @@
+registry_id: every-source
+title: One definition per source kind
+dimensions:
+  namespace: { registry: open }

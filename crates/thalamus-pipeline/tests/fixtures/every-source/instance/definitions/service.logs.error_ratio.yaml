@@ -1,0 +1,26 @@
+id: service.logs.error_ratio
+title: Share of log lines that report an error
+family: service
+kind: ratio
+unit: "1"
+dimensions: []
+source: { adapter: logs, connection: logs-main }
+extractor: loki.ratio
+query:
+  numerator: sum(count_over_time({app="api"} |= "error" [1h]))
+  denominator: sum(count_over_time({app="api"} [1h]))
+window: PT1H
+cadence: PT1H
+history: store
+denominator: { unit: "{line}", min_n: 20, since: first_sample }
+evaluation:
+  rule: higher_is_worse
+  baselines: [fixed]
+  fixed: "0"
+  warn: { abs: "0.02" }
+  crit: { abs: "0.05" }
+owner: team:service
+lifecycle: active
+rev: 1
+revised_at: 2026-10-01T00:00:00Z
+revised_by: operator

@@ -1,0 +1,6 @@
+{
+  "stdout": {
+    "ok": true,
+    "result": {"adapter": "forge", "operation": "merge_requests.list", "schema": "merge_requests.list/v1", "revision": "op-rev-1"}
+  }
+}

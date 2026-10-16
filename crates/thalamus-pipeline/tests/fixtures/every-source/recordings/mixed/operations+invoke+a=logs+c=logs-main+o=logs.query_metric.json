@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "the provider limited the request rate",
+      "data": {"kind": "operational", "code": "rate_limited", "stage": "dispatch", "next_action": "retry"}
+    }
+  }
+}

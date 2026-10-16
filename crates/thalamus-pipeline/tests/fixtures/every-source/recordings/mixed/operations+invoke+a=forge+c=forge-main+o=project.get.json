@@ -1,0 +1,12 @@
+{
+  "input": {"id": "42"},
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "forge",
+      "operation": "project.get",
+      "revision": "op-rev-1",
+      "result": "{\"status\":200,\"body\":{\"id\":42,\"name\":\"example\"},\"provenance\":{\"instance\":\"forge-main\",\"resource\":\"/projects/42\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":null}}"
+    }
+  }
+}

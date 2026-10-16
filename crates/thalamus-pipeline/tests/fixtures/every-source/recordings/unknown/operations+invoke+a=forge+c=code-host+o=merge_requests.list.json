@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "stderr": {
+    "ok": false,
+    "error": {
+      "code": "failure",
+      "message": "the provider did not answer",
+      "data": {"kind": "operational", "code": "provider_unavailable", "stage": "dispatch", "next_action": "retry"}
+    }
+  }
+}
