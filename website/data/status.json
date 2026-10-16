@@ -18,7 +18,7 @@
     },
     {
       "area": "Command line",
-      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). Each still exits 70, not implemented.",
+      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample and compare are implemented; eval, show, rollup and flaps still exit 70, not implemented.",
       "href": "/docs/getting-started",
       "label": "A usage error exits 64, never a verdict code",
       "status": "shipped"
@@ -193,10 +193,10 @@
     },
     {
       "area": "Command line",
-      "detail": "Answers from stored samples. Planned in story:m2-compare.",
+      "detail": "Answers from stored samples.",
       "href": "/docs/concepts/baselines",
       "label": "thalamus compare --vs <offset>",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Command line",
