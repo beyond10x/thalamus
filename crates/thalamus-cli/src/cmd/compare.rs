@@ -463,7 +463,8 @@ fn quietly<T>(work: impl FnOnce() -> T) -> std::thread::Result<T> {
 /// own message, which may hold a path or a URL.
 fn refusal(error: &StoreError) -> String {
     match error {
-        StoreError::Locator { code, .. } | StoreError::Refused { code } => code.clone(),
+        StoreError::Locator { code, .. } => (*code).to_owned(),
+        StoreError::Refused { code } => code.clone(),
         StoreError::Contended { .. } => "another writer kept appending".to_owned(),
         StoreError::Record(_) => "a record in the store fails its checks".to_owned(),
         StoreError::Runtime(_) => "the store's runtime cannot be started".to_owned(),

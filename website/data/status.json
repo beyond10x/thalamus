@@ -193,10 +193,10 @@
     },
     {
       "area": "Command line",
-      "detail": "Answers from stored samples. Planned in story:m2-compare.",
+      "detail": "Answers from stored samples.",
       "href": "/docs/concepts/baselines",
       "label": "thalamus compare --vs <offset>",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Command line",
