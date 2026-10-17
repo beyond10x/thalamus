@@ -20,7 +20,10 @@
 //! before the current slot is missed; on a later tick, every slot after the last slot this
 //! scheduler handled for the definition (a clock jump, a tick that came late). Each missed slot
 //! holds one `unknown` sample with reason [`MISSED_SLOT`] per series of the definition's newest
-//! pass, recorded in a pass of their own before the current slot is sampled. A slot that already
+//! pass, recorded in a pass of their own before the current slot is sampled. The first tick fills
+//! at most [`FIRST_TICK_FILL_SLOTS`] slots, the newest, and none from before the revision in
+//! force (a span the definition was muted across a restart is not missed); older slots stay
+//! empty (D47). A slot that already
 //! holds a sample of the definition (another writer's, or this one's before a restart) is never
 //! recorded again. A definition that becomes `Active` while the scheduler runs starts at its
 //! current slot: the slots it spent `Proposed` or `Muted` were not missed.
@@ -51,6 +54,9 @@ use time::format_description::well_known::Rfc3339;
 
 /// The reason of a missed slot's sample (design § 11 D16).
 pub const MISSED_SLOT: &str = "missed_slot";
+
+/// The most slots the first tick fills as missed, the newest ones (design § 11 D47).
+pub const FIRST_TICK_FILL_SLOTS: i64 = 288;
 /// The reason of a read that did not finish within the cadence (design § 2.2).
 pub const READ_TIMED_OUT: &str = "read timed out";
 /// The provenance `producer` of every sample the scheduler records.
@@ -275,6 +281,16 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             if let Some(since) = since {
                 let series = held.newest_pass_dims(&signal.0);
                 let mut slot = since + cadence;
+                if !self.started {
+                    // D47: no earlier than the revision now in force (a mute and its unmute are
+                    // revisions), and no more than the bound's newest slots.
+                    let revised = Instant::parse(&data.revised_at.0).map_or(slot, |at| {
+                        at.seconds().div_euclid(cadence) * cadence + cadence
+                    });
+                    slot = slot
+                        .max(revised)
+                        .max(current - FIRST_TICK_FILL_SLOTS * cadence);
+                }
                 while slot < current {
                     if !held.has(&signal.0, slot) {
                         missed.push((signal.clone(), slot, missed_reads(data, &series, slot)));

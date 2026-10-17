@@ -19,7 +19,7 @@ use thalamus_model::evaluation::{SignalEvaluationData, Verdict};
 use thalamus_model::observation::{CompleteReading, Reading, RunId, SignalSampleData};
 use thalamus_model::primitives::{Decimal, Timestamp};
 use thalamus_service::scheduler::{
-    Clock, ConnectorsReader, MISSED_SLOT, READ_TIMED_OUT, Reader, Scheduler,
+    Clock, ConnectorsReader, FIRST_TICK_FILL_SLOTS, MISSED_SLOT, READ_TIMED_OUT, Reader, Scheduler,
 };
 use thalamus_sources::adapter::{Read, unknown};
 use thalamus_sources::connectors::Connectors;
@@ -783,4 +783,72 @@ fn revision_applies_at_next_slot() {
         .find(|evaluation| evaluation.sample_id == samples[1].sample_id)
         .expect("the revised sample is graded");
     assert_eq!(graded.definition_rev, 2);
+}
+
+/// D47: the first tick fills at most `FIRST_TICK_FILL_SLOTS` slots, the newest, when the store was
+/// last written far behind; the older slots stay empty.
+#[test]
+fn first_tick_fill_is_bounded_when_the_store_is_far_behind() {
+    let now = T0 + 10 * DAY;
+    let mut world = World::new("first_tick_bound", &[depth(1, QUEUE)]);
+    for slot in [T0, now] {
+        world.answer(QUEUE, slot, "7");
+    }
+    let clock = FakeClock::at(T0 + 1);
+    world.scheduler(&clock).tick();
+    clock.set(now + 1);
+    world.scheduler(&clock).tick();
+
+    let samples = world.samples();
+    let missed: Vec<&SignalSampleData> = samples
+        .iter()
+        .filter(|sample| reason(sample) == Some(MISSED_SLOT))
+        .collect();
+    assert_eq!(
+        missed.len() as i64,
+        FIRST_TICK_FILL_SLOTS,
+        "at most the bound's slots are filled"
+    );
+    let oldest = now - FIRST_TICK_FILL_SLOTS * FIVE_MINUTES;
+    let expected: Vec<String> = (0..FIRST_TICK_FILL_SLOTS)
+        .map(|n| rfc3339(oldest + n * FIVE_MINUTES))
+        .collect();
+    let mut got: Vec<String> = missed.iter().map(|sample| sample.ts.0.clone()).collect();
+    got.sort();
+    assert_eq!(got, expected, "the newest slots are the ones filled");
+    assert_eq!(
+        samples.len() as i64,
+        FIRST_TICK_FILL_SLOTS + 2,
+        "{samples:#?}"
+    );
+}
+
+/// A definition muted across a restart and active again at the first tick: the slots of the
+/// span it was muted are not missed; the slots after the unmuting revision are.
+#[test]
+fn first_tick_does_not_fill_the_span_muted_across_a_restart() {
+    let unmuted = T0 + 2 * FIVE_MINUTES + 10;
+    let now = T0 + 5 * FIVE_MINUTES;
+    let mut world = World::new("first_tick_muted_span", &[depth(1, QUEUE)]);
+    for slot in [T0, now] {
+        world.answer(QUEUE, slot, "7");
+    }
+    let clock = FakeClock::at(T0 + 1);
+    world.scheduler(&clock).tick();
+    // Muted after T0, unmuted at `unmuted`; the restart is later.
+    world.define(
+        DEPTH,
+        &definition(DEPTH, QUEUE, "[]", "PT5M", ACTIVE, 3)
+            .replace("2026-10-02T00:00:00Z", &rfc3339(unmuted)),
+    );
+    clock.set(now + 1);
+    world.scheduler(&clock).tick();
+
+    let samples = world.samples();
+    let filled: Vec<String> = slots(&samples).into_iter().map(|(_, ts)| ts).collect();
+    let expected: Vec<String> = [T0, T0 + 3 * FIVE_MINUTES, T0 + 4 * FIVE_MINUTES, now]
+        .iter()
+        .map(|slot| rfc3339(*slot))
+        .collect();
+    assert_eq!(filled, expected, "{samples:#?}");
 }
