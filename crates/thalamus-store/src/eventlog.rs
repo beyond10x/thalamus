@@ -400,6 +400,7 @@ impl Record {
 pub(crate) enum Row {
     Sample(SignalSampleData),
     Evaluation(SignalEvaluationData),
+    Unmuted(crate::definition_events::UnmutedRecord),
 }
 
 /// The rows appended since the handle last moved, read for a `&self` answer.
@@ -407,6 +408,7 @@ pub(crate) enum Row {
 pub(crate) struct Tail {
     pub(crate) samples: Vec<SignalSampleData>,
     pub(crate) evaluations: Vec<SignalEvaluationData>,
+    pub(crate) unmuted: Vec<crate::definition_events::UnmutedRecord>,
 }
 
 /// The store's own runtime, shut down in the background when dropped: a blocking shutdown would
@@ -579,6 +581,7 @@ impl EventlogStore {
             match row {
                 Row::Sample(sample) => tail.samples.push(sample),
                 Row::Evaluation(evaluation) => tail.evaluations.push(evaluation),
+                Row::Unmuted(unmuted) => tail.unmuted.push(unmuted),
             }
         }
         tail
@@ -637,6 +640,11 @@ impl EventlogStore {
                 let evaluation = crate::evaluations::decode(&record.body)?;
                 let again = crate::evaluations::encode(&evaluation)?;
                 (Row::Evaluation(evaluation), again)
+            }
+            Some(crate::definition_events::DEFINITION_EVENT_SCHEMA) => {
+                let unmuted = crate::definition_events::decode(&record.body)?;
+                let again = crate::definition_events::encode(&unmuted)?;
+                (Row::Unmuted(unmuted), again)
             }
             other => return refuse(format!("has the unknown schema {other:?}")),
         };
@@ -859,6 +867,7 @@ impl EventlogStore {
                     .insert(evaluation.evaluation_id.0.clone(), self.evaluations.len());
                 self.evaluations.push(evaluation);
             }
+            Row::Unmuted(_) => {}
         }
         self.head = record.version;
         self.records.push(record);

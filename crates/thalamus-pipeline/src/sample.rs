@@ -29,7 +29,7 @@ use std::fmt;
 use thalamus_core::behaviour::observation::{
     IdSequence, Instant, record_sample, series_samples, timestamp_order,
 };
-use thalamus_core::registry::{Definition, Instance};
+use thalamus_core::registry::Definition;
 use thalamus_core::series::{DimsRefusal, admit_dims, series_key};
 use thalamus_core::since::resolve_since;
 use thalamus_model::behaviour::{SignalDefinitionStorage, SignalSampleStorage};
@@ -45,6 +45,7 @@ use thalamus_sources::connectors::Connectors;
 use thalamus_sources::{registry, vocabulary};
 use thalamus_store::eventlog::EventlogStore;
 
+use crate::definitions::{self, Effective};
 use crate::instance::LoadedInstance;
 
 /// The id prefix of a sampling pass.
@@ -175,7 +176,7 @@ pub fn admit(instance: &LoadedInstance, signal: &str) -> Result<SignalId, Refusa
             signal: signal.to_owned(),
         });
     };
-    match definition.state() {
+    match definitions::state(instance, signal).unwrap_or(definition.state()) {
         SignalDefinitionState::Active => Ok(definition.data().signal_id.clone()),
         state => Err(Refusal::NotActive {
             signal: signal.to_owned(),
@@ -184,13 +185,17 @@ pub fn admit(instance: &LoadedInstance, signal: &str) -> Result<SignalId, Refusa
     }
 }
 
-/// Every `Active` definition of the instance, in id order.
+/// Every `Active` definition of the instance, in id order, by its effective lifecycle
+/// (`crate::definitions`).
 #[must_use]
 pub fn active(instance: &LoadedInstance) -> Vec<SignalId> {
     instance
         .instance()
         .definitions()
-        .filter(|definition| definition.state() == SignalDefinitionState::Active)
+        .filter(|definition| {
+            definitions::state(instance, &definition.data().signal_id.0)
+                == Some(SignalDefinitionState::Active)
+        })
         .map(|definition| definition.data().signal_id.clone())
         .collect()
 }
@@ -324,8 +329,9 @@ pub fn record_reads(
         };
         let quality = quality(&input.reading);
         let series = input.series.clone();
+        let (files, overlay) = instance.parts_mut();
         let mut ports = Ports {
-            definitions: instance.instance_mut(),
+            definitions: Effective { files, overlay },
             samples: store,
         };
         match record_sample(&mut ports, input) {
@@ -346,7 +352,7 @@ pub fn record_reads(
             Ok(RecordSampleOutcome::NotActive { .. }) => {
                 pass.refused.push(Refusal::NotActive {
                     signal: signal.0.clone(),
-                    state: definition.state(),
+                    state: definitions::state(instance, &signal.0).unwrap_or(definition.state()),
                 });
             }
         }
@@ -515,28 +521,29 @@ fn quality(reading: &Reading) -> &'static str {
     }
 }
 
-/// The ports `RecordSample` runs over: the instance's file-backed definitions and the store's
-/// samples and id sequence.
+/// The ports `RecordSample` runs over: the instance's file-backed definitions seen through its
+/// overlay (an expired mute answers `Active`, `crate::definitions`) and the store's samples and
+/// id sequence.
 struct Ports<'a> {
-    definitions: &'a mut Instance,
+    definitions: Effective<'a>,
     samples: &'a mut EventlogStore,
 }
 
 impl SignalDefinitionStorage for Ports<'_> {
     fn get(&self, identity: &SignalId) -> Option<SignalDefinitionSnapshot> {
-        SignalDefinitionStorage::get(&*self.definitions, identity)
+        self.definitions.get(identity)
     }
 
     fn put(&mut self, snapshot: SignalDefinitionSnapshot) {
-        SignalDefinitionStorage::put(self.definitions, snapshot);
+        self.definitions.put(snapshot);
     }
 
     fn delete(&mut self, identity: &SignalId) {
-        SignalDefinitionStorage::delete(self.definitions, identity);
+        self.definitions.delete(identity);
     }
 
     fn list(&self) -> Vec<SignalDefinitionSnapshot> {
-        SignalDefinitionStorage::list(&*self.definitions)
+        self.definitions.list()
     }
 }
 

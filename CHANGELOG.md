@@ -11,6 +11,9 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 - A store on SQLite waits out a write lock another connection holds, for about 35 seconds at most, when it reserves an id or appends, instead of panicking with `database is locked`.
 - `thalamus flaps --since <duration>` measures raw and settled verdict changes per family and
   series-day over stored evaluations, with `--rev`, `--k`, `--k-crit`, `--m` and `--sweep`.
+- `thalamus-service run` samples a muted definition whose `mute_until` has passed as Active,
+  records its `DefinitionUnmuted` once in the store as actor `thalamus.definition.Service`, and
+  warns on every pass naming the definition file, which it never rewrites.
 
 ## 0.1.0 — 2026-10-17
 
