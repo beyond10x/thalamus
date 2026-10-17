@@ -263,6 +263,7 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             return tick;
         }
         crate::unmute::effective_definitions(&mut instance, &mut self.store, now, &mut tick);
+        crate::daily_rollup::closed_day(&mut instance, &mut self.store, now, &mut tick);
 
         let held = Held::read(&self.store);
         let mut missed: Vec<(SignalId, i64, Vec<Read>)> = Vec::new();

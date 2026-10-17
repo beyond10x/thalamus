@@ -81,7 +81,7 @@ reason `missed_slot`; it is never re-read and never interpolated, and views draw
 | record | where | retention |
 |---|---|---|
 | samples and evaluations | an append-only stream per instance; the first store is [Eventlog](https://beyond10x.github.io/ecosystem/eventlog/) ([GitHub](https://github.com/beyond10x/eventlog)) (File, SQLite) | a configured window, by default 35 days: enough for a 7-day offset and a 4-week same-slot median |
-| daily rollups | one row per series per UTC day: count, unknown and partial counts, min, median, max and last value, worst verdict, verdict counts, min and max score | kept |
+| daily rollups | one row per series per UTC day: count, unknown and partial counts, min, median, max and last value (over `ok` readings only; absent, never 0, when there is none), worst verdict, verdict counts and min and max score, each from a sample's evaluation at the highest definition revision present. Written once per series and day by the service after each UTC midnight, or by `thalamus rollup [--day YYYY-MM-DD] [--signal <id>]` for a closed day | kept |
 | transitions | emitted as events and, for an instance connected to cortex, as facts | see [Assertions, events and views](./interfaces.md) |
 
 Raw samples never go into a knowledge store: they have no lifecycle, and a pass over a fleet writes

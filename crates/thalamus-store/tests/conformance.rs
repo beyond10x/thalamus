@@ -25,6 +25,8 @@ const SCENARIOS: &[&str] = &[
     "thalamus.evaluation.RecordEvaluation/outcome/recorded",
     "thalamus.evaluation.RecordEvaluation/outcome/unknown-sample",
     "thalamus.evaluation.SignalEvaluation/invariant/after/thalamus.evaluation.RecordEvaluation/recorded",
+    "thalamus.rollup.RecordRollup/outcome/recorded",
+    "thalamus.rollup.RecordRollup/outcome/already-rolled-up",
 ];
 
 /// Samples and evaluations in a fresh Eventlog store, everything else in memory. The directory
@@ -202,7 +204,7 @@ delegate!(
 );
 delegate!(
     DailyRollupStorage,
-    memory,
+    store,
     thalamus_model::rollup::RollupId,
     thalamus_model::rollup::DailyRollupSnapshot
 );
