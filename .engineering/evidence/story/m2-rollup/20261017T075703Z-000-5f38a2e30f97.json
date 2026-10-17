@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-17T07:57:03Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-rollup",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:adversary-m2-rollup-pass-1",
+    "reference": "corrections 8bb584f: F1 hook after both recording passes, F2 every closed day without a row, F3 rolled-up series skipped before building, F4 --signal naming no definition refused (exit 65)",
+    "review": "review-result:adversary-m2-rollup-pass-1",
+    "outcome": "fixed"
+  }
+}

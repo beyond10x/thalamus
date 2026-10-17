@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-17T07:56:56Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-rollup",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 5d16c33 and wave/20261017b 9e1a455: core rollup 7, cli rollup and adv_rollup_p1 1, service daily_rollup 1 and adv_rollup_p1 2, task test-postgres exit 0 (store conformance with RecordRollup), clippy -D warnings and fmt exit 0"
+  }
+}
