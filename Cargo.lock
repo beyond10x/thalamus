@@ -1504,12 +1504,15 @@ dependencies = [
 name = "thalamus-service"
 version = "0.1.0"
 dependencies = [
+ "clap",
+ "serde_json",
  "thalamus",
  "thalamus-core",
  "thalamus-pipeline",
  "thalamus-sources",
  "thalamus-spec-types",
  "thalamus-store",
+ "time",
 ]
 
 [[package]]
