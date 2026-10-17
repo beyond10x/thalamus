@@ -8,7 +8,7 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 - A `rolling_median` baseline over a series of `rolling_n` samples or more with fewer than `rolling_n` `ok` ones is `UNKNOWN` with reason `too few ok samples`, not `baseline predates series`.
 - `thalamus-service run` fills at most 288 missed slots on its first tick, and none from before the revision in force, so a long-stopped or muted-across-restart definition no longer gets a sample per slot of the whole gap (design D47).
-- A store on SQLite waits out a write lock another connection holds, for up to 30 seconds, when it reserves an id or appends, instead of panicking with `database is locked`.
+- A store on SQLite waits out a write lock another connection holds, for about 35 seconds at most, when it reserves an id or appends, instead of panicking with `database is locked`.
 - `thalamus flaps --since <duration>` measures raw and settled verdict changes per family and
   series-day over stored evaluations, with `--rev`, `--k`, `--k-crit`, `--m` and `--sweep`.
 
