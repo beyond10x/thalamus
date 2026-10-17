@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T01:21:52Z",
+  "actor": "human:timo",
+  "artifact": "story:m3-one-vocabulary-across-sources",
+  "kind": "story",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 1201385: thalamus-pipeline every_source_one_ladder 5 passed 0 failed; clippy -D warnings and fmt --check exit 0",
+    "reference": "1201385"
+  }
+}

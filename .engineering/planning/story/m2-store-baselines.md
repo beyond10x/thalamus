@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-store-baselines
 kind: story
-status: draft
+status: implemented
 title: Grade against same_slot_median_4w and rolling_median from stored samples
 relations:
 - decomposes: epic:history-and-transitions
@@ -18,11 +18,25 @@ scope:
   path: crates/thalamus-core/src/baseline/rolling.rs
 - confidence: inferred
   path: crates/thalamus-core/src/baseline/same_slot.rs
+- confidence: cited
+  path: crates/thalamus-core/tests/baselines.rs
 - confidence: inferred
   path: crates/thalamus-core/tests/store_baselines.rs
+- confidence: cited
+  path: crates/thalamus-docs/src/status.rs
 - confidence: inferred
   path: crates/thalamus-pipeline/src/evaluate.rs
-revision: 9
+- confidence: cited
+  path: website/data/status.json
+- confidence: cited
+  path: website/docs/concepts/baselines.md
+- confidence: cited
+  path: website/docs/concepts/signals.md
+revision: 13
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-16T21:40:01Z", actor: "human:timo", revision: 10, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "proposed", to: "active", at: "2026-10-16T21:40:01Z", actor: "human:timo", revision: 11, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "active", to: "implemented", at: "2026-10-17T01:21:55Z", actor: "human:timo", revision: 13, decided_on: {"recorded":{"test_result":1,"review_outcome":2}}}
 ---
 ## Context
 

@@ -6,6 +6,8 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+## 0.1.0 — 2026-10-17
+
 Specification and model
 
 - Five ESS domains under `spec/` specify signal definitions, dimensions, samples, evaluations and
@@ -20,6 +22,8 @@ Grading
   an unknown reading is never `OK`.
 - Offset, pooled, higher-of, lower-of and fixed baselines; a baseline older than its series is
   `UNKNOWN`.
+- `same_slot_median_4w` and `rolling_median` baselines, computed from the series' stored samples;
+  a missing week or fewer than `rolling_n` `ok` samples is `UNKNOWN`.
 - Persistence settles verdict changes: `k` agreeing evaluations (`k_crit` for `CRIT`), and `WARN`
   clears after `m` `OK` evaluations, never on `N/A` or `UNKNOWN`.
 - Other producers' vocabularies (colour ladders, detector exits, blocking gate exits) map onto the
@@ -44,6 +48,9 @@ Command line
 - `thalamus sample`, `thalamus eval`, `thalamus show` (exits with the worst current verdict) and
   `thalamus compare --vs <offset>`; a usage error exits 64, never a verdict code. `rollup` and
   `flaps` are parsed and still exit 70, not implemented.
+- `thalamus-service run --instance <dir>` samples each Active definition on its cadence until
+  stopped; a slot it missed is recorded as an `unknown` sample with reason `missed_slot`, and a read
+  past its cadence is `unknown`, `read timed out`.
 
 Project
 

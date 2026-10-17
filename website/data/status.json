@@ -172,10 +172,10 @@
     },
     {
       "area": "Sources",
-      "detail": "A pass over every source kind yields only ladder verdicts and exits with the worst one. Planned in story:m3-one-vocabulary-across-sources.",
+      "detail": "A pass over every source kind yields only ladder verdicts and exits with the worst one.",
       "href": "/docs/concepts/verdicts",
       "label": "One vocabulary across every source",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Command line",
@@ -214,10 +214,10 @@
     },
     {
       "area": "Service",
-      "detail": "The scheduler in thalamus-service owns sampling; a missed slot is an unknown sample. Planned in story:m2-scheduler.",
+      "detail": "The scheduler in thalamus-service owns sampling; a missed slot is an unknown sample.",
       "href": "/docs/concepts/samples",
       "label": "Each Active definition is sampled on its cadence",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Service",

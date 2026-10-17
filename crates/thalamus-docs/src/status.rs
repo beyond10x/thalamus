@@ -279,11 +279,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#the-host-collector",
     ),
-    planned(
+    shipped(
         "Sources",
         "One vocabulary across every source",
         "A pass over every source kind yields only ladder verdicts and exits with the worst one.",
-        "story:m3-one-vocabulary-across-sources",
+        Evidence::Test(
+            "crates/thalamus-pipeline/tests/every_source_one_ladder.rs::every_source_kind_yields_only_ladder_verdicts",
+        ),
         "/docs/concepts/verdicts",
     ),
     shipped(

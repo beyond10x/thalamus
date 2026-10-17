@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T01:10:51Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-store-baselines",
+  "kind": "story",
+  "revision": 12,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 298e3c9: thalamus-core, thalamus-pipeline, thalamus-cli, thalamus-docs 413 passed; adv_eval_show_p1 concurrent-eval case failed once under load and passed 3 reruns (fixture names no store baseline); clippy -D warnings and fmt --check exit 0; task docs-generate exit 0 (ess 0.60.0)",
+    "reference": "298e3c9"
+  }
+}
