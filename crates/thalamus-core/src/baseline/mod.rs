@@ -30,6 +30,10 @@ use time::format_description::well_known::Rfc3339;
 /// The reason of a baseline whose window starts before its series began (rule 2).
 pub const REASON_PREDATES_SERIES: &str = "baseline predates series";
 
+/// The reason of a `rolling_median` baseline whose series holds `rolling_n` samples or more, fewer
+/// than `rolling_n` of them `ok`.
+pub const REASON_TOO_FEW_OK: &str = "too few ok samples";
+
 /// The reason of a `same_slot_median_4w` baseline one of whose four slots holds no `ok` reading
 /// (rule 1: a missing week is unknown, not a median of three).
 pub const REASON_SAME_SLOT_NOT_READ: &str = "same slot not read";

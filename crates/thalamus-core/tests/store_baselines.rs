@@ -357,7 +357,19 @@ fn rolling_median_skips_unknown_and_partial() {
 }
 
 #[test]
-fn rolling_median_too_few_is_unknown() {
+fn rolling_median_short_series_predates_series() {
+    // Fewer than rolling_n samples of any status: the series is too young.
+    let history = hourly(vec![unknown("source down"), ok("2")]);
+    let folded = fold(&rolling(3), TS, &history, OLD);
+    assert_eq!(reason(&folded), "baseline predates series", "{folded:#?}");
+
+    let folded = fold(&rolling(1), TS, &[], OLD);
+    assert_eq!(reason(&folded), "baseline predates series", "{folded:#?}");
+}
+
+#[test]
+fn rolling_median_long_series_with_too_few_ok_says_so() {
+    // rolling_n samples or more, fewer than rolling_n of them ok.
     let history = hourly(vec![
         unknown("source down"),
         ok("2"),
@@ -365,10 +377,12 @@ fn rolling_median_too_few_is_unknown() {
         ok("6"),
     ]);
     let folded = fold(&rolling(3), TS, &history, OLD);
-    assert_eq!(reason(&folded), REASON_PREDATES_SERIES, "{folded:#?}");
+    assert_eq!(folded.kind.0, "rolling_median");
+    assert_eq!(reason(&folded), "too few ok samples", "{folded:#?}");
 
-    let folded = fold(&rolling(1), TS, &[], OLD);
-    assert_eq!(reason(&folded), REASON_PREDATES_SERIES, "{folded:#?}");
+    let history = hourly(vec![unknown("a"), unknown("b"), unknown("c")]);
+    let folded = fold(&rolling(3), TS, &history, OLD);
+    assert_eq!(reason(&folded), "too few ok samples", "{folded:#?}");
 }
 
 #[test]
