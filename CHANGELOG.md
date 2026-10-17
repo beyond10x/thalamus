@@ -6,6 +6,9 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+- `thalamus flaps --since <duration>` measures raw and settled verdict changes per family and
+  series-day over stored evaluations, with `--rev`, `--k`, `--k-crit`, `--m` and `--sweep`.
+
 ## 0.1.0 — 2026-10-17
 
 Specification and model

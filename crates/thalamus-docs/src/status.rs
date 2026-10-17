@@ -98,7 +98,7 @@ pub const CAPABILITIES: &[Capability] = &[
     shipped(
         "Command line",
         "A usage error exits 64, never a verdict code",
-        "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show and compare are implemented; rollup and flaps still exit 70, not implemented.",
+        "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show, compare and flaps are implemented; rollup still exits 70, not implemented.",
         Evidence::Test("crates/thalamus-cli/tests/cli.rs::an_unknown_flag_exits_64"),
         "/docs/getting-started",
     ),
@@ -318,11 +318,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m2-rollup",
         "/docs/concepts/samples#storage",
     ),
-    planned(
+    shipped(
         "Command line",
         "thalamus flaps",
-        "Measures flap rates over stored evaluations before k and m are fixed.",
-        "story:m2-flap-measurement",
+        "Measures raw and settled verdict changes per family and series-day over stored evaluations, so k and m can be fixed per family.",
+        Evidence::Test(
+            "crates/thalamus-cli/tests/flaps.rs::flaps_settled_changes_match_hysteresis_replay",
+        ),
         "/docs/concepts/verdicts#persistence",
     ),
     shipped(
