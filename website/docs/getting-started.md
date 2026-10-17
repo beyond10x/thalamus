@@ -75,15 +75,6 @@ Options:
   -V, --version           Print version
 ```
 
-Every subcommand not yet implemented exits 70:
-
-```console
-$ ./target/debug/thalamus compare
-thalamus compare: not implemented
-$ echo $?
-70
-```
-
 A usage error exits 64, never one of the verdict ladder's exit codes (0 to 3):
 
 ```console

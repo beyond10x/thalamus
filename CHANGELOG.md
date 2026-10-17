@@ -6,6 +6,8 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+- `thalamus rollup [--day YYYY-MM-DD] [--signal <id>]` records one daily rollup per series for a closed UTC day (default yesterday), refuses a day that has not closed and writes nothing on a re-run; `thalamus-service run` rolls up each day after its UTC midnight.
+
 ## 0.2.0 — 2026-10-17
 
 - A `rolling_median` baseline over a series of `rolling_n` samples or more with fewer than `rolling_n` `ok` ones is `UNKNOWN` with reason `too few ok samples`, not `baseline predates series`.

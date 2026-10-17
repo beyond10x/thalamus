@@ -483,7 +483,7 @@ fn rolling_n(definition: &SignalDefinitionData) -> Result<usize, Refusal> {
 /// The median of `values`, exact: the middle value of an odd count, the mean of the two middle
 /// values of an even one. An `unknown` reading naming the value when one is not a decimal, and
 /// `None` for no values.
-fn median(values: &[&Decimal]) -> Option<Reading> {
+pub(crate) fn median(values: &[&Decimal]) -> Option<Reading> {
     let mut parsed = Vec::with_capacity(values.len());
     for value in values {
         match Dec::parse(&value.0) {
@@ -514,6 +514,11 @@ fn median(values: &[&Decimal]) -> Option<Reading> {
     // Half of a value at `scale` is five times it at one more fractional digit: exact.
     let half = sum.times(5, scale);
     Some(ok(Decimal(render(half.negative, half.digits, scale + 1))))
+}
+
+/// The numeric order of two decimals, exact at any length; `None` when either is not one.
+pub(crate) fn decimal_order(left: &Decimal, right: &Decimal) -> Option<Ordering> {
+    Some(Dec::parse(&left.0)?.compare(&Dec::parse(&right.0)?))
 }
 
 /// Rule 2: the reason an offset baseline is unknown because of the series age, if it is.
