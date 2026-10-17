@@ -174,6 +174,26 @@ impl SeriesHysteresis {
         }
     }
 
+    /// A series resumed from the settled verdict last recorded for it, with its window and newest
+    /// `ts` read from `history`: the stored evaluations up to and including that transition's
+    /// `settled_ts`, in minting order. The changes `history` settles are not returned (they are
+    /// recorded already); the settled verdict is `settled` after it. So a re-grade of a sample
+    /// in the window after a restart is a re-grade, and one of a sample older than the window
+    /// is dropped as late, as in a service that never stopped.
+    #[must_use]
+    pub fn resume_from<'a>(
+        persistence: Persistence,
+        settled: Verdict,
+        history: impl IntoIterator<Item = &'a SignalEvaluationData>,
+    ) -> Self {
+        let mut resumed = Self::new(persistence);
+        for evaluation in history {
+            let _recorded = resumed.observe(evaluation);
+        }
+        resumed.settled = Some(settled);
+        resumed
+    }
+
     /// Applies `persistence` from now on, as after a definition revision that changed it, and
     /// returns the change the current run settles under it, if any. The settled verdict and the
     /// window are kept; a smaller window lets its oldest samples go.
