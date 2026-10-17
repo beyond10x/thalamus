@@ -6,6 +6,8 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+- A `rolling_median` baseline over a series of `rolling_n` samples or more with fewer than `rolling_n` `ok` ones is `UNKNOWN` with reason `too few ok samples`, not `baseline predates series`.
+
 ## 0.1.0 — 2026-10-17
 
 Specification and model
