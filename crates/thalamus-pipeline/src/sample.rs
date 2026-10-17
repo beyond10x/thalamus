@@ -264,61 +264,90 @@ pub fn sample_into(
 ) -> Result<(), PassError> {
     let run_id = pass.run_id.clone();
     for signal in signals {
-        let Some(definition) = instance.instance().definition(&signal.0).cloned() else {
-            pass.refused.push(Refusal::UnknownSignal {
-                signal: signal.0.clone(),
-            });
-            continue;
+        let reads = match instance.instance().definition(&signal.0) {
+            Some(definition) => registry::read(connectors, definition.data(), end, &run_id),
+            None => Vec::new(),
         };
-        let reads = registry::read(connectors, definition.data(), end, &run_id);
-        for (series, dims, reads) in by_series(instance, &definition, reads, &mut pass.refused) {
-            let text = match reads.as_slice() {
-                [read] => vocabulary::sample_text(definition.data(), read),
-                _ => None,
-            };
-            let read = merge(&series, reads);
-            let input = match sample_input(
-                instance,
-                store,
-                &definition,
-                (series, dims, read, text),
-                end,
-                &run_id,
-                producer,
-            ) {
-                Ok(input) => input,
-                Err(refusal) => {
-                    pass.refused.push(refusal);
-                    continue;
-                }
-            };
-            let quality = quality(&input.reading);
-            let series = input.series.clone();
-            let mut ports = Ports {
-                definitions: instance.instance_mut(),
-                samples: store,
-            };
-            match record_sample(&mut ports, input) {
-                Err(_) => return Err(PassError::IdsSpent { prefix: "smp_" }),
-                Ok(RecordSampleOutcome::Recorded { response, .. }) => {
-                    pass.recorded.push(Recorded {
-                        sample_id: response.sample_id,
-                        signal: signal.clone(),
-                        series,
-                        quality,
-                    });
-                }
-                Ok(RecordSampleOutcome::UnknownSignal { .. }) => {
-                    pass.refused.push(Refusal::UnknownSignal {
-                        signal: signal.0.clone(),
-                    });
-                }
-                Ok(RecordSampleOutcome::NotActive { .. }) => {
-                    pass.refused.push(Refusal::NotActive {
-                        signal: signal.0.clone(),
-                        state: definition.state(),
-                    });
-                }
+        record_reads(pass, instance, store, signal, reads, end, producer)?;
+    }
+    Ok(())
+}
+
+/// `reads` of `signal`, made for the window ending at `end` by whoever read them (the extractor
+/// registry in [`sample_into`], or a caller that bounds or replaces the read, such as the
+/// service's scheduler), recorded into `pass` under its run id exactly as [`sample_into`] records
+/// its own: one sample per series, reads that fall on one series key merged ([`merge`]).
+///
+/// # Errors
+///
+/// [`PassError::IdsSpent`] when the store mints no sample id.
+///
+/// # Panics
+///
+/// When the store cannot be read or written: the generated sample port answers no error.
+pub fn record_reads(
+    pass: &mut Pass,
+    instance: &mut LoadedInstance,
+    store: &mut EventlogStore,
+    signal: &SignalId,
+    reads: Vec<Read>,
+    end: &Timestamp,
+    producer: &Producer,
+) -> Result<(), PassError> {
+    let run_id = pass.run_id.clone();
+    let Some(definition) = instance.instance().definition(&signal.0).cloned() else {
+        pass.refused.push(Refusal::UnknownSignal {
+            signal: signal.0.clone(),
+        });
+        return Ok(());
+    };
+    for (series, dims, reads) in by_series(instance, &definition, reads, &mut pass.refused) {
+        let text = match reads.as_slice() {
+            [read] => vocabulary::sample_text(definition.data(), read),
+            _ => None,
+        };
+        let read = merge(&series, reads);
+        let input = match sample_input(
+            instance,
+            store,
+            &definition,
+            (series, dims, read, text),
+            end,
+            &run_id,
+            producer,
+        ) {
+            Ok(input) => input,
+            Err(refusal) => {
+                pass.refused.push(refusal);
+                continue;
+            }
+        };
+        let quality = quality(&input.reading);
+        let series = input.series.clone();
+        let mut ports = Ports {
+            definitions: instance.instance_mut(),
+            samples: store,
+        };
+        match record_sample(&mut ports, input) {
+            Err(_) => return Err(PassError::IdsSpent { prefix: "smp_" }),
+            Ok(RecordSampleOutcome::Recorded { response, .. }) => {
+                pass.recorded.push(Recorded {
+                    sample_id: response.sample_id,
+                    signal: signal.clone(),
+                    series,
+                    quality,
+                });
+            }
+            Ok(RecordSampleOutcome::UnknownSignal { .. }) => {
+                pass.refused.push(Refusal::UnknownSignal {
+                    signal: signal.0.clone(),
+                });
+            }
+            Ok(RecordSampleOutcome::NotActive { .. }) => {
+                pass.refused.push(Refusal::NotActive {
+                    signal: signal.0.clone(),
+                    state: definition.state(),
+                });
             }
         }
     }

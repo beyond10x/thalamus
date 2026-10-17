@@ -321,11 +321,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m2-flap-measurement",
         "/docs/concepts/verdicts#persistence",
     ),
-    planned(
+    shipped(
         "Service",
         "Each Active definition is sampled on its cadence",
         "The scheduler in thalamus-service owns sampling; a missed slot is an unknown sample.",
-        "story:m2-scheduler",
+        Evidence::Test(
+            "crates/thalamus-service/tests/scheduler.rs::samples_each_active_definition_once_per_cadence_slot",
+        ),
         "/docs/concepts/samples",
     ),
     planned(

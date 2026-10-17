@@ -19,12 +19,10 @@ instance, or a definition that is not `Active`, exits 65 and records nothing; a 
 opened exits 74. A sample under a definition's fixed floor is printed as a `breach` line after the
 sample ids, without changing the exit code; see [a floor of free space](./signals.md#a-floor-of-free-space).
 
-:::caution[Planned]
-
-The service's scheduler, which samples each definition on its cadence, is planned; see the
-[status page](/docs/status).
-
-:::
+`thalamus-service run --instance <dir>` runs the scheduler, which samples each `Active` definition
+on its cadence until stopped; see [who samples](#who-samples). It takes the same `--store` and
+`--connectors` as the command line, and reloads the instance and the store before each pass, so a
+revised definition applies from its next slot.
 
 ## A sample on the wire
 
