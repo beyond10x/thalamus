@@ -36,6 +36,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::mpsc;
@@ -152,6 +153,9 @@ pub struct Tick {
     /// What went wrong, one line each: an instance refused, a read or grade refused, a store
     /// failure. Nothing here stops the next tick.
     pub problems: Vec<String>,
+    /// The CloudEvents events the tick emitted, one JSON line each: a settled verdict change
+    /// recorded as a transition (`crate::events`).
+    pub events: Vec<String>,
 }
 
 /// Samples each `Active` definition of one instance on its cadence.
@@ -166,6 +170,8 @@ pub struct Scheduler<C, R> {
     started: bool,
     /// The last slot handled per `Active` definition, in Unix seconds.
     handled: BTreeMap<String, i64>,
+    /// The hysteresis of every series, settling verdict changes into transitions.
+    transitions: crate::transitions::Transitions,
 }
 
 impl<C: Clock, R: Reader> Scheduler<C, R> {
@@ -184,6 +190,7 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
     ) -> Result<Self, OpenError> {
         let instance = LoadedInstance::load(dir).map_err(OpenError::Instance)?;
         let store = EventlogStore::open(locator, instance.name()).map_err(OpenError::Store)?;
+        let transitions = crate::transitions::Transitions::seed(&store, &instance);
         Ok(Self {
             dir: dir.to_owned(),
             store,
@@ -196,6 +203,7 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             },
             started: false,
             handled: BTreeMap::new(),
+            transitions,
         })
     }
 
@@ -206,6 +214,11 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             for problem in &tick.problems {
                 eprintln!("thalamus-service: {problem}");
             }
+            let mut out = std::io::stdout().lock();
+            for event in &tick.events {
+                let _ = writeln!(out, "{event}");
+            }
+            drop(out);
             let next = self.next_slot();
             self.clock.sleep_until(next);
         }
@@ -443,6 +456,7 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
                 .extend(graded.refused.iter().map(ToString::to_string)),
             Err(error) => tick.problems.push(error.to_string()),
         }
+        crate::transitions::observe(&mut self.transitions, &mut self.store, instance, tick);
         tick.runs.push(pass.run_id);
     }
 }

@@ -338,11 +338,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/samples",
     ),
-    planned(
+    shipped(
         "Service",
         "Settled transitions as CloudEvents",
         "A verdict change that persisted is recorded and emitted.",
-        "story:m2-transitions",
+        Evidence::Test(
+            "crates/thalamus-service/tests/transitions.rs::warn_opened_and_cleared_end_to_end",
+        ),
         "/docs/concepts/interfaces#events",
     ),
     planned(
