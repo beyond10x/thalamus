@@ -2,13 +2,15 @@
 format: aep.planning-md/3
 id: story:m2-scheduler
 kind: story
-status: draft
+status: implemented
 title: Sample each Active definition on its cadence in thalamus-service
 relations:
 - decomposes: epic:history-and-transitions
 - depends_on: epic:signal-contract
 - depends_on: story:m1-cli-eval-show
 scope:
+- confidence: cited
+  path: crates/thalamus-pipeline/src/sample.rs
 - confidence: inferred
   path: crates/thalamus-service/Cargo.toml
 - confidence: inferred
@@ -17,7 +19,13 @@ scope:
   path: crates/thalamus-service/src/scheduler.rs
 - confidence: inferred
   path: crates/thalamus-service/tests/scheduler.rs
-revision: 7
+- confidence: cited
+  path: crates/thalamus-sources/src/bin/connectors-double.rs
+revision: 12
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-16T21:40:01Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-16T21:40:01Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-17T01:21:55Z", actor: "human:timo", revision: 12, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Context
 

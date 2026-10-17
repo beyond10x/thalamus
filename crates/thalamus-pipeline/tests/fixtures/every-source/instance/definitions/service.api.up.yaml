@@ -1,0 +1,26 @@
+id: service.api.up
+title: Whether the code host serves a project read
+family: service
+kind: gauge
+unit: "1"
+dimensions: []
+source: { adapter: forge, connection: forge-main }
+extractor: http_probe.up
+query:
+  operation: project.get
+  input: '{"id":"42"}'
+window: PT1H
+cadence: PT1H
+history: store
+denominator: { unit: "{probe}", min_n: 0, since: 2026-01-01T00:00:00Z }
+evaluation:
+  rule: lower_is_worse
+  baselines: [fixed]
+  fixed: "1"
+  warn: { abs: "0.5" }
+  crit: { abs: "0" }
+owner: team:service
+lifecycle: active
+rev: 1
+revised_at: 2026-10-01T00:00:00Z
+revised_by: operator

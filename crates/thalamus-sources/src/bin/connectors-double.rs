@@ -260,9 +260,13 @@ fn append(log: &Path, recording: &str, argv: &[String]) -> std::io::Result<()> {
         .map(|(name, _)| name.to_string_lossy().into_owned())
         .collect();
     env.sort();
-    let line = json!({"recording": recording, "argv": argv, "env": env});
+    // One `write` per line: calls made concurrently append whole lines, never interleaved pieces.
+    let line = format!(
+        "{}\n",
+        json!({"recording": recording, "argv": argv, "env": env})
+    );
     let mut file = OpenOptions::new().create(true).append(true).open(log)?;
-    writeln!(file, "{line}")
+    file.write_all(line.as_bytes())
 }
 
 fn matches(answer: &Value, call: u64, input: Option<&Value>) -> bool {

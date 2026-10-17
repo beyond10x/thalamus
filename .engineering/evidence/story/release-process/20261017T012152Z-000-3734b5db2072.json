@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T01:21:52Z",
+  "actor": "human:timo",
+  "artifact": "story:release-process",
+  "kind": "story",
+  "revision": 4,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at de0433f: thalamus-docs 27 passed 0 failed (release-check among them); clippy -D warnings and fmt --check exit 0; task docs-generate exit 0",
+    "reference": "de0433f"
+  }
+}

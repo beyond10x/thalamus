@@ -159,12 +159,14 @@ pub const CAPABILITIES: &[Capability] = &[
         Evidence::Test("crates/thalamus-core/tests/hysteresis.rs::unknown_does_not_clear_warn"),
         "/docs/concepts/verdicts#persistence",
     ),
-    planned(
+    shipped(
         "Grading",
         "Same-slot median and rolling median baselines",
-        "Computed from stored samples.",
-        "story:m2-store-baselines",
-        "/docs/concepts/baselines",
+        "Computed from stored samples; a missing week or too few samples is UNKNOWN, never a median of less.",
+        Evidence::Test(
+            "crates/thalamus-cli/tests/eval_store_history.rs::eval_grades_store_history_definition_from_stored_samples",
+        ),
+        "/docs/concepts/baselines#store-baselines",
     ),
     shipped(
         "Grading",
@@ -277,11 +279,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/signals#the-host-collector",
     ),
-    planned(
+    shipped(
         "Sources",
         "One vocabulary across every source",
         "A pass over every source kind yields only ladder verdicts and exits with the worst one.",
-        "story:m3-one-vocabulary-across-sources",
+        Evidence::Test(
+            "crates/thalamus-pipeline/tests/every_source_one_ladder.rs::every_source_kind_yields_only_ladder_verdicts",
+        ),
         "/docs/concepts/verdicts",
     ),
     shipped(
@@ -321,11 +325,13 @@ pub const CAPABILITIES: &[Capability] = &[
         "story:m2-flap-measurement",
         "/docs/concepts/verdicts#persistence",
     ),
-    planned(
+    shipped(
         "Service",
         "Each Active definition is sampled on its cadence",
         "The scheduler in thalamus-service owns sampling; a missed slot is an unknown sample.",
-        "story:m2-scheduler",
+        Evidence::Test(
+            "crates/thalamus-service/tests/scheduler.rs::samples_each_active_definition_once_per_cadence_slot",
+        ),
         "/docs/concepts/samples",
     ),
     planned(

@@ -1,0 +1,26 @@
+id: delivery.changes.merged
+title: Changes merged into the repository
+family: delivery
+kind: count_of_cases
+unit: "{change}"
+dimensions: []
+source: { adapter: forge, connection: code-host }
+extractor: git.count
+query:
+  project: "7"
+  records: merge_requests
+window: PT1H
+cadence: PT1H
+history: store
+denominator: { unit: "{change}", min_n: 0, since: 2026-01-01T00:00:00Z }
+evaluation:
+  rule: higher_is_worse
+  baselines: [fixed]
+  fixed: "0"
+  warn: { abs: "10" }
+  crit: { abs: "20" }
+owner: team:delivery
+lifecycle: active
+rev: 1
+revised_at: 2026-10-01T00:00:00Z
+revised_by: operator

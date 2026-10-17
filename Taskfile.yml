@@ -94,6 +94,13 @@ tasks:
     cmds:
       - '{{.CARGO}} run --locked -p thalamus-docs -- generate --check --ess {{.ESS}}'
 
+  release-check:
+    desc: Fail when TAG is not v<workspace version> or CHANGELOG.md has no non-empty section for it (task release-check TAG=v0.1.0)
+    requires:
+      vars: [TAG]
+    cmds:
+      - '{{.CARGO}} run --locked -p thalamus-docs -- release-check --tag {{.TAG}}'
+
   website:
     desc: Build the documentation site, as CI's Documentation validation workflow does
     dir: website

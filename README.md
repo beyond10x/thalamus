@@ -21,6 +21,7 @@ rollups reach cortex as evidence-backed facts.
 | design | [docs/design/thalamus.md](docs/design/thalamus.md) |
 | language | Rust: libraries plus a service and a CLI |
 | secrets | none; every source is a [Connectors](https://beyond10x.github.io/connectors/) ([GitHub](https://github.com/beyond10x/connectors)) connection |
+| changes | [CHANGELOG.md](CHANGELOG.md) |
 | licence | [Apache-2.0](LICENSE) |
 
 ## Build and check

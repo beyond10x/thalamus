@@ -1,0 +1,12 @@
+{
+  "input": {"namespace": "shared-1", "kind": "pods"},
+  "stdout": {
+    "ok": true,
+    "result": {
+      "adapter": "kubernetes",
+      "operation": "resources.list",
+      "revision": "op-rev-1",
+      "result": "{\"items\":[{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-1\",\"namespace\":\"shared-1\"},\"status\":{\"phase\":\"Running\"}},{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-2\",\"namespace\":\"shared-1\"},\"status\":{\"phase\":\"Running\"}},{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"name\":\"api-3\",\"namespace\":\"shared-1\"},\"status\":{\"phase\":\"Pending\"}}],\"next_cursor\":null,\"complete\":true,\"provenance\":{\"instance\":\"kubernetes-main\",\"resource\":\"pods\",\"observed_at_unix_ms\":1792018623000,\"source_revision\":\"4711\"}}"
+    }
+  }
+}

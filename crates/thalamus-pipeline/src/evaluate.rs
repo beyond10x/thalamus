@@ -6,10 +6,14 @@
 //! 1. the baseline windows come from `thalamus_core::baseline::plan`. Under `history: source`
 //!    each window is read from the source through the extractor registry at the shifted window
 //!    end; under `history: store` the series' own stored sample at the offset is read through the
-//!    store's series range read; `fixed` reads nothing;
+//!    store's series range read; `fixed` reads nothing. `same_slot_median_4w` and
+//!    `rolling_median` (`thalamus_core::baseline::stored_history`) read the series' stored
+//!    samples through the series range read, whatever the definition's `history`: the 28 days and
+//!    one hour before the sample, or every sample before it, of which the fold takes the last
+//!    `rolling_n` `ok` ones;
 //! 2. the series age is `denominator.age_s` when the sample carries one, else the time since the
 //!    first stored sample of the series (by instant);
-//! 3. `baseline::fold`, then `grading::grade`; `prev` is the verdict of the newest evaluation of
+//! 3. `baseline::fold_with_history`, then `grading::grade`; `prev` is the verdict of the newest evaluation of
 //!    the series whose `ts` is earlier than the sample's (design § 11 D6: the previous raw
 //!    verdict);
 //! 4. the result is recorded through the generated `RecordEvaluation` over the store, under an
@@ -23,7 +27,9 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
-use thalamus_core::baseline::{self, Offset, OffsetReading, WindowRequest};
+use thalamus_core::baseline::{
+    self, Offset, OffsetReading, StoredHistory, WindowRequest, same_slot,
+};
 use thalamus_core::behaviour::evaluation::record_evaluation;
 use thalamus_core::behaviour::observation::{
     IdSequence, Instant, in_time_order, series_samples, timestamp_order,
@@ -38,7 +44,8 @@ use thalamus_model::evaluation::{
     EvaluationId, RecordEvaluation, RecordEvaluationOutcome, SignalEvaluationSnapshot, Verdict,
 };
 use thalamus_model::observation::{
-    Reading, RunId, SampleId, SeriesKey, SignalSampleData, SignalSampleSnapshot, UnreadReading,
+    Reading, RunId, SampleId, SeriesKey, SeriesSamples, SignalSampleData, SignalSampleSnapshot,
+    UnreadReading,
 };
 use thalamus_model::primitives::{Duration, Timestamp};
 use thalamus_sources::adapter::{Read, window_ending};
@@ -315,8 +322,13 @@ fn evaluate_definition(
                 History::Store => from_store(store, &data.cadence, &sample, request),
             })
             .collect();
+        // `plan` accepted the definition, so `stored_history` does too.
+        let history = match baseline::stored_history(data) {
+            Ok(Some(stored)) => stored_samples(store, &sample, stored),
+            Ok(None) | Err(_) => Vec::new(),
+        };
         let age = series_age(store, &sample);
-        let folded = match baseline::fold(data, &sample, &readings, age) {
+        let folded = match baseline::fold_with_history(data, &sample, &readings, &history, age) {
             Ok(folded) => folded,
             Err(refusal) => {
                 pass.refused.push(Refusal::Baseline {
@@ -491,6 +503,45 @@ fn from_store(
         },
         None => unknown(request.offset, NO_STORED_SAMPLE.to_owned()),
     }
+}
+
+/// The earliest bound of a `rolling_median` read: every stored sample of the series before the
+/// graded one, from which the fold takes the last `rolling_n` `ok` ones.
+const BEGINNING: &str = "0001-01-01T00:00:00Z";
+
+/// The stored samples of `sample`'s series a store baseline reads, through the store's series
+/// range read, as `thalamus.observation.SeriesSamples` rows: for `same_slot_median_4w` the 28 days
+/// and one hour before the sample, for `rolling_median` everything before it. A sample whose `ts`
+/// names no instant reads nothing, and the fold answers `UNKNOWN` for it.
+fn stored_samples(
+    store: &EventlogStore,
+    sample: &SignalSampleData,
+    stored: StoredHistory,
+) -> Vec<SeriesSamples> {
+    let from = match stored {
+        StoredHistory::SameSlot => {
+            let span = Duration(format!("PT{}S", same_slot::SPAN_S));
+            match window_ending(&span, &sample.ts) {
+                Ok(window) => window.start,
+                Err(_) => return Vec::new(),
+            }
+        }
+        StoredHistory::Rolling { .. } => Timestamp(BEGINNING.to_owned()),
+    };
+    store
+        .series_range(&sample.series, &from, &sample.ts)
+        .samples
+        .into_iter()
+        .map(|row| SeriesSamples {
+            sample_id: row.sample_id,
+            ts: row.ts,
+            window: row.window,
+            reading: row.reading,
+            text: row.text,
+            unit: row.unit,
+            denominator: row.denominator,
+        })
+        .collect()
 }
 
 /// Why a stored offset baseline is unknown when no stored sample lies at the offset.

@@ -600,16 +600,23 @@ fn instant_refuses_non_fixed_baseline() {
     assert_eq!(value(&folded), "3");
 }
 
+/// `story:m2-store-baselines` computes the two store baselines from stored history
+/// (`tests/store_baselines.rs`); they read no source window, and folded without that history
+/// they are unknown, never 0.
 #[test]
-fn store_baselines_answer_not_in_m1() {
-    for kind in [BaselineKind::SameSlotMedian4w, BaselineKind::RollingMedian] {
-        let definition = ratio(&[kind]);
-        let refusal = baseline::plan(&definition, &sample()).expect_err("not in M1");
-        assert_eq!(refusal, Refusal::NotInM1 { kind });
-        assert!(refusal.to_string().contains("not in M1"), "{refusal}");
-        assert_eq!(
-            baseline::fold(&definition, &sample(), &[], OLD),
-            Err(Refusal::NotInM1 { kind }),
+fn store_baselines_read_no_window_and_fold_unknown_without_history() {
+    let mut rolling = ratio(&[BaselineKind::RollingMedian]);
+    rolling.evaluation.rolling_n = Some(3);
+    for definition in [ratio(&[BaselineKind::SameSlotMedian4w]), rolling] {
+        assert!(
+            baseline::plan(&definition, &sample())
+                .expect("a store baseline plans")
+                .is_empty()
+        );
+        let folded = baseline::fold(&definition, &sample(), &[], OLD).expect("folds");
+        assert!(
+            matches!(folded.reading, Reading::Unknown(_)),
+            "never a number without history: {folded:?}"
         );
     }
 }

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T01:21:31Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-scheduler",
+  "kind": "story",
+  "revision": 11,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 3d3daa2: thalamus-service 13 passed 0 failed (scheduler 8, adv_scheduler_p1 2, adv_scheduler_p2 3), thalamus-pipeline; clippy -D warnings and fmt --check exit 0",
+    "reference": "3d3daa2"
+  }
+}

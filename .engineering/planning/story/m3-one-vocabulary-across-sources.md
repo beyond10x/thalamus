@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m3-one-vocabulary-across-sources
 kind: story
-status: draft
+status: implemented
 title: One pass over every source kind yields only ladder verdicts and the worst verdict's exit
 relations:
 - decomposes: epic:source-adapters
@@ -17,11 +17,19 @@ relations:
 - depends_on: story:m1-prometheus-adapter
 - depends_on: story:m1-cli-eval-show
 scope:
+- confidence: cited
+  path: Cargo.lock
+- confidence: cited
+  path: crates/thalamus-pipeline/Cargo.toml
 - confidence: inferred
   path: crates/thalamus-pipeline/tests/every_source_one_ladder.rs
 - confidence: inferred
   path: crates/thalamus-pipeline/tests/fixtures/every-source
-revision: 3
+revision: 9
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-16T21:40:01Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "proposed", to: "active", at: "2026-10-16T21:40:01Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "active", to: "implemented", at: "2026-10-17T01:21:54Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"test_result":1,"review_outcome":3}}}
 ---
 ## Context
 
@@ -52,3 +60,11 @@ All paths `inferred` (no code exists yet):
 - `crates/thalamus-pipeline/tests/fixtures/every-source` (new: definitions, dimension registry, recorded Connectors answers)
 
 No source file outside these paths is expected to change; a change one adapter needs belongs to that adapter story. The crate and its member line are `story:m0-workspace`'s.
+
+## Amendment 1 (wave 20261016b)
+
+`generated/spec-types` declares no type for a whole `thalamus.sample/1` or `thalamus.evaluation/1` line, only the `SampleRecorded` and `EvaluationRecorded` event subsets, and `ess generate types` selects types and events, not entities. The generated form of the two entities is their JSON Schema (`website/static/schemas/signal-sample.schema.json`, `signal-evaluation.schema.json`, from `ess generate --kind schema`, drift-checked by `task docs-check`). Decision (reversible): `every_recorded_sample_and_evaluation_validates_against_generated_types` validates each stored line of the pass against the JSON Schema of its entity, with the dev-dependency `boon` in `thalamus-pipeline`; no second record type is declared in `spec/`. Scope adds `crates/thalamus-pipeline/Cargo.toml` (dev-dependencies) and `Cargo.lock`.
+
+## Amendment 2 (wave 20261016b)
+
+A stored line is the body of the `SampleRecorded` or `EvaluationRecorded` event with the store envelope key `schema` (`crates/thalamus-store/src/samples.rs` `encode`), not the entity snapshot: the entity schemas require `state` and refuse extra keys. Both entities have the single state `Recorded` (`spec/domains/observation.yaml:170`), which the store supplies on read (`samples.rs` `snapshot`). Decision (reversible): the test reads each stored line as the snapshot the store serves (the `schema` key taken off, `state: "Recorded"` put on) and validates that against the entity JSON Schema; the stored line format does not change.

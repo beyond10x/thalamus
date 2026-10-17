@@ -1,0 +1,5 @@
+registry_id: fixture
+title: Fixture instance
+dimensions:
+  component: { registry: file:registries/components.yaml }
+  environment: { registry: open }
