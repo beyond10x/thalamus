@@ -1,11 +1,16 @@
 //! Baselines (design § 3.1): which earlier windows a sample's baseline reads, and how their
 //! readings fold into the one baseline the sample is graded against.
 //!
-//! Pure: [`plan`] names the windows to read, the caller reads them, and [`fold`] turns what came
-//! back, together with the age of the series, into a recorded [`Baseline`]. A baseline that could
-//! not be read (rule 1), or that is older than its series (rule 2, L6), folds to an `unknown`
-//! reading, which carries no value, so it can never become 0. A signal of kind `instant` is graded
-//! against `fixed` only (rule 3, L8).
+//! Pure: [`plan`] names the windows to read, [`stored_history`] names the stored history to read,
+//! the caller reads them, and [`fold_with_history`] (or [`fold`], with no stored history) turns
+//! what came back, together with the age of the series, into a recorded [`Baseline`]. A baseline
+//! that could not be read (rule 1), or that is older than its series (rule 2, L6), folds to an
+//! `unknown` reading, which carries no value, so it can never become 0. A signal of kind
+//! `instant` is graded against `fixed` only (rule 3, L8).
+//!
+//! The two baselines only stored history answers, `same_slot_median_4w` ([`same_slot`]) and
+//! `rolling_median` ([`rolling`]), read the samples of the series the caller passes, as
+//! `thalamus.observation.SeriesSamples` serves them; they read no source window.
 
 pub mod rolling;
 pub mod same_slot;
@@ -16,7 +21,7 @@ use std::fmt;
 use thalamus_model::definition::{BaselineKind, SignalDefinitionData, SignalKind};
 use thalamus_model::evaluation::{Baseline, BaselineLabel};
 use thalamus_model::observation::{
-    CompleteReading, Reading, SignalSampleData, TimeWindow, UnreadReading,
+    CompleteReading, Reading, SeriesSamples, SignalSampleData, TimeWindow, UnreadReading,
 };
 use thalamus_model::primitives::{Decimal, Timestamp};
 use time::OffsetDateTime;
@@ -24,6 +29,10 @@ use time::format_description::well_known::Rfc3339;
 
 /// The reason of a baseline whose window starts before its series began (rule 2).
 pub const REASON_PREDATES_SERIES: &str = "baseline predates series";
+
+/// The reason of a `same_slot_median_4w` baseline one of whose four slots holds no `ok` reading
+/// (rule 1: a missing week is unknown, not a median of three).
+pub const REASON_SAME_SLOT_NOT_READ: &str = "same slot not read";
 
 /// The reason of an offset baseline over a series whose age is not known (rule 2, read
 /// conservatively).
@@ -120,10 +129,11 @@ pub enum Refusal {
         /// The signal's kind.
         kind: SignalKind,
     },
-    /// A baseline that milestone M1 does not compute (`story:m2-store-baselines`).
-    NotInM1 {
-        /// The kind requested.
-        kind: BaselineKind,
+    /// A `rolling_median` baseline whose definition declares no `evaluation.rolling_n` of at
+    /// least 1 (the spec's `thalamus.definition.RollingWindowMissing`).
+    RollingNeedsN {
+        /// The `evaluation.rolling_n` declared, if any.
+        n: Option<i64>,
     },
     /// A timestamp of the sample is not RFC 3339, or its shifted window cannot be written as one.
     Timestamp {
@@ -159,7 +169,15 @@ impl fmt::Display for Refusal {
                  or one offset",
                 signal_kind_name(*kind)
             ),
-            Refusal::NotInM1 { kind } => write!(f, "baseline {} is not in M1", kind_name(*kind)),
+            Refusal::RollingNeedsN { n: None } => f.write_str(
+                "rolling_median is the median of the last N samples, and evaluation.rolling_n \
+                 declares no N",
+            ),
+            Refusal::RollingNeedsN { n: Some(n) } => write!(
+                f,
+                "rolling_median is the median of the last N samples, and evaluation.rolling_n \
+                 {n} is below 1"
+            ),
             Refusal::Timestamp { field, value } => {
                 write!(
                     f,
@@ -199,12 +217,13 @@ pub fn signal_kind_name(kind: SignalKind) -> &'static str {
     }
 }
 
-/// The windows `fold` needs read for this sample, one per offset, in offset order. `fixed` needs
-/// none.
+/// The windows `fold` needs read for this sample, one per offset, in offset order. `fixed`,
+/// `same_slot_median_4w` and `rolling_median` need none: the last two read stored history
+/// ([`stored_history`]).
 ///
 /// # Errors
 ///
-/// A [`Refusal`] when the definition names no single M1 baseline (rule 3 included), or when the
+/// A [`Refusal`] when the definition names no single baseline (rule 3 included), or when the
 /// sample's window is not RFC 3339.
 pub fn plan(
     definition: &SignalDefinitionData,
@@ -225,29 +244,77 @@ pub fn plan(
         .collect()
 }
 
-/// The baseline `sample` is graded against, from the readings of the windows [`plan`] named.
-///
-/// `series_age_s` is the age of the series at the sample, in seconds (`denominator.age_s`, or what
-/// the caller resolved); `None` when it is not known. A `fixed` baseline is the definition's own
-/// number, `evaluation.fixed` (design § 11 D25), and is unknown, never 0, when it declares none.
-///
-/// The recorded kind and offsets follow design § 11 D4: a combined baseline over both offsets is
-/// recorded as, for example, `pooled` over `[1d, 7d]`.
+/// The stored history a baseline reads, for the two baselines only stored history answers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StoredHistory {
+    /// `same_slot_median_4w`: the series' samples of the 28 days and one hour before the graded
+    /// sample ([`same_slot::SPAN_S`]).
+    SameSlot,
+    /// `rolling_median`: the series' last `n` `ok` samples before the graded sample.
+    Rolling {
+        /// `evaluation.rolling_n`, at least 1.
+        n: usize,
+    },
+}
+
+/// The stored history the definition's baseline reads, or `None` when it reads none (an offset
+/// baseline reads its windows through [`plan`], and `fixed` reads nothing).
 ///
 /// # Errors
 ///
-/// A [`Refusal`] when the definition names no single M1 baseline (rule 3 included), or when the
-/// sample's timestamps are not RFC 3339. An unreadable or too-old baseline is not an error: it is
-/// an `Ok` baseline whose reading is `unknown`.
+/// A [`Refusal`] when the definition names no single baseline (rule 3 included).
+pub fn stored_history(definition: &SignalDefinitionData) -> Result<Option<StoredHistory>, Refusal> {
+    Ok(match resolve(definition)? {
+        Shape::SameSlot => Some(StoredHistory::SameSlot),
+        Shape::Rolling(n) => Some(StoredHistory::Rolling { n }),
+        Shape::Offset(_) | Shape::Combined(..) | Shape::Fixed => None,
+    })
+}
+
+/// [`fold_with_history`] with no stored history: a `same_slot_median_4w` or `rolling_median`
+/// baseline folded here is unknown, never 0.
+///
+/// # Errors
+///
+/// As [`fold_with_history`].
 pub fn fold(
     definition: &SignalDefinitionData,
     sample: &SignalSampleData,
     readings: &[OffsetReading],
     series_age_s: Option<i64>,
 ) -> Result<Baseline, Refusal> {
+    fold_with_history(definition, sample, readings, &[], series_age_s)
+}
+
+/// The baseline `sample` is graded against, from the readings of the windows [`plan`] named and
+/// the stored history of the series [`stored_history`] named (its rows in any order; only those
+/// before the sample count).
+///
+/// `series_age_s` is the age of the series at the sample, in seconds (`denominator.age_s`, or what
+/// the caller resolved); `None` when it is not known. A `fixed` baseline is the definition's own
+/// number, `evaluation.fixed` (design § 11 D25), and is unknown, never 0, when it declares none.
+///
+/// The recorded kind and offsets follow design § 11 D4: a combined baseline over both offsets is
+/// recorded as, for example, `pooled` over `[1d, 7d]`; `same_slot_median_4w` over its four weeks
+/// `[7d, 14d, 21d, 28d]`; `rolling_median` over none.
+///
+/// # Errors
+///
+/// A [`Refusal`] when the definition names no single baseline (rule 3 included), or when the
+/// sample's timestamps are not RFC 3339. An unreadable or too-old baseline is not an error: it is
+/// an `Ok` baseline whose reading is `unknown`.
+pub fn fold_with_history(
+    definition: &SignalDefinitionData,
+    sample: &SignalSampleData,
+    readings: &[OffsetReading],
+    history: &[SeriesSamples],
+    series_age_s: Option<i64>,
+) -> Result<Baseline, Refusal> {
     let shape = resolve(definition)?;
     let reading = match &shape {
         Shape::Fixed => fixed_reading(definition.evaluation.fixed.as_ref()),
+        Shape::SameSlot => same_slot::median(&sample.ts, history, series_age_s)?,
+        Shape::Rolling(n) => rolling::median(&sample.ts, history, *n)?,
         Shape::Offset(offset) => match series_rule(sample, &[*offset], series_age_s)? {
             Some(reason) => unknown(reason),
             None => match constituents(&[*offset], readings) {
@@ -265,11 +332,7 @@ pub fn fold(
     };
     Ok(Baseline {
         kind: BaselineLabel(shape.label().to_owned()),
-        offsets: shape
-            .offsets()
-            .iter()
-            .map(|offset| offset.label().to_owned())
-            .collect(),
+        offsets: shape.recorded_offsets(),
         reading,
     })
 }
@@ -287,6 +350,10 @@ enum Shape {
     Offset(Offset),
     Combined(Combiner, Vec<Offset>),
     Fixed,
+    /// `same_slot_median_4w`, from stored history.
+    SameSlot,
+    /// `rolling_median` over the last N `ok` samples, from stored history.
+    Rolling(usize),
 }
 
 impl Shape {
@@ -298,14 +365,32 @@ impl Shape {
             Shape::Combined(Combiner::HigherOf, _) => "higher_of",
             Shape::Combined(Combiner::LowerOf, _) => "lower_of",
             Shape::Fixed => "fixed",
+            Shape::SameSlot => "same_slot_median_4w",
+            Shape::Rolling(_) => "rolling_median",
         }
     }
 
+    /// The source windows the baseline reads, one per offset.
     fn offsets(&self) -> Vec<Offset> {
         match self {
             Shape::Offset(offset) => vec![*offset],
             Shape::Combined(_, offsets) => offsets.clone(),
-            Shape::Fixed => Vec::new(),
+            Shape::Fixed | Shape::SameSlot | Shape::Rolling(_) => Vec::new(),
+        }
+    }
+
+    /// The offsets the recorded baseline names.
+    fn recorded_offsets(&self) -> Vec<String> {
+        match self {
+            Shape::SameSlot => same_slot::WEEKS
+                .iter()
+                .map(|week| format!("{}d", week * 7))
+                .collect(),
+            _ => self
+                .offsets()
+                .iter()
+                .map(|offset| offset.label().to_owned())
+                .collect(),
         }
     }
 }
@@ -329,6 +414,7 @@ fn resolve(definition: &SignalDefinitionData) -> Result<Shape, Refusal> {
     let mut offsets = Vec::new();
     let mut combiners = Vec::new();
     let mut fixed = false;
+    let mut stored = Vec::new();
     for &kind in kinds {
         match kind {
             BaselineKind::Offset1d => offsets.push(Offset::OneDay),
@@ -337,18 +423,26 @@ fn resolve(definition: &SignalDefinitionData) -> Result<Shape, Refusal> {
             BaselineKind::HigherOf => combiners.push(Combiner::HigherOf),
             BaselineKind::LowerOf => combiners.push(Combiner::LowerOf),
             BaselineKind::Fixed => fixed = true,
-            // `story:m2-store-baselines` replaces these two arms with `same_slot` and `rolling`.
-            BaselineKind::SameSlotMedian4w | BaselineKind::RollingMedian => {
-                return Err(Refusal::NotInM1 { kind });
-            }
+            BaselineKind::SameSlotMedian4w | BaselineKind::RollingMedian => stored.push(kind),
         }
     }
     offsets.sort_unstable();
     offsets.dedup();
     combiners.dedup();
+    stored.dedup();
     let ambiguous = || Refusal::Ambiguous {
         kinds: kinds.clone(),
     };
+    // A store baseline is a whole baseline of its own: it stands alone.
+    if let Some(&kind) = stored.first() {
+        if stored.len() > 1 || fixed || !offsets.is_empty() || !combiners.is_empty() {
+            return Err(ambiguous());
+        }
+        return match kind {
+            BaselineKind::SameSlotMedian4w => Ok(Shape::SameSlot),
+            _ => rolling_n(definition).map(Shape::Rolling),
+        };
+    }
     if fixed {
         return if offsets.is_empty() && combiners.is_empty() {
             Ok(Shape::Fixed)
@@ -371,6 +465,51 @@ fn resolve(definition: &SignalDefinitionData) -> Result<Shape, Refusal> {
         });
     }
     Ok(shape)
+}
+
+/// `evaluation.rolling_n`, when it is at least 1.
+fn rolling_n(definition: &SignalDefinitionData) -> Result<usize, Refusal> {
+    let declared = definition.evaluation.rolling_n;
+    declared
+        .filter(|&n| n >= 1)
+        .and_then(|n| usize::try_from(n).ok())
+        .ok_or(Refusal::RollingNeedsN { n: declared })
+}
+
+/// The median of `values`, exact: the middle value of an odd count, the mean of the two middle
+/// values of an even one. An `unknown` reading naming the value when one is not a decimal, and
+/// `None` for no values.
+fn median(values: &[&Decimal]) -> Option<Reading> {
+    let mut parsed = Vec::with_capacity(values.len());
+    for value in values {
+        match Dec::parse(&value.0) {
+            Some(dec) => parsed.push((dec, *value)),
+            None => {
+                return Some(unknown(format!(
+                    "stored value `{}` is not a decimal",
+                    value.0
+                )));
+            }
+        }
+    }
+    parsed.sort_by(|left, right| left.0.compare(&right.0));
+    let count = parsed.len();
+    if count == 0 {
+        return None;
+    }
+    if count % 2 == 1 {
+        return Some(ok(parsed[count / 2].1.clone()));
+    }
+    let (low, high) = (&parsed[count / 2 - 1].0, &parsed[count / 2].0);
+    let scale = low.scale.max(high.scale);
+    let sum = Dec::new(low.negative, low.aligned(scale), scale).plus(&Dec::new(
+        high.negative,
+        high.aligned(scale),
+        scale,
+    ));
+    // Half of a value at `scale` is five times it at one more fractional digit: exact.
+    let half = sum.times(5, scale);
+    Some(ok(Decimal(render(half.negative, half.digits, scale + 1))))
 }
 
 /// Rule 2: the reason an offset baseline is unknown because of the series age, if it is.

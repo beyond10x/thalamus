@@ -12,13 +12,6 @@ A sample is graded against a **baseline**: what is normal for this series. A def
 baseline kinds it is graded against (`evaluation.baselines`), and every evaluation records the
 baseline it used: its kind, its offsets and its own [reading](./samples.md#the-reading).
 
-:::caution[Planned]
-
-The baseline kinds are specified (`BaselineKind`, and `Baseline` on the evaluation). Computing
-them is planned; see the [status page](/docs/status).
-
-:::
-
 ## Kinds
 
 | kind | what | needs |
@@ -43,6 +36,26 @@ failures of yesterday's and last week's windows over their requests.
    apart can differ by a quarter.
 4. A `partial` sample may escalate but never clear; see
    [How a reading is graded](./verdicts.md#how-a-reading-is-graded).
+
+## Store baselines
+
+`same_slot_median_4w` and `rolling_median` are computed from the series' own stored samples, read
+through the store, never from the source. A definition that names one of them names no other
+baseline beside it.
+
+- **`same_slot_median_4w`**: the slots are the UTC hours holding the sample's time minus 7, 14,
+  21 and 28 days, so the weekday and the hour are UTC, whatever offset a timestamp is written in.
+  Each slot's value is its `ok` sample closest to that time; the baseline is the median of the
+  four, recorded with offsets `7d`, `14d`, `21d` and `28d`. A slot with no `ok` sample makes the
+  baseline `UNKNOWN` with reason `same slot not read`: a missing week is not a median of three. A
+  slot whose hour ends before the series began makes it `UNKNOWN` with reason `baseline predates
+  series`.
+- **`rolling_median`**: the median of the last `evaluation.rolling_n` `ok` samples before the
+  graded one; `partial` and `unknown` samples are skipped. Fewer than `rolling_n` makes the
+  baseline `UNKNOWN` with reason `baseline predates series`.
+
+The median of an even count is the mean of the two middle values, computed exactly in decimal
+(the median of `0.1` and `0.2` is `0.15`).
 
 ## How old is a series
 
