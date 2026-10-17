@@ -103,6 +103,16 @@ const SQLITE_LOCK_MESSAGES: [&str; 3] = [
 ];
 /// The pause before an SQLite open that met another opener's lock is tried again.
 const SQLITE_OPEN_PAUSE: Duration = Duration::from_millis(10);
+/// How long an append, and an id reservation, that finds the SQLite write lock held keeps trying
+/// again. The driver's own busy handler waits 5 s and then answers `database is locked`, which a
+/// writer starved under load can meet; the append was refused before it wrote anything, so it is
+/// safe to repeat.
+const LOCK_BUDGET: Duration = Duration::from_secs(30);
+
+/// Whether `error` is SQLite answering that another connection holds a lock.
+fn is_sqlite_locked(error: &EventLogError) -> bool {
+    matches!(error, EventLogError::Backend(message) if SQLITE_LOCK_MESSAGES.contains(&message.as_str()))
+}
 
 /// The table prefix in either database.
 const TABLE_PREFIX: &str = "thalamus";
@@ -322,6 +332,11 @@ impl StoreError {
     /// Whether another writer appended to the stream since this handle last read it.
     pub(crate) fn is_conflict(&self) -> bool {
         matches!(self, Self::Eventlog(EventLogError::Conflict { .. }))
+    }
+
+    /// Whether SQLite answered that another connection holds a lock.
+    fn is_locked(&self) -> bool {
+        matches!(self, Self::Eventlog(error) if is_sqlite_locked(error))
     }
 
     /// Whether the id was already stored on the stream with another body.
@@ -712,8 +727,14 @@ impl EventlogStore {
         &mut self,
         mut attempt: impl FnMut(&mut Self) -> Result<(), StoreError>,
     ) -> Result<(), StoreError> {
-        for _ in 0..CATCH_UP_ATTEMPTS {
+        let started = Instant::now();
+        let mut attempts = 0;
+        while attempts < CATCH_UP_ATTEMPTS {
             match attempt(self) {
+                Err(error) if error.is_locked() && started.elapsed() < LOCK_BUDGET => {
+                    std::thread::sleep(SQLITE_OPEN_PAUSE);
+                    continue;
+                }
                 Err(error) if error.is_conflict() => self.refresh()?,
                 Err(error) if error.is_id_taken_elsewhere() => {
                     self.refresh()?;
@@ -723,6 +744,7 @@ impl EventlogStore {
                 }
                 answer => return answer,
             }
+            attempts += 1;
         }
         Err(StoreError::Contended {
             attempts: CATCH_UP_ATTEMPTS,
@@ -733,10 +755,13 @@ impl EventlogStore {
     /// the highest the instance stream and the id stream hold, appended as a reservation at the
     /// id stream's version this handle last read. Another writer's reservation in between (a
     /// version conflict, or the same reservation already recorded) is read and the next number
-    /// tried, up to [`CATCH_UP_ATTEMPTS`] times. `None` once the sequence is spent.
+    /// tried, up to [`CATCH_UP_ATTEMPTS`] times. An append that finds the SQLite write lock held is
+    /// repeated for up to [`LOCK_BUDGET`], and is no attempt. `None` once the sequence is spent.
     fn reserve(&mut self, prefix: &str) -> Result<Option<u64>, StoreError> {
         self.refresh()?;
-        for _ in 0..CATCH_UP_ATTEMPTS {
+        let started = Instant::now();
+        let mut attempts = 0;
+        while attempts < CATCH_UP_ATTEMPTS {
             self.read_reservations()?;
             let last = self.sequences.get(prefix).copied().unwrap_or(0);
             let Some(number) = last.checked_add(1) else {
@@ -764,9 +789,14 @@ impl EventlogStore {
                     }
                     return Ok(Some(number));
                 }
+                Err(locked) if is_sqlite_locked(&locked) && started.elapsed() < LOCK_BUDGET => {
+                    std::thread::sleep(SQLITE_OPEN_PAUSE);
+                    continue;
+                }
                 Ok(_) | Err(EventLogError::Conflict { .. }) => {}
                 Err(other) => return Err(other.into()),
             }
+            attempts += 1;
         }
         Err(StoreError::Contended {
             attempts: CATCH_UP_ATTEMPTS,

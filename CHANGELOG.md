@@ -6,6 +6,8 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+- A store on SQLite waits out a write lock another connection holds, for up to 30 seconds, when it reserves an id or appends, instead of panicking with `database is locked`.
+
 ## 0.1.0 — 2026-10-17
 
 Specification and model
