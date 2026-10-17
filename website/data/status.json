@@ -18,7 +18,7 @@
     },
     {
       "area": "Command line",
-      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show and compare are implemented; rollup and flaps still exit 70, not implemented.",
+      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show, compare and flaps are implemented; rollup still exits 70, not implemented.",
       "href": "/docs/getting-started",
       "label": "A usage error exits 64, never a verdict code",
       "status": "shipped"
@@ -207,10 +207,10 @@
     },
     {
       "area": "Command line",
-      "detail": "Measures flap rates over stored evaluations before k and m are fixed. Planned in story:m2-flap-measurement.",
+      "detail": "Measures raw and settled verdict changes per family and series-day over stored evaluations, so k and m can be fixed per family.",
       "href": "/docs/concepts/verdicts#persistence",
       "label": "thalamus flaps",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Service",

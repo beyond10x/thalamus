@@ -4,7 +4,7 @@
 
 use std::process::Command;
 
-const STUBS: [&str; 2] = ["rollup", "flaps"];
+const STUBS: [&str; 1] = ["rollup"];
 
 #[test]
 fn every_stub_subcommand_exits_70_saying_not_implemented() {
