@@ -90,17 +90,14 @@ const OPEN_BUDGET: Duration = Duration::from_secs(30);
 /// its timeout (SQLSTATE 57014 or 55P03). Only that deadline is retried at open: a server that
 /// does not answer the connection fails at once.
 const LOCK_DEADLINE: &str = "database statement or lock";
-/// The messages SQLite gives a lock another connection holds: `SQLITE_BUSY` ("database is
-/// locked") and `SQLITE_LOCKED` ("database table is locked", "database schema is locked").
+/// The message SQLite gives `SQLITE_BUSY`, a lock another connection holds, which waiting can
+/// clear. `SQLITE_LOCKED` ("database table is locked", "database schema is locked") is not
+/// matched: on a private connection waiting cannot clear it.
 /// Switching a new database file to WAL answers `SQLITE_BUSY` at once, without the busy handler,
 /// while another connection is switching it, so two processes opening a new store together meet
-/// it. Only these are retried at open, within [`OPEN_BUDGET`]; any other backend failure fails
+/// it. Only this is retried at open, within [`OPEN_BUDGET`]; any other backend failure fails
 /// at once.
-const SQLITE_LOCK_MESSAGES: [&str; 3] = [
-    "database is locked",
-    "database table is locked",
-    "database schema is locked",
-];
+const SQLITE_BUSY_MESSAGE: &str = "database is locked";
 /// The pause before an SQLite open that met another opener's lock is tried again.
 const SQLITE_OPEN_PAUSE: Duration = Duration::from_millis(10);
 /// How long an append, and an id reservation, that finds the SQLite write lock held keeps trying
@@ -111,7 +108,7 @@ const LOCK_BUDGET: Duration = Duration::from_secs(30);
 
 /// Whether `error` is SQLite answering that another connection holds a lock.
 fn is_sqlite_locked(error: &EventLogError) -> bool {
-    matches!(error, EventLogError::Backend(message) if SQLITE_LOCK_MESSAGES.contains(&message.as_str()))
+    matches!(error, EventLogError::Backend(message) if message == SQLITE_BUSY_MESSAGE)
 }
 
 /// The table prefix in either database.
@@ -511,7 +508,7 @@ impl EventlogStore {
                     if operation == LOCK_DEADLINE && started.elapsed() < OPEN_BUDGET => {}
                 Err(StoreError::Eventlog(EventLogError::Backend(message)))
                     if matches!(locator, Locator::Sqlite(_))
-                        && SQLITE_LOCK_MESSAGES.contains(&message.as_str())
+                        && message == SQLITE_BUSY_MESSAGE
                         && started.elapsed() < OPEN_BUDGET =>
                 {
                     std::thread::sleep(SQLITE_OPEN_PAUSE);
@@ -1021,6 +1018,15 @@ pub(crate) fn dims_value(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Only SQLite's busy lock is retried; a table or schema lock is not.
+    #[test]
+    fn only_a_busy_sqlite_lock_is_retried() {
+        let backend = |m: &str| EventLogError::Backend(m.to_string());
+        assert!(is_sqlite_locked(&backend("database is locked")));
+        assert!(!is_sqlite_locked(&backend("database table is locked")));
+        assert!(!is_sqlite_locked(&backend("database schema is locked")));
+    }
 
     /// An append that meets another writer's append on every attempt is retried up to its bound,
     /// then answered with an error naming the attempts, never looped forever or dropped silently.
