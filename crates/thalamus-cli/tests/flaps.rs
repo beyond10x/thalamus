@@ -4,16 +4,15 @@
 //! measures. No source is read: `--connectors` names a binary that does not exist and `PATH` is
 //! empty.
 //!
-//! The expected figures are computed here from what was stored: raw changes by the filter of
-//! `thalamus.evaluation.VerdictChanges` (`defined(prev)`, `verdict != prev`), settled changes by
-//! `thalamus_core::hysteresis::replay` over each series' kept evaluations in minting order.
+//! Every expected figure is a literal worked out by hand from design § 3.2 and the stored
+//! verdicts, never recomputed through the implementation's own replay. Both definitions are
+//! sampled hourly here (`cadence: PT1H`), so 24 kept evaluations of one series are one series-day.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use serde_json::Value;
-use thalamus_core::hysteresis::{Persistence, replay};
 use thalamus_model::definition::{AdapterId, ConnectionId, SignalId, Unit};
 use thalamus_model::evaluation::{EvaluationId, SignalEvaluationData, Verdict};
 use thalamus_model::observation::{
@@ -27,7 +26,7 @@ use time::{Duration, OffsetDateTime};
 
 /// The registry id of the fixture instance: the name its store stream is kept under.
 const INSTANCE: &str = "fixture";
-/// Family `service`, no dimensions, rev 1, no `persistence` block.
+/// Family `service`, no dimensions, rev 1, no `persistence` block, cadence one hour here.
 const DEPTH: &str = "service.queue.depth";
 /// Family `platform`, no dimensions, rev 1: a copy of the gauge added by [`World::new`].
 const PLATFORM: &str = "platform.queue.depth";
@@ -55,7 +54,10 @@ impl World {
         std::fs::create_dir_all(root.join("empty-path")).expect("create the empty PATH directory");
         let definitions = root.join("instance/definitions");
         let gauge = std::fs::read_to_string(definitions.join(format!("{DEPTH}.yaml")))
-            .expect("read the gauge definition");
+            .expect("read the gauge definition")
+            .replace("cadence: PT5M", "cadence: PT1H");
+        std::fs::write(definitions.join(format!("{DEPTH}.yaml")), &gauge)
+            .expect("write the gauge definition");
         std::fs::write(
             definitions.join(format!("{PLATFORM}.yaml")),
             gauge
@@ -246,130 +248,88 @@ fn family<'a>(doc: &'a Value, name: &str) -> &'a Value {
         .unwrap_or_else(|| panic!("family {name} in {doc}"))
 }
 
-/// The rows `thalamus.evaluation.VerdictChanges` shows of `evaluations`: `prev` defined and the
-/// verdict differs from it.
-fn verdict_changes(evaluations: &[SignalEvaluationData]) -> u64 {
-    evaluations
-        .iter()
-        .filter(|evaluation| {
-            evaluation
-                .prev
-                .is_some_and(|prev| prev != evaluation.verdict)
-        })
-        .count() as u64
-}
-
-/// The settled changes after the first settled verdict that `persistence` replays from
-/// `evaluations`, in minting order.
-fn settled(persistence: Persistence, evaluations: &[SignalEvaluationData]) -> u64 {
-    let mut minted = evaluations.to_vec();
-    minted.sort_by(|a, b| a.evaluation_id.0.cmp(&b.evaluation_id.0));
-    replay(persistence, &minted)
-        .iter()
-        .filter(|change| change.from.is_some())
-        .count() as u64
-}
-
-/// The distinct UTC days of the evaluations' `ts`.
-fn days(evaluations: &[SignalEvaluationData]) -> u64 {
-    evaluations
-        .iter()
-        .map(|evaluation| evaluation.ts.0[..10].to_owned())
-        .collect::<BTreeSet<_>>()
-        .len() as u64
-}
-
-fn per_day(changes: u64, days: u64) -> f64 {
-    let rate = changes as f64 / days as f64;
-    (rate * 1000.0).round() / 1000.0
+/// `field` of `row` as a number.
+fn number(row: &Value, field: &str) -> Option<f64> {
+    row[field].as_f64()
 }
 
 const FLAPPY: [Verdict; 10] = [OK, WARN, OK, WARN, WARN, OK, CRIT, OK, OK, OK];
 
+/// Raw changes of `FLAPPY` under `prev`: OK>WARN, WARN>OK, OK>WARN, WARN>OK, OK>CRIT, CRIT>OK, six
+/// per block; one block's last OK to the next block's first OK is no change.
 #[test]
 fn flaps_raw_changes_match_verdict_changes_view() {
     let mut world = World::new("raw_changes");
     // 30 hours, so the series spans two UTC days or more.
     let mut long = FLAPPY.repeat(3);
     long.truncate(30);
-    let depth = world.series(DEPTH, 1, 1, &long);
-    let platform = world.series(PLATFORM, 2, 1, &[OK, OK, CRIT, CRIT, OK]);
-    // Before --since: not read at all, neither kept nor excluded.
+    world.series(DEPTH, 1, 1, &long);
+    world.series(PLATFORM, 2, 1, &[OK, OK, CRIT, CRIT, OK]);
+    // Before --since: read only to seed the settled replay, neither counted nor excluded.
     let old = world.ago(24 * 40);
     let sample = world.sample(DEPTH, &old);
     world.evaluate(&sample, DEPTH, &old, 1, WARN, Some(OK));
 
     let doc = world.json(&["--since", "30d"]);
     assert_eq!(doc["excluded"], 0, "{doc}");
-    for (name, stored) in [("service", &depth), ("platform", &platform)] {
-        let row = family(&doc, name);
-        let raw = verdict_changes(stored);
-        assert!(raw > 0, "the fixture flaps");
-        assert_eq!(row["series"], 1, "{name}: {row}");
-        assert_eq!(row["series_days"], days(stored), "{name}: {row}");
-        assert_eq!(row["raw_changes"], raw, "{name}: {row}");
-        assert_eq!(
-            row["raw_per_series_day"].as_f64(),
-            Some(per_day(raw, days(stored))),
-            "{name}: {row}"
-        );
-    }
+    // 30 hourly evaluations are 1.25 series-days; 18 raw changes over them are 14.4 a day.
+    let row = family(&doc, "service");
+    assert_eq!(row["series"], 1, "{row}");
+    assert_eq!(number(row, "series_days"), Some(1.25), "{row}");
+    assert_eq!(row["raw_changes"], 18, "{row}");
+    assert_eq!(number(row, "raw_per_series_day"), Some(14.4), "{row}");
+    // OK>CRIT and CRIT>OK over 5 hourly evaluations: 5/24 = 0.208 series-days, 9.6 a day.
+    let row = family(&doc, "platform");
+    assert_eq!(row["series"], 1, "{row}");
+    assert_eq!(number(row, "series_days"), Some(0.208), "{row}");
+    assert_eq!(row["raw_changes"], 2, "{row}");
+    assert_eq!(number(row, "raw_per_series_day"), Some(9.6), "{row}");
 }
 
+/// `FLAPPY` twice is the runs OK1 W1 OK1 W2 OK1 C1 OK4 W1 OK1 W2 OK1 C1 OK3 (20 hourly
+/// evaluations, 0.833 series-days, 12 raw changes). A run of V settles V once it is as long as V
+/// needs and V is not already settled; the first settled verdict is a start, not counted.
 #[test]
 fn flaps_settled_changes_match_hysteresis_replay() {
     let mut world = World::new("settled_changes");
     world.persistence(PLATFORM, 3, 2, 1);
-    let depth = world.series(DEPTH, 1, 1, &FLAPPY.repeat(2));
-    let platform = world.series(PLATFORM, 1, 1, &FLAPPY.repeat(2));
+    world.series(DEPTH, 1, 1, &FLAPPY.repeat(2));
+    world.series(PLATFORM, 1, 1, &FLAPPY.repeat(2));
 
-    // Each definition's own persistence: the defaults for the gauge, the declared block for the
-    // copy.
+    // Each definition's own persistence.
     let doc = world.json(&["--since", "7d"]);
-    for (name, stored, persistence) in [
-        ("service", &depth, Persistence::DEFAULT),
-        (
-            "platform",
-            &platform,
-            Persistence {
-                k: 3,
-                k_crit: 2,
-                m: 1,
-            },
-        ),
-    ] {
-        let row = family(&doc, name);
-        let runs = row["settled"].as_array().expect("settled is a list");
-        assert_eq!(runs.len(), 1, "{name}: {row}");
-        let expected = settled(persistence, stored);
-        assert_eq!(runs[0]["settled_changes"], expected, "{name}: {row}");
-        assert_eq!(
-            runs[0]["settled_per_series_day"].as_f64(),
-            Some(per_day(expected, days(stored))),
-            "{name}: {row}"
-        );
-        assert!(runs[0]["k"].is_null(), "{name}: {row}");
-        assert!(
-            expected < verdict_changes(stored),
-            "{name}: hysteresis settles fewer changes than the raw ones"
-        );
-    }
+    // Defaults k 2, k_crit 1, m 3: W2 (start), C1, OK4, W2, C1, OK3 settle: 5, 6.0 a day.
+    let row = family(&doc, "service");
+    let runs = row["settled"].as_array().expect("settled is a list");
+    assert_eq!(runs.len(), 1, "{row}");
+    assert_eq!(number(row, "series_days"), Some(0.833), "{row}");
+    assert_eq!(row["raw_changes"], 12, "{row}");
+    assert_eq!(runs[0]["settled_changes"], 5, "{row}");
+    assert_eq!(
+        number(&runs[0], "settled_per_series_day"),
+        Some(6.0),
+        "{row}"
+    );
+    assert!(runs[0]["k"].is_null(), "{row}");
+    // Declared k 3, k_crit 2, m 1: OK1 settles first; no WARN run reaches 3 and no CRIT run 2.
+    let row = family(&doc, "platform");
+    let runs = row["settled"].as_array().expect("settled is a list");
+    assert_eq!(runs.len(), 1, "{row}");
+    assert_eq!(runs[0]["settled_changes"], 0, "{row}");
+    assert_eq!(
+        number(&runs[0], "settled_per_series_day"),
+        Some(0.0),
+        "{row}"
+    );
+    assert!(runs[0]["k"].is_null(), "{row}");
 
-    // --k, --k-crit and --m override every definition's own.
+    // --k, --k-crit and --m override every definition's own. k 1, k_crit 1, m 2: W1 (start), C1,
+    // OK4, W1, C1, OK3 settle: 5 for both.
     let doc = world.json(&["--since", "7d", "--k", "1", "--k-crit", "1", "--m", "2"]);
-    let given = Persistence {
-        k: 1,
-        k_crit: 1,
-        m: 2,
-    };
-    for (name, stored) in [("service", &depth), ("platform", &platform)] {
+    for name in ["service", "platform"] {
         let row = family(&doc, name);
         let run = &row["settled"][0];
-        assert_eq!(
-            run["settled_changes"],
-            settled(given, stored),
-            "{name}: {row}"
-        );
+        assert_eq!(run["settled_changes"], 5, "{name}: {row}");
         assert_eq!(
             (&run["k"], &run["k_crit"], &run["m"]),
             (&1.into(), &1.into(), &2.into())
@@ -377,36 +337,54 @@ fn flaps_settled_changes_match_hysteresis_replay() {
     }
 }
 
+/// A WARN that settled before `--since` and clears inside it is a settled change of the window:
+/// the replay is seeded with the series' kept evaluations before the window and counts only the
+/// changes that settle inside it.
+///
+/// Hourly, 9 h to 1 h ago: OK OK OK WARN WARN WARN | OK OK OK, the window the last 3.5 h. Before
+/// it OK settles (start) and WARN settles (before the window, not counted); inside it OK settles
+/// from WARN: 1 settled change, and 1 raw change (the first OK, `prev` WARN).
+#[test]
+fn flaps_settled_counts_a_clear_of_a_warn_settled_before_the_window() {
+    let mut world = World::new("seeded");
+    world.series(DEPTH, 1, 1, &[OK, OK, OK, WARN, WARN, WARN, OK, OK, OK]);
+
+    let doc = world.json(&["--since", "210m"]);
+    assert_eq!(doc["excluded"], 0, "{doc}");
+    let row = family(&doc, "service");
+    assert_eq!(row["settled"][0]["settled_changes"], 1, "{row}");
+    assert_eq!(row["series"], 1, "{row}");
+    assert_eq!(row["raw_changes"], 1, "{row}");
+    assert_eq!(number(row, "series_days"), Some(0.125), "{row}");
+}
+
 #[test]
 fn flaps_excludes_other_revisions() {
     let mut world = World::new("revisions");
     let current = world.series(DEPTH, 10, 1, &[OK, WARN, WARN, OK, OK, OK]);
     // Re-grades of three of those samples at revision 2, which the instance does not have yet.
-    let mut regraded = Vec::new();
     let mut prev = None;
     for (evaluation, verdict) in current.iter().take(3).zip([CRIT, CRIT, OK]) {
         let ts = evaluation.ts.0.clone();
-        regraded.push(world.evaluate(&evaluation.sample_id, DEPTH, &ts, 2, verdict, prev));
+        world.evaluate(&evaluation.sample_id, DEPTH, &ts, 2, verdict, prev);
         prev = Some(verdict);
     }
 
+    // Rev 1: OK>WARN and WARN>OK raw; WARN settles (start), then OK after three: 1 settled.
     let doc = world.json(&["--since", "2d"]);
     assert_eq!(doc["rev"], "current", "{doc}");
     assert_eq!(doc["excluded"], 3, "{doc}");
     let row = family(&doc, "service");
-    assert_eq!(row["raw_changes"], verdict_changes(&current), "{row}");
-    assert_eq!(
-        row["settled"][0]["settled_changes"],
-        settled(Persistence::DEFAULT, &current),
-        "{row}"
-    );
+    assert_eq!(row["raw_changes"], 2, "{row}");
+    assert_eq!(row["settled"][0]["settled_changes"], 1, "{row}");
 
+    // Rev 2: CRIT CRIT OK, so CRIT>OK is the one raw change; 3 hourly evaluations, 0.125 days.
     let doc = world.json(&["--since", "2d", "--rev", "2"]);
     assert_eq!(doc["rev"], 2, "{doc}");
     assert_eq!(doc["excluded"], 6, "{doc}");
     let row = family(&doc, "service");
-    assert_eq!(row["raw_changes"], verdict_changes(&regraded), "{row}");
-    assert_eq!(row["series_days"], days(&regraded), "{row}");
+    assert_eq!(row["raw_changes"], 1, "{row}");
+    assert_eq!(number(row, "series_days"), Some(0.125), "{row}");
 
     // A revision nothing was graded at keeps nothing and reports no family.
     let doc = world.json(&["--since", "2d", "--rev", "7"]);
@@ -414,38 +392,65 @@ fn flaps_excludes_other_revisions() {
     assert_eq!(doc["families"], Value::Array(Vec::new()), "{doc}");
 }
 
+/// The sweep over the runs of `FLAPPY` twice (see `flaps_settled_changes_match_hysteresis_replay`),
+/// by hand, `(k, m) => settled`. The gauge keeps its own k_crit 1, so every CRIT run settles; the
+/// copy declares k_crit 3, so none does.
 #[test]
 fn flaps_sweep_covers_k_and_m_grid() {
     let mut world = World::new("sweep");
     world.persistence(PLATFORM, 2, 3, 3);
-    let depth = world.series(DEPTH, 1, 1, &FLAPPY.repeat(2));
-    let platform = world.series(PLATFORM, 1, 1, &FLAPPY.repeat(2));
+    world.series(DEPTH, 1, 1, &FLAPPY.repeat(2));
+    world.series(PLATFORM, 1, 1, &FLAPPY.repeat(2));
+
+    let service: BTreeMap<(u64, u64), u64> = [
+        ((1, 1), 12),
+        ((1, 2), 5),
+        ((1, 3), 5),
+        ((1, 4), 4),
+        ((2, 1), 8),
+        ((2, 2), 5),
+        ((2, 3), 5),
+        ((2, 4), 4),
+        ((3, 1), 4),
+        ((3, 2), 3),
+        ((3, 3), 3),
+        ((3, 4), 2),
+    ]
+    .into();
+    let platform: BTreeMap<(u64, u64), u64> = [
+        ((1, 1), 8),
+        ((1, 2), 3),
+        ((1, 3), 3),
+        ((1, 4), 2),
+        ((2, 1), 4),
+        ((2, 2), 3),
+        ((2, 3), 3),
+        ((2, 4), 2),
+        ((3, 1), 0),
+        ((3, 2), 0),
+        ((3, 3), 0),
+        ((3, 4), 0),
+    ]
+    .into();
 
     let doc = world.json(&["--since", "7d", "--sweep"]);
-    for (name, stored, k_crit) in [("service", &depth, 1), ("platform", &platform, 3)] {
+    for (name, expected) in [("service", &service), ("platform", &platform)] {
         let row = family(&doc, name);
         let runs = row["settled"].as_array().expect("settled is a list");
-        let mut grid = BTreeSet::new();
+        let mut measured = BTreeMap::new();
         for run in runs {
             let k = run["k"].as_u64().expect("k is given");
             let m = run["m"].as_u64().expect("m is given");
-            grid.insert((k, m));
-            let persistence = Persistence {
-                k: usize::try_from(k).expect("small"),
-                k_crit,
-                m: usize::try_from(m).expect("small"),
-            };
             assert!(run["k_crit"].is_null(), "{name}: {run}");
-            assert_eq!(
-                run["settled_changes"],
-                settled(persistence, stored),
-                "{name}: {run}"
-            );
+            let settled = run["settled_changes"].as_u64().expect("a count");
+            assert!(measured.insert((k, m), settled).is_none(), "{name}: {row}");
         }
-        let expected: BTreeSet<(u64, u64)> =
-            (1..=3).flat_map(|k| (1..=4).map(move |m| (k, m))).collect();
         assert_eq!(runs.len(), 12, "{name}: {row}");
-        assert_eq!(grid, expected, "{name}: {row}");
+        assert_eq!(&measured, expected, "{name}: {row}");
+        let grid: BTreeSet<(u64, u64)> = measured.keys().copied().collect();
+        let full: BTreeSet<(u64, u64)> =
+            (1..=3).flat_map(|k| (1..=4).map(move |m| (k, m))).collect();
+        assert_eq!(grid, full, "{name}: {row}");
     }
 
     // --sweep chooses k and m itself.
