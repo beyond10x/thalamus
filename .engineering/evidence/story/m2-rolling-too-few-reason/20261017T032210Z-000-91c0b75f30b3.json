@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T03:22:10Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-rolling-too-few-reason",
+  "kind": "story",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at e92a970: thalamus-core cargo test every binary 0 failed, rolling_median_long_series_with_too_few_ok_says_so red first at store_baselines.rs:381; clippy -D warnings exit 0",
+    "reference": "e92a970"
+  }
+}

@@ -509,7 +509,7 @@ fn from_store(
 /// graded one, from which the fold takes the last `rolling_n` `ok` ones.
 const BEGINNING: &str = "0001-01-01T00:00:00Z";
 
-/// The stored samples of `sample`'s series a store baseline reads, through the store's series
+/// The stored samples of `sample`'s series a store baseline reads, through the store's samples-only
 /// range read, as `thalamus.observation.SeriesSamples` rows: for `same_slot_median_4w` the 28 days
 /// and one hour before the sample, for `rolling_median` everything before it. A sample whose `ts`
 /// names no instant reads nothing, and the fold answers `UNKNOWN` for it.
@@ -529,8 +529,7 @@ fn stored_samples(
         StoredHistory::Rolling { .. } => Timestamp(BEGINNING.to_owned()),
     };
     store
-        .series_range(&sample.series, &from, &sample.ts)
-        .samples
+        .series_samples(&sample.series, &from, &sample.ts)
         .into_iter()
         .map(|row| SeriesSamples {
             sample_id: row.sample_id,

@@ -18,6 +18,11 @@
 //! eval`'s), an unknown reading is never a breach and never OK, and a breach leaves the exit code
 //! as it was: a breach is not a failure of the run.
 //!
+//! A `Muted` definition whose `mute_until` is at or before the window end is sampled as `Active`,
+//! as the service samples it (design § 11 D9, D19; `thalamus_pipeline::definitions`), with one
+//! warning on stderr naming the definition file that still says muted. The run records no
+//! `DefinitionUnmuted`: that event is the service's, as actor `thalamus.definition.Service`.
+//!
 //! Exit codes, none of them a verdict ladder code (0 to 3, design § 2.3):
 //!
 //! | code | when |
@@ -46,6 +51,7 @@ use thalamus_model::definition::BaselineKind;
 use thalamus_model::evaluation::Verdict;
 use thalamus_model::observation::{Reading, SampleId};
 use thalamus_model::primitives::Timestamp;
+use thalamus_pipeline::definitions;
 use thalamus_pipeline::instance::LoadedInstance;
 use thalamus_pipeline::sample::{self, Pass, Producer};
 use thalamus_sources::connectors::Connectors;
@@ -123,6 +129,13 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
             return ExitCode::from(EX_DATAERR);
         }
     };
+    for unmuted in definitions::unmute_expired(&mut instance, &end) {
+        eprintln!(
+            "thalamus sample: {}: mute_until {} has passed; {} is sampled as Active, and the file \
+             still says muted: edit it to drop the mute",
+            unmuted.file, unmuted.mute_until.0, unmuted.event.signal_id.0
+        );
+    }
     let signals = match &args.signal {
         Some(signal) => match sample::admit(&instance, signal) {
             Ok(signal) => vec![signal],

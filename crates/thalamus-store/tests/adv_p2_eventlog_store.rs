@@ -451,6 +451,47 @@ fn adv_p2_two_threads_minting_and_recording_lose_no_sample() {
     );
 }
 
+/// A writer reserving an `smp_` id while another handle holds the SQLite write lock, for longer
+/// than the driver's own 5 s busy handler waits but less than the store's lock budget, waits the
+/// lock out: it gets its id and stores its sample, and neither call fails or panics.
+#[test]
+fn adv_p2_reserving_an_id_under_a_held_write_lock_waits_and_stores() {
+    const HOLD: Duration = Duration::from_secs(7);
+    let root = tempfile::tempdir().expect("tempdir");
+    let path = root.path().join("thalamus.sqlite");
+    let target = Target {
+        locator: Locator::Sqlite(path.clone()),
+        instance: instance_of(root.path()),
+    };
+    let mut reserver = open(&target);
+    let first = reserver.next_number("smp_").expect("a first number");
+    reserver
+        .append_sample(&sample_at(&smp(first), &ts_of(1, 0)))
+        .expect("the first sample is stored");
+    let holder = rusqlite::Connection::open(&path).expect("the holder opens the file");
+    holder
+        .execute_batch("BEGIN IMMEDIATE")
+        .expect("the holder takes the write lock");
+    let release = std::thread::spawn(move || {
+        std::thread::sleep(HOLD);
+        holder.execute_batch("COMMIT").expect("the holder commits");
+    });
+    let started = Instant::now();
+    let number = reserver
+        .next_number("smp_")
+        .expect("a number after the lock is released");
+    let stored = reserver.append_sample(&sample_at(&smp(number), &ts_of(1, 1)));
+    release.join().expect("the holder did not panic");
+    assert!(
+        started.elapsed() >= HOLD / 2,
+        "the reservation did not meet the held lock"
+    );
+    assert_eq!(number, first + 1);
+    stored.expect("the sample is stored under the reserved id");
+    let fresh = open(&target);
+    assert!(fresh.sample(&SampleId(smp(number))).is_some());
+}
+
 #[test]
 fn adv_p2_two_threads_recording_disjoint_ids_lose_no_sample() {
     let root = tempfile::tempdir().expect("tempdir");

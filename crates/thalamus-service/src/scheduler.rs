@@ -8,7 +8,9 @@
 //! (`thalamus.observation.Provenance`): its read, `RecordSample` per series
 //! (`thalamus_pipeline::sample::record_reads`), then grading and `RecordEvaluation` of what the
 //! pass recorded (`thalamus_pipeline::evaluate`). The scheduler adds no pass of its own.
-//! `Proposed`, `Muted` and `Retired` definitions are neither read nor recorded.
+//! `Proposed`, `Muted` and `Retired` definitions are neither read nor recorded, except a `Muted`
+//! definition whose `mute_until` is at or before now: it is sampled as `Active` (design § 11 D9,
+//! D19; `crate::unmute`), and the running scheduler wakes for its slots as for any `Active` one.
 //!
 //! Each read runs on its own thread and is given the definition's cadence (on the wall, as the
 //! [`Clock`] maps it). A read that has not answered by then is recorded as one `unknown` read with
@@ -20,7 +22,11 @@
 //! before the current slot is missed; on a later tick, every slot after the last slot this
 //! scheduler handled for the definition (a clock jump, a tick that came late). Each missed slot
 //! holds one `unknown` sample with reason [`MISSED_SLOT`] per series of the definition's newest
-//! pass, recorded in a pass of their own before the current slot is sampled. A slot that already
+//! pass, recorded in a pass of their own before the current slot is sampled. The first tick fills
+//! at most [`FIRST_TICK_FILL_SLOTS`] slots, the newest, and none from before the revision in
+//! force (a span the definition was muted across a restart is not missed), and, for a mute that
+//! expired and was unmuted automatically, none from before its `mute_until`; older slots stay
+//! empty (D47). A slot that already
 //! holds a sample of the definition (another writer's, or this one's before a restart) is never
 //! recorded again. A definition that becomes `Active` while the scheduler runs starts at its
 //! current slot: the slots it spent `Proposed` or `Muted` were not missed.
@@ -36,12 +42,12 @@ use std::sync::mpsc;
 use std::time::Instant as WallInstant;
 
 use thalamus_core::behaviour::observation::Instant;
-use thalamus_model::definition::{SignalDefinitionData, SignalId};
+use thalamus_model::definition::{SignalDefinitionData, SignalDefinitionState, SignalId};
 use thalamus_model::observation::RunId;
 use thalamus_model::primitives::Timestamp;
-use thalamus_pipeline::evaluate;
 use thalamus_pipeline::instance::{InstanceError, LoadedInstance};
 use thalamus_pipeline::sample::{self, Producer};
+use thalamus_pipeline::{definitions, evaluate};
 use thalamus_sources::adapter::{Read, unknown, window_ending};
 use thalamus_sources::connectors::Connectors;
 use thalamus_sources::registry;
@@ -51,6 +57,9 @@ use time::format_description::well_known::Rfc3339;
 
 /// The reason of a missed slot's sample (design § 11 D16).
 pub const MISSED_SLOT: &str = "missed_slot";
+
+/// The most slots the first tick fills as missed, the newest ones (design § 11 D47).
+pub const FIRST_TICK_FILL_SLOTS: i64 = 288;
 /// The reason of a read that did not finish within the cadence (design § 2.2).
 pub const READ_TIMED_OUT: &str = "read timed out";
 /// The provenance `producer` of every sample the scheduler records.
@@ -202,18 +211,33 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
         }
     }
 
-    /// The earliest slot boundary after now among the `Active` definitions; a minute from now
-    /// when there is none.
+    /// The earliest slot boundary after now among the definitions by their effective lifecycle
+    /// (`thalamus_pipeline::definitions`): every `Active` one, an expired mute among them, and a
+    /// `Muted` one at its first slot at or after its `mute_until`, when its mute will have
+    /// expired. A minute from now when there is none.
     fn next_slot(&self) -> i64 {
         let now = self.clock.now();
         LoadedInstance::load(&self.dir)
             .ok()
-            .and_then(|instance| {
-                sample::active(&instance)
-                    .iter()
-                    .filter_map(|signal| instance.instance().definition(&signal.0))
-                    .filter_map(|definition| cadence_seconds(definition.data()))
-                    .map(|cadence| (now.div_euclid(cadence) + 1) * cadence)
+            .and_then(|mut instance| {
+                definitions::unmute_expired(&mut instance, &Timestamp(rfc3339(now)));
+                let instance = &instance;
+                instance
+                    .instance()
+                    .definitions()
+                    .filter_map(|definition| {
+                        let data = definition.data();
+                        let cadence = cadence_seconds(data)?;
+                        let next = (now.div_euclid(cadence) + 1) * cadence;
+                        match definitions::state(instance, &data.signal_id.0)? {
+                            SignalDefinitionState::Active => Some(next),
+                            SignalDefinitionState::Muted => {
+                                let until = Instant::parse(&data.mute_until.as_ref()?.0)?;
+                                Some(next.max(slot_at_or_after(until.seconds(), cadence)))
+                            }
+                            _ => None,
+                        }
+                    })
                     .min()
             })
             .unwrap_or(now + 60)
@@ -238,6 +262,7 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             tick.problems.push(format!("store refused: {error}"));
             return tick;
         }
+        crate::unmute::effective_definitions(&mut instance, &mut self.store, now, &mut tick);
 
         let held = Held::read(&self.store);
         let mut missed: Vec<(SignalId, i64, Vec<Read>)> = Vec::new();
@@ -275,6 +300,23 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             if let Some(since) = since {
                 let series = held.newest_pass_dims(&signal.0);
                 let mut slot = since + cadence;
+                if !self.started {
+                    // D47: no earlier than the revision now in force (a mute and its unmute are
+                    // revisions), no earlier than the expiry of a mute unmuted automatically (the
+                    // file, and so `revised_at`, still name the mute), and no more than the
+                    // bound's newest slots.
+                    let revised = Instant::parse(&data.revised_at.0).map_or(slot, |at| {
+                        at.seconds().div_euclid(cadence) * cadence + cadence
+                    });
+                    let unmuted = (definition.state() == SignalDefinitionState::Muted)
+                        .then(|| Instant::parse(&data.mute_until.as_ref()?.0))
+                        .flatten()
+                        .map_or(slot, |until| slot_at_or_after(until.seconds(), cadence));
+                    slot = slot
+                        .max(revised)
+                        .max(unmuted)
+                        .max(current - FIRST_TICK_FILL_SLOTS * cadence);
+                }
                 while slot < current {
                     if !held.has(&signal.0, slot) {
                         missed.push((signal.clone(), slot, missed_reads(data, &series, slot)));
@@ -509,6 +551,11 @@ fn cadence_seconds(definition: &SignalDefinitionData) -> Option<i64> {
     let start = Instant::parse(&window.start.0)?.seconds();
     let end = Instant::parse(&window.end.0)?.seconds();
     (end > start).then_some(end - start)
+}
+
+/// The first slot boundary of `cadence` at or after Unix second `at`.
+fn slot_at_or_after(at: i64, cadence: i64) -> i64 {
+    -(-at).div_euclid(cadence) * cadence
 }
 
 /// The RFC 3339 text of Unix second `at`, in UTC.

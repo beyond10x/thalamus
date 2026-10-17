@@ -5,14 +5,15 @@
 //! graded sample's, latest first; `partial` and `unknown` samples are skipped, and a `ts` that
 //! names no instant cannot be placed before anything and is skipped too. One instant counts once among
 //! the N, as its row appended last (design § 11 D6), so a re-read of an instant does not crowd an
-//! earlier sample out. Fewer than N such samples
-//! make the baseline `UNKNOWN` with reason [`REASON_PREDATES_SERIES`] (rule 2): the series is not
-//! yet N samples long, and a median of fewer is not the baseline the definition names.
+//! earlier sample out. Fewer than N such samples make the baseline `UNKNOWN` (rule 2), and a
+//! median of fewer is not the baseline the definition names. The reason is
+//! [`REASON_PREDATES_SERIES`] when the series holds fewer than N samples of any status before the
+//! graded one (it is not yet N samples long), and [`REASON_TOO_FEW_OK`] when it holds N or more.
 
 use thalamus_model::observation::{CompleteReading, Reading, SeriesSamples};
 use thalamus_model::primitives::{Decimal, Timestamp};
 
-use super::{REASON_PREDATES_SERIES, Refusal, median as median_of, unknown};
+use super::{REASON_PREDATES_SERIES, REASON_TOO_FEW_OK, Refusal, median as median_of, unknown};
 use crate::behaviour::observation::Instant;
 
 /// The `rolling_median` baseline over the last `n` `ok` samples of `history` (the series' stored
@@ -26,6 +27,13 @@ pub fn median(ts: &Timestamp, history: &[SeriesSamples], n: usize) -> Result<Rea
         field: "ts",
         value: ts.0.clone(),
     })?;
+    let mut instants: Vec<Instant> = history
+        .iter()
+        .filter_map(|row| Instant::parse(&row.ts.0))
+        .filter(|sampled| *sampled < at)
+        .collect();
+    instants.sort();
+    instants.dedup();
     let mut earlier: Vec<(Instant, &Decimal)> = history
         .iter()
         .filter_map(|row| match &row.reading {
@@ -45,8 +53,11 @@ pub fn median(ts: &Timestamp, history: &[SeriesSamples], n: usize) -> Result<Rea
         }
     }
     let earlier = once;
-    if n == 0 || earlier.len() < n {
+    if n == 0 || instants.len() < n {
         return Ok(unknown(REASON_PREDATES_SERIES.to_owned()));
+    }
+    if earlier.len() < n {
+        return Ok(unknown(REASON_TOO_FEW_OK.to_owned()));
     }
     let last: Vec<&Decimal> = earlier[earlier.len() - n..]
         .iter()

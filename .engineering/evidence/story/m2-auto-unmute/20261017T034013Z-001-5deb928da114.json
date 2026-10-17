@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T03:40:13Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-auto-unmute",
+  "kind": "story",
+  "revision": 10,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 9f30afd and a31db91: thalamus-service 26 passed (unmute 6, adv_unmute_p1 6), thalamus-cli 103 passed 1 ignored, thalamus-pipeline 5, thalamus-store 54 on SQLite and PostgreSQL at 9f30afd, thalamus-docs 27; clippy -D warnings and fmt exit 0",
+    "reference": "a31db91"
+  }
+}

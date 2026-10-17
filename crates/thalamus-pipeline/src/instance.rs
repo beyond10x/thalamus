@@ -24,6 +24,8 @@ use thalamus_core::rules::RuleId;
 use thalamus_model::definition::SignalDefinitionState;
 use thalamus_model::dimension::ValueSource;
 
+use crate::definitions::Overlay;
+
 /// The registry file, relative to the instance directory.
 pub const REGISTRY_FILE: &str = "dimensions.yaml";
 /// The definitions directory, relative to the instance directory.
@@ -75,13 +77,15 @@ impl fmt::Display for InstanceError {
 
 impl std::error::Error for InstanceError {}
 
-/// A loaded instance: the validated definitions and registry, and the parsed values of every
-/// `file:` registry, by dimension key.
+/// A loaded instance: the validated definitions and registry, the parsed values of every
+/// `file:` registry, by dimension key, and the in-memory overlay of the definitions unmuted since
+/// it was loaded (`crate::definitions`).
 #[derive(Debug, Clone)]
 pub struct LoadedInstance {
     dir: PathBuf,
     instance: Instance,
     values: BTreeMap<String, FileValues>,
+    overlay: Overlay,
 }
 
 impl LoadedInstance {
@@ -184,6 +188,7 @@ impl LoadedInstance {
                 dir: dir.to_owned(),
                 instance,
                 values,
+                overlay: Overlay::default(),
             })
         } else {
             Err(errors)
@@ -211,6 +216,17 @@ impl LoadedInstance {
     /// The validated definitions and registry, for the generated ports that take them mutably.
     pub fn instance_mut(&mut self) -> &mut Instance {
         &mut self.instance
+    }
+
+    /// The definitions unmuted in memory since the instance was loaded; the files are unchanged.
+    #[must_use]
+    pub fn overlay(&self) -> &Overlay {
+        &self.overlay
+    }
+
+    /// The file-backed definitions and their overlay, for the ports that read both.
+    pub(crate) fn parts_mut(&mut self) -> (&mut Instance, &mut Overlay) {
+        (&mut self.instance, &mut self.overlay)
     }
 
     /// The values of every `file:` registry, by dimension key.

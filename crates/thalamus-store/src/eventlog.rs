@@ -90,19 +90,26 @@ const OPEN_BUDGET: Duration = Duration::from_secs(30);
 /// its timeout (SQLSTATE 57014 or 55P03). Only that deadline is retried at open: a server that
 /// does not answer the connection fails at once.
 const LOCK_DEADLINE: &str = "database statement or lock";
-/// The messages SQLite gives a lock another connection holds: `SQLITE_BUSY` ("database is
-/// locked") and `SQLITE_LOCKED` ("database table is locked", "database schema is locked").
+/// The message SQLite gives `SQLITE_BUSY`, a lock another connection holds, which waiting can
+/// clear. `SQLITE_LOCKED` ("database table is locked", "database schema is locked") is not
+/// matched: on a private connection waiting cannot clear it.
 /// Switching a new database file to WAL answers `SQLITE_BUSY` at once, without the busy handler,
 /// while another connection is switching it, so two processes opening a new store together meet
-/// it. Only these are retried at open, within [`OPEN_BUDGET`]; any other backend failure fails
+/// it. Only this is retried at open, within [`OPEN_BUDGET`]; any other backend failure fails
 /// at once.
-const SQLITE_LOCK_MESSAGES: [&str; 3] = [
-    "database is locked",
-    "database table is locked",
-    "database schema is locked",
-];
+const SQLITE_BUSY_MESSAGE: &str = "database is locked";
 /// The pause before an SQLite open that met another opener's lock is tried again.
 const SQLITE_OPEN_PAUSE: Duration = Duration::from_millis(10);
+/// How long an append, and an id reservation, that finds the SQLite write lock held keeps trying
+/// again. The driver's own busy handler waits 5 s and then answers `database is locked`, which a
+/// writer starved under load can meet; the append was refused before it wrote anything, so it is
+/// safe to repeat.
+const LOCK_BUDGET: Duration = Duration::from_secs(30);
+
+/// Whether `error` is SQLite answering that another connection holds a lock.
+fn is_sqlite_locked(error: &EventLogError) -> bool {
+    matches!(error, EventLogError::Backend(message) if message == SQLITE_BUSY_MESSAGE)
+}
 
 /// The table prefix in either database.
 const TABLE_PREFIX: &str = "thalamus";
@@ -324,6 +331,11 @@ impl StoreError {
         matches!(self, Self::Eventlog(EventLogError::Conflict { .. }))
     }
 
+    /// Whether SQLite answered that another connection holds a lock.
+    fn is_locked(&self) -> bool {
+        matches!(self, Self::Eventlog(error) if is_sqlite_locked(error))
+    }
+
     /// Whether the id was already stored on the stream with another body.
     fn is_id_taken_elsewhere(&self) -> bool {
         matches!(
@@ -388,6 +400,7 @@ impl Record {
 pub(crate) enum Row {
     Sample(SignalSampleData),
     Evaluation(SignalEvaluationData),
+    Unmuted(crate::definition_events::UnmutedRecord),
 }
 
 /// The rows appended since the handle last moved, read for a `&self` answer.
@@ -395,6 +408,7 @@ pub(crate) enum Row {
 pub(crate) struct Tail {
     pub(crate) samples: Vec<SignalSampleData>,
     pub(crate) evaluations: Vec<SignalEvaluationData>,
+    pub(crate) unmuted: Vec<crate::definition_events::UnmutedRecord>,
 }
 
 /// The store's own runtime, shut down in the background when dropped: a blocking shutdown would
@@ -460,6 +474,9 @@ pub struct EventlogStore {
     records: Vec<Record>,
     pub(crate) samples: Vec<SignalSampleData>,
     pub(crate) sample_index: HashMap<String, usize>,
+    /// The positions in `samples` of each series' samples, by series key, in append order: the
+    /// index a series range read goes through, so it never scans other series.
+    pub(crate) series_index: HashMap<String, Vec<usize>>,
     pub(crate) evaluations: Vec<SignalEvaluationData>,
     pub(crate) evaluation_index: HashMap<String, usize>,
     /// The last number reserved or stored per id prefix (`smp_`, `evl_`).
@@ -496,7 +513,7 @@ impl EventlogStore {
                     if operation == LOCK_DEADLINE && started.elapsed() < OPEN_BUDGET => {}
                 Err(StoreError::Eventlog(EventLogError::Backend(message)))
                     if matches!(locator, Locator::Sqlite(_))
-                        && SQLITE_LOCK_MESSAGES.contains(&message.as_str())
+                        && message == SQLITE_BUSY_MESSAGE
                         && started.elapsed() < OPEN_BUDGET =>
                 {
                     std::thread::sleep(SQLITE_OPEN_PAUSE);
@@ -515,6 +532,7 @@ impl EventlogStore {
             records: Vec::new(),
             samples: Vec::new(),
             sample_index: HashMap::new(),
+            series_index: HashMap::new(),
             evaluations: Vec::new(),
             evaluation_index: HashMap::new(),
             sequences: BTreeMap::new(),
@@ -563,6 +581,7 @@ impl EventlogStore {
             match row {
                 Row::Sample(sample) => tail.samples.push(sample),
                 Row::Evaluation(evaluation) => tail.evaluations.push(evaluation),
+                Row::Unmuted(unmuted) => tail.unmuted.push(unmuted),
             }
         }
         tail
@@ -621,6 +640,11 @@ impl EventlogStore {
                 let evaluation = crate::evaluations::decode(&record.body)?;
                 let again = crate::evaluations::encode(&evaluation)?;
                 (Row::Evaluation(evaluation), again)
+            }
+            Some(crate::definition_events::DEFINITION_EVENT_SCHEMA) => {
+                let unmuted = crate::definition_events::decode(&record.body)?;
+                let again = crate::definition_events::encode(&unmuted)?;
+                (Row::Unmuted(unmuted), again)
             }
             other => return refuse(format!("has the unknown schema {other:?}")),
         };
@@ -712,8 +736,14 @@ impl EventlogStore {
         &mut self,
         mut attempt: impl FnMut(&mut Self) -> Result<(), StoreError>,
     ) -> Result<(), StoreError> {
-        for _ in 0..CATCH_UP_ATTEMPTS {
+        let started = Instant::now();
+        let mut attempts = 0;
+        while attempts < CATCH_UP_ATTEMPTS {
             match attempt(self) {
+                Err(error) if error.is_locked() && started.elapsed() < LOCK_BUDGET => {
+                    std::thread::sleep(SQLITE_OPEN_PAUSE);
+                    continue;
+                }
                 Err(error) if error.is_conflict() => self.refresh()?,
                 Err(error) if error.is_id_taken_elsewhere() => {
                     self.refresh()?;
@@ -723,6 +753,7 @@ impl EventlogStore {
                 }
                 answer => return answer,
             }
+            attempts += 1;
         }
         Err(StoreError::Contended {
             attempts: CATCH_UP_ATTEMPTS,
@@ -733,10 +764,13 @@ impl EventlogStore {
     /// the highest the instance stream and the id stream hold, appended as a reservation at the
     /// id stream's version this handle last read. Another writer's reservation in between (a
     /// version conflict, or the same reservation already recorded) is read and the next number
-    /// tried, up to [`CATCH_UP_ATTEMPTS`] times. `None` once the sequence is spent.
+    /// tried, up to [`CATCH_UP_ATTEMPTS`] times. An append that finds the SQLite write lock held is
+    /// repeated for up to [`LOCK_BUDGET`], and is no attempt. `None` once the sequence is spent.
     fn reserve(&mut self, prefix: &str) -> Result<Option<u64>, StoreError> {
         self.refresh()?;
-        for _ in 0..CATCH_UP_ATTEMPTS {
+        let started = Instant::now();
+        let mut attempts = 0;
+        while attempts < CATCH_UP_ATTEMPTS {
             self.read_reservations()?;
             let last = self.sequences.get(prefix).copied().unwrap_or(0);
             let Some(number) = last.checked_add(1) else {
@@ -764,9 +798,14 @@ impl EventlogStore {
                     }
                     return Ok(Some(number));
                 }
+                Err(locked) if is_sqlite_locked(&locked) && started.elapsed() < LOCK_BUDGET => {
+                    std::thread::sleep(SQLITE_OPEN_PAUSE);
+                    continue;
+                }
                 Ok(_) | Err(EventLogError::Conflict { .. }) => {}
                 Err(other) => return Err(other.into()),
             }
+            attempts += 1;
         }
         Err(StoreError::Contended {
             attempts: CATCH_UP_ATTEMPTS,
@@ -816,6 +855,10 @@ impl EventlogStore {
                 self.resume_after(&sample.sample_id.0);
                 self.sample_index
                     .insert(sample.sample_id.0.clone(), self.samples.len());
+                self.series_index
+                    .entry(sample.series.0.clone())
+                    .or_default()
+                    .push(self.samples.len());
                 self.samples.push(sample);
             }
             Row::Evaluation(evaluation) => {
@@ -824,6 +867,7 @@ impl EventlogStore {
                     .insert(evaluation.evaluation_id.0.clone(), self.evaluations.len());
                 self.evaluations.push(evaluation);
             }
+            Row::Unmuted(_) => {}
         }
         self.head = record.version;
         self.records.push(record);
@@ -991,6 +1035,15 @@ pub(crate) fn dims_value(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Only SQLite's busy lock is retried; a table or schema lock is not.
+    #[test]
+    fn only_a_busy_sqlite_lock_is_retried() {
+        let backend = |m: &str| EventLogError::Backend(m.to_string());
+        assert!(is_sqlite_locked(&backend("database is locked")));
+        assert!(!is_sqlite_locked(&backend("database table is locked")));
+        assert!(!is_sqlite_locked(&backend("database schema is locked")));
+    }
 
     /// An append that meets another writer's append on every attempt is retried up to its bound,
     /// then answered with an error naming the attempts, never looped forever or dropped silently.

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T01:56:20Z",
+  "actor": "human:timo",
+  "artifact": "story:store-sqlite-id-reserve-locked",
+  "kind": "story",
+  "revision": 1,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check on wave/20261016b 913d914, step test-postgres (SQLite): adv_p2_two_threads_minting_and_recording_lose_no_sample FAILED, eventlog.rs:862 'the next smp_ id cannot be reserved on the instance's id stream: eventlog: event store is unavailable: database is locked'; passed when the step was rerun alone (54 passed)",
+    "reference": "913d914"
+  }
+}

@@ -51,8 +51,10 @@ baseline beside it.
   slot whose hour ends before the series began makes it `UNKNOWN` with reason `baseline predates
   series`.
 - **`rolling_median`**: the median of the last `evaluation.rolling_n` `ok` samples before the
-  graded one; `partial` and `unknown` samples are skipped. Fewer than `rolling_n` makes the
-  baseline `UNKNOWN` with reason `baseline predates series`.
+  graded one; `partial` and `unknown` samples are skipped. A series of fewer than
+  `rolling_n` samples of any status makes the baseline `UNKNOWN` with reason `baseline predates
+  series`; a series of `rolling_n` samples or more with fewer than `rolling_n` `ok` ones makes it
+  `UNKNOWN` with reason `too few ok samples`.
 
 The median of an even count is the mean of the two middle values, computed exactly in decimal
 (the median of `0.1` and `0.2` is `0.15`).

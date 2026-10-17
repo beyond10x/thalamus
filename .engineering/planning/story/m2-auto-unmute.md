@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-auto-unmute
 kind: story
-status: draft
+status: implemented
 title: The service unmutes a definition whose mute has expired
 relations:
 - decomposes: epic:history-and-transitions
@@ -20,7 +20,11 @@ scope:
   path: crates/thalamus-service/tests/unmute.rs
 - confidence: inferred
   path: crates/thalamus-store/src/definition_events.rs
-revision: 8
+revision: 11
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-17T02:11:18Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "proposed", to: "active", at: "2026-10-17T02:11:18Z", actor: "human:timo", revision: 10, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "active", to: "implemented", at: "2026-10-17T03:47:24Z", actor: "human:timo", revision: 11, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Context
 

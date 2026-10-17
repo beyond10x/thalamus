@@ -115,8 +115,24 @@ applied to every source; without it a flapping signal opens and closes a downstr
 pass. Only `OK` clears a settled `WARN` or `CRIT`: a run of `N/A` or `UNKNOWN` never does. The count
 is of consecutive samples, not of time, and any differing verdict breaks a run. `k`, `k_crit` and
 `m` live on the definition as `persistence: {k, k_crit, m}`, all three or none, with defaults 2, 1
-and 3. The defaults are a starting point: flap rates are to be measured over stored evaluations
-(`thalamus flaps`, planned) before they are fixed per family.
+and 3. The defaults are a starting point: flap rates are measured over stored evaluations before
+they are fixed per family.
+
+`thalamus flaps --since <duration>` reads every series' evaluations over that span and reports,
+per family, the series, the series-days, the raw verdict changes (the rows of
+`thalamus.evaluation.VerdictChanges`) and the settled changes the hysteresis replays from them,
+each also per series-day. A series-day is observed time: per series, the time from its first to its
+last sample in the span plus the median spacing between samples, never more than the span, over
+24 hours, a decimal; 288 samples 5 minutes apart are one. Rates use the rounded series-days and are
+absent when those are 0.
+It keeps the evaluations at each definition's current revision (`--rev <n>` picks another) and
+counts the rest as `excluded`. Raw changes compare each verdict with its stored `prev`, so the
+first evaluation of a new revision counts as a change against the previous revision's verdict.
+The replay takes a series' kept evaluations in sample time order, history re-graded after a
+revision included, and is seeded with those before the span: a `WARN` that settled before it and
+clears inside it is a settled change. Each definition's own `persistence` applies unless `--k`,
+`--k-crit` or `--m` overrides it; `--sweep` measures every `k` from 1 to 3 against every `m` from
+1 to 4. It writes nothing.
 
 Each series keeps its newest `max(k, k_crit, m)` samples. A sample reads the verdict of its
 evaluation at the highest definition revision seen: when a revision re-grades history, the
