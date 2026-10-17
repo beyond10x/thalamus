@@ -6,6 +6,8 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+- `thalamus-service run` fills at most 288 missed slots on its first tick, and none from before the revision in force, so a long-stopped or muted-across-restart definition no longer gets a sample per slot of the whole gap (design D47).
+
 ## 0.1.0 — 2026-10-17
 
 Specification and model
