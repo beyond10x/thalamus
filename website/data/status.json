@@ -74,10 +74,10 @@
     },
     {
       "area": "Grading",
-      "detail": "Computed from stored samples. Planned in story:m2-store-baselines.",
-      "href": "/docs/concepts/baselines",
+      "detail": "Computed from stored samples; a missing week or too few samples is UNKNOWN, never a median of less.",
+      "href": "/docs/concepts/baselines#store-baselines",
       "label": "Same-slot median and rolling median baselines",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Grading",

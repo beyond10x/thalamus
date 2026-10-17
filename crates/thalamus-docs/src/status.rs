@@ -159,12 +159,14 @@ pub const CAPABILITIES: &[Capability] = &[
         Evidence::Test("crates/thalamus-core/tests/hysteresis.rs::unknown_does_not_clear_warn"),
         "/docs/concepts/verdicts#persistence",
     ),
-    planned(
+    shipped(
         "Grading",
         "Same-slot median and rolling median baselines",
-        "Computed from stored samples.",
-        "story:m2-store-baselines",
-        "/docs/concepts/baselines",
+        "Computed from stored samples; a missing week or too few samples is UNKNOWN, never a median of less.",
+        Evidence::Test(
+            "crates/thalamus-cli/tests/eval_store_history.rs::eval_grades_store_history_definition_from_stored_samples",
+        ),
+        "/docs/concepts/baselines#store-baselines",
     ),
     shipped(
         "Grading",
