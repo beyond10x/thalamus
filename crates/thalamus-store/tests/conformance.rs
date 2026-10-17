@@ -1,6 +1,6 @@
 //! The named scenarios of `spec/suite.json`, run by `thalamus_core::conformance::run_sequenced`
-//! with the Eventlog store in place of the in-memory one for samples and evaluations, on both
-//! SQLite and the PostgreSQL provider. Definitions, dimensions and assertions stay in memory; every id
+//! with the Eventlog store in place of the in-memory one for samples, evaluations and
+//! transitions, on both SQLite and the PostgreSQL provider. Definitions, dimensions and assertions stay in memory; every id
 //! is minted from the store's own sequence.
 //!
 //! [`SCENARIOS`] is the one selection: a later story that puts another port on Eventlog adds its
@@ -21,10 +21,13 @@ use thalamus_store::eventlog::{EventlogStore, Locator};
 
 /// The scenarios run against the Eventlog storage.
 const SCENARIOS: &[&str] = &[
+    "thalamus.transition.RecordTransition/outcome/recorded",
     "thalamus.observation.RecordSample/outcome/recorded",
     "thalamus.evaluation.RecordEvaluation/outcome/recorded",
     "thalamus.evaluation.RecordEvaluation/outcome/unknown-sample",
     "thalamus.evaluation.SignalEvaluation/invariant/after/thalamus.evaluation.RecordEvaluation/recorded",
+    "thalamus.rollup.RecordRollup/outcome/recorded",
+    "thalamus.rollup.RecordRollup/outcome/already-rolled-up",
 ];
 
 /// Samples and evaluations in a fresh Eventlog store, everything else in memory. The directory
@@ -196,13 +199,13 @@ use thalamus_model::behaviour::{DailyRollupStorage, TransitionStorage};
 
 delegate!(
     TransitionStorage,
-    memory,
+    store,
     thalamus_model::transition::TransitionId,
     thalamus_model::transition::TransitionSnapshot
 );
 delegate!(
     DailyRollupStorage,
-    memory,
+    store,
     thalamus_model::rollup::RollupId,
     thalamus_model::rollup::DailyRollupSnapshot
 );

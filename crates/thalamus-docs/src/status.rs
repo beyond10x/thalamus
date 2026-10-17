@@ -98,7 +98,7 @@ pub const CAPABILITIES: &[Capability] = &[
     shipped(
         "Command line",
         "A usage error exits 64, never a verdict code",
-        "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show, compare and flaps are implemented; rollup still exits 70, not implemented.",
+        "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps), and all six are implemented.",
         Evidence::Test("crates/thalamus-cli/tests/cli.rs::an_unknown_flag_exits_64"),
         "/docs/getting-started",
     ),
@@ -313,11 +313,11 @@ pub const CAPABILITIES: &[Capability] = &[
         Evidence::Test("crates/thalamus-cli/tests/compare.rs::compare_vs_7d_reads_stored_samples"),
         "/docs/concepts/baselines",
     ),
-    planned(
+    shipped(
         "Command line",
         "thalamus rollup",
-        "One rollup per series per UTC day.",
-        "story:m2-rollup",
+        "One rollup per series per UTC day, written by thalamus rollup for a closed day and by the service after each UTC midnight; a re-run writes nothing.",
+        Evidence::Test("crates/thalamus-cli/tests/rollup.rs::rollup_rerun_writes_nothing"),
         "/docs/concepts/samples#storage",
     ),
     shipped(
@@ -338,11 +338,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/samples",
     ),
-    planned(
+    shipped(
         "Service",
         "Settled transitions as CloudEvents",
         "A verdict change that persisted is recorded and emitted.",
-        "story:m2-transitions",
+        Evidence::Test(
+            "crates/thalamus-service/tests/transitions.rs::warn_opened_and_cleared_end_to_end",
+        ),
         "/docs/concepts/interfaces#events",
     ),
     planned(

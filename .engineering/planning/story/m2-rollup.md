@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-rollup
 kind: story
-status: draft
+status: implemented
 title: thalamus rollup writes one sample rollup per series per UTC day
 relations:
 - decomposes: epic:history-and-transitions
@@ -29,7 +29,11 @@ scope:
   path: crates/thalamus-store/src/rollups.rs
 - confidence: inferred
   path: crates/thalamus-store/tests/conformance.rs
-revision: 5
+revision: 8
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-17T04:25:48Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-17T04:25:48Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-17T07:57:04Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"review_outcome":3}}}
 ---
 ## Context
 

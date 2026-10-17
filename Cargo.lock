@@ -1451,7 +1451,7 @@ dependencies = [
 
 [[package]]
 name = "thalamus-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "clap",
  "eventlog-core",
@@ -1468,7 +1468,7 @@ dependencies = [
 
 [[package]]
 name = "thalamus-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -1481,7 +1481,7 @@ dependencies = [
 
 [[package]]
 name = "thalamus-docs"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "clap",
  "serde_json",
@@ -1489,7 +1489,7 @@ dependencies = [
 
 [[package]]
 name = "thalamus-pipeline"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "boon",
  "serde_json",
@@ -1502,7 +1502,7 @@ dependencies = [
 
 [[package]]
 name = "thalamus-service"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "clap",
  "serde_json",
@@ -1517,7 +1517,7 @@ dependencies = [
 
 [[package]]
 name = "thalamus-sources"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "rustix",
  "serde_json",
@@ -1539,7 +1539,7 @@ dependencies = [
 
 [[package]]
 name = "thalamus-store"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "eventlog-core",
  "eventlog-postgres",

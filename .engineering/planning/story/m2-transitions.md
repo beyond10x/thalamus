@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-transitions
 kind: story
-status: draft
+status: implemented
 title: Settled verdict changes are recorded as transitions and emitted as CloudEvents
 relations:
 - decomposes: epic:history-and-transitions
@@ -23,7 +23,11 @@ scope:
   path: crates/thalamus-store/src/transitions.rs
 - confidence: inferred
   path: crates/thalamus-store/tests/conformance.rs
-revision: 3
+revision: 7
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-17T04:25:48Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "proposed", to: "active", at: "2026-10-17T04:25:49Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"review_outcome":3}}}
+- {from: "active", to: "implemented", at: "2026-10-17T07:57:04Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Outcome
 
@@ -40,7 +44,7 @@ A settled verdict change (design § 3.2) is recorded as a transition and emitted
 
 ## Acceptance
 
-- `cargo test -p thalamus-service --test transitions` passes these named tests, each red before the change: `transition_recorded_when_hysteresis_settles`, `transition_references_the_k_evaluations_of_its_run`, `transition_emitted_as_cloudevent_with_series_subject` (type `dev.beyond10x.thalamus.transition`, `subject` = the series key of D10, `time` = the settling evaluation's ts), `transition_survives_expired_evaluations` (a reader of a transition whose evaluations were retired gets the copied fields, not an error), `hysteresis_state_survives_restart` and `warn_opened_and_cleared_end_to_end` (a fake source drives one series OK → WARN → OK through the scheduler; exactly two transitions are recorded and emitted).
+- `cargo test -p thalamus-service --test transitions` passes these named tests, each red before the change: `transition_recorded_when_hysteresis_settles`, `transition_references_the_k_evaluations_of_its_run`, `transition_emitted_as_cloudevent_with_series_subject` (type `dev.beyond10x.thalamus.transition`, `subject` = the series key of D10, `time` = the settling evaluation's ts), `transition_survives_expired_evaluations` (a reader of a transition whose evaluations were retired gets the copied fields, not an error), `hysteresis_state_survives_restart` and `warn_opened_and_cleared_end_to_end` (a fake source drives one series through the scheduler until it has settled OK, then OK → WARN → OK; exactly two transitions are recorded and emitted by that drive. The series' first settled OK is itself a transition with no `from`, by hysteresis rule 4, design § 3.2).
 - `cargo test -p thalamus-store --test conformance` passes `thalamus.transition.RecordTransition/outcome/recorded` with the Eventlog storage.
 
 ## Domain relations

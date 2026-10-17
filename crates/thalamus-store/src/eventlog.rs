@@ -401,6 +401,8 @@ pub(crate) enum Row {
     Sample(SignalSampleData),
     Evaluation(SignalEvaluationData),
     Unmuted(crate::definition_events::UnmutedRecord),
+    Rollup(thalamus_model::rollup::DailyRollupData),
+    Transition(thalamus_model::transition::TransitionData),
 }
 
 /// The rows appended since the handle last moved, read for a `&self` answer.
@@ -409,6 +411,8 @@ pub(crate) struct Tail {
     pub(crate) samples: Vec<SignalSampleData>,
     pub(crate) evaluations: Vec<SignalEvaluationData>,
     pub(crate) unmuted: Vec<crate::definition_events::UnmutedRecord>,
+    pub(crate) rollups: Vec<thalamus_model::rollup::DailyRollupData>,
+    pub(crate) transitions: Vec<thalamus_model::transition::TransitionData>,
 }
 
 /// The store's own runtime, shut down in the background when dropped: a blocking shutdown would
@@ -582,6 +586,8 @@ impl EventlogStore {
                 Row::Sample(sample) => tail.samples.push(sample),
                 Row::Evaluation(evaluation) => tail.evaluations.push(evaluation),
                 Row::Unmuted(unmuted) => tail.unmuted.push(unmuted),
+                Row::Rollup(rollup) => tail.rollups.push(rollup),
+                Row::Transition(transition) => tail.transitions.push(transition),
             }
         }
         tail
@@ -645,6 +651,16 @@ impl EventlogStore {
                 let unmuted = crate::definition_events::decode(&record.body)?;
                 let again = crate::definition_events::encode(&unmuted)?;
                 (Row::Unmuted(unmuted), again)
+            }
+            Some(crate::rollups::ROLLUP_SCHEMA) => {
+                let rollup = crate::rollups::decode(&record.body)?;
+                let again = crate::rollups::encode(&rollup)?;
+                (Row::Rollup(rollup), again)
+            }
+            Some(crate::transitions::TRANSITION_SCHEMA) => {
+                let transition = crate::transitions::decode(&record.body)?;
+                let again = crate::transitions::encode(&transition)?;
+                (Row::Transition(transition), again)
             }
             other => return refuse(format!("has the unknown schema {other:?}")),
         };
@@ -867,7 +883,8 @@ impl EventlogStore {
                     .insert(evaluation.evaluation_id.0.clone(), self.evaluations.len());
                 self.evaluations.push(evaluation);
             }
-            Row::Unmuted(_) => {}
+            Row::Unmuted(_) | Row::Rollup(_) => {}
+            Row::Transition(transition) => self.resume_after(&transition.transition_id.0),
         }
         self.head = record.version;
         self.records.push(record);

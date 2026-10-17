@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-17T07:56:56Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-transitions",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at d16a3f7 and wave/20261017b 9e1a455: service transitions 6 and adv_transitions_p1 3, service 32 at d16a3f7, task test-postgres exit 0 (RecordTransition/outcome/recorded on Eventlog), clippy -D warnings and fmt exit 0"
+  }
+}

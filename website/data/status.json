@@ -18,7 +18,7 @@
     },
     {
       "area": "Command line",
-      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps). sample, eval, show, compare and flaps are implemented; rollup still exits 70, not implemented.",
+      "detail": "The thalamus binary parses its six subcommands (sample, eval, show, compare, rollup, flaps), and all six are implemented.",
       "href": "/docs/getting-started",
       "label": "A usage error exits 64, never a verdict code",
       "status": "shipped"
@@ -200,10 +200,10 @@
     },
     {
       "area": "Command line",
-      "detail": "One rollup per series per UTC day. Planned in story:m2-rollup.",
+      "detail": "One rollup per series per UTC day, written by thalamus rollup for a closed day and by the service after each UTC midnight; a re-run writes nothing.",
       "href": "/docs/concepts/samples#storage",
       "label": "thalamus rollup",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Command line",
@@ -221,10 +221,10 @@
     },
     {
       "area": "Service",
-      "detail": "A verdict change that persisted is recorded and emitted. Planned in story:m2-transitions.",
+      "detail": "A verdict change that persisted is recorded and emitted.",
       "href": "/docs/concepts/interfaces#events",
       "label": "Settled transitions as CloudEvents",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Views",

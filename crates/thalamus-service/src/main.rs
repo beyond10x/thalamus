@@ -1,5 +1,7 @@
 //! `thalamus-service run --instance <dir>`: the scheduler of one instance, sampling each `Active`
-//! definition on its cadence until the process is stopped. No HTTP is served yet.
+//! definition on its cadence until the process is stopped. Each settled verdict change is
+//! recorded as a transition and written to standard output as one CloudEvents JSON line
+//! (`thalamus_service::events`). No HTTP is served yet.
 
 use std::path::PathBuf;
 use std::process::ExitCode;

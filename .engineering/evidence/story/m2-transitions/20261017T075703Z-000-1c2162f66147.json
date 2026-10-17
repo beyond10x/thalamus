@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-17T07:57:03Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-transitions",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:adversary-m2-transitions-pass-1",
+    "reference": "corrections 9e1a455: F1 seeding records what the replay settles after the newest stored transition, a failed record stays pending; F2 resume_from refills the window up to the transition; F3 accepted, acceptance restated",
+    "review": "review-result:adversary-m2-transitions-pass-1",
+    "outcome": "fixed"
+  }
+}
