@@ -274,6 +274,46 @@ fn range_read_returns_samples_and_evaluations_of_one_series() {
     }
 }
 
+/// The samples-only range read answers from the series' own index: only that series' samples
+/// inside `[from, to)`, in `ts` order, no evaluations, and also what another writer appended
+/// since this handle last moved.
+#[test]
+fn samples_range_read_returns_only_one_series_inside_the_bound() {
+    let root = tempfile::tempdir().expect("tempdir");
+    for locator in targets(root.path()) {
+        let mut store = open(&locator);
+        let a1 = sample("smp_a1", SERIES_A, 10, ok("1"));
+        let a2 = sample("smp_a2", SERIES_A, 5, ok("2"));
+        let a3 = sample("smp_a3", SERIES_A, 40, ok("3"));
+        let b1 = sample("smp_b1", SERIES_B, 7, ok("4"));
+        for s in [&a1, &a2, &a3, &b1] {
+            store.append_sample(s).expect("stored");
+        }
+        let series = SeriesKey(SERIES_A.to_owned());
+        let rows = store.series_samples(&series, &ts(5), &ts(30));
+        assert_eq!(ids_of_samples(&rows), ["smp_a2", "smp_a1"], "{locator}");
+        assert_eq!(rows[0], a2, "{locator}: the whole sample comes back");
+        let other = SeriesKey(SERIES_B.to_owned());
+        assert_eq!(
+            ids_of_samples(&store.series_samples(&other, &ts(0), &ts(59))),
+            ["smp_b1"],
+            "{locator}"
+        );
+        let none = SeriesKey("platform.other{}".to_owned());
+        assert!(store.series_samples(&none, &ts(0), &ts(59)).is_empty());
+
+        let mut writer = open(&locator);
+        writer
+            .append_sample(&sample("smp_a4", SERIES_A, 20, ok("5")))
+            .expect("stored");
+        assert_eq!(
+            ids_of_samples(&store.series_samples(&series, &ts(5), &ts(30))),
+            ["smp_a2", "smp_a1", "smp_a4"],
+            "{locator}: a stale handle reads what another writer appended"
+        );
+    }
+}
+
 #[test]
 fn first_stored_sample_of_series() {
     let root = tempfile::tempdir().expect("tempdir");
