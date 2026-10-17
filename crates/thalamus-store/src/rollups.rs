@@ -9,10 +9,10 @@
 //! Eventlog idempotency key is a digest of the id, since a series key may hold bytes, or a
 //! length, that Eventlog does not store as a key.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Map, Value};
-use thalamus_core::rollup::{build, day_start};
+use thalamus_core::rollup::{build, day_start, rollup_id};
 use thalamus_model::behaviour::{DailyRollupStorage, Generated, SignalDefinitionStorage};
 use thalamus_model::definition::{SignalDefinitionSnapshot, SignalId};
 use thalamus_model::json;
@@ -131,16 +131,6 @@ impl EventlogStore {
             .filter(|sample| signal.is_none_or(|signal| sample.signal == *signal))
             .cloned()
             .collect();
-        let evaluations: Vec<_> = self
-            .evaluations()
-            .iter()
-            .filter(|evaluation| {
-                samples
-                    .iter()
-                    .any(|sample| sample.sample_id == evaluation.sample_id)
-            })
-            .cloned()
-            .collect();
         let series: BTreeMap<String, (SeriesKey, SignalId)> = samples
             .iter()
             .map(|sample| {
@@ -151,8 +141,31 @@ impl EventlogStore {
             })
             .collect();
         let mut rolled = RolledUp::default();
+        let held: BTreeMap<String, DailyRollupData> = self
+            .rollups()
+            .into_iter()
+            .map(|rollup| (rollup.rollup_id.0.clone(), rollup))
+            .collect();
+        // Built only when a series has no row yet: the evaluations of the day's samples, found
+        // by sample id.
+        let mut evaluations: Option<Vec<_>> = None;
         for (series, signal) in series.into_values() {
-            let input = build(&signal, &series, day, &samples, &evaluations);
+            if let Some(row) = held.get(&rollup_id(&series, day).0) {
+                rolled.held.push(row.clone());
+                continue;
+            }
+            let evaluations = evaluations.get_or_insert_with(|| {
+                let ids: BTreeSet<&str> = samples
+                    .iter()
+                    .map(|sample| sample.sample_id.0.as_str())
+                    .collect();
+                self.evaluations()
+                    .iter()
+                    .filter(|evaluation| ids.contains(evaluation.sample_id.0.as_str()))
+                    .cloned()
+                    .collect()
+            });
+            let input = build(&signal, &series, day, &samples, evaluations);
             let id = input.rollup_id.clone();
             let mut behaviour = Generated::new(Ports {
                 definitions: &mut *definitions,

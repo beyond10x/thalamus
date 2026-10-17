@@ -14,7 +14,7 @@
 //! |---|---|
 //! | 0 | every series of the day is rolled up, now or before |
 //! | 64 | a usage error: no instance, a day that is not `YYYY-MM-DD`, a day that has not closed |
-//! | 65 | the instance is invalid, or a series was refused (a signal no definition has) |
+//! | 65 | the instance is invalid, or a series was refused, or `--signal` names a signal no definition has |
 //! | 74 | the store cannot be opened or written; the rows recorded before a failure stay recorded |
 
 use std::process::ExitCode;
@@ -76,6 +76,15 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
         Err(code) => return code,
     };
     let signal = args.signal.clone().map(SignalId);
+    if let Some(signal) = &signal
+        && instance.instance().definition(&signal.0).is_none()
+    {
+        eprintln!(
+            "thalamus rollup: no definition has the signal id {}; nothing was rolled up",
+            signal.0
+        );
+        return ExitCode::from(EX_DATAERR);
+    }
     let answer = quietly(|| store.roll_up_day(instance.instance_mut(), day, signal.as_ref()));
     let rolled = match answer {
         Ok(Ok(rolled)) => rolled,

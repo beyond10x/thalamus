@@ -276,7 +276,6 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             return tick;
         }
         crate::unmute::effective_definitions(&mut instance, &mut self.store, now, &mut tick);
-        crate::daily_rollup::closed_day(&mut instance, &mut self.store, now, &mut tick);
 
         let held = Held::read(&self.store);
         let mut missed: Vec<(SignalId, i64, Vec<Read>)> = Vec::new();
@@ -364,6 +363,8 @@ impl<C: Clock, R: Reader> Scheduler<C, R> {
             let reads = self.read(&instance, &due, &pass.run_id);
             self.record(pass, &mut instance, reads, &mut tick);
         }
+        // After both recording passes, so a closed day holds the samples they backfilled.
+        crate::daily_rollup::closed_day(&mut instance, &mut self.store, now, &mut tick);
         tick
     }
 
