@@ -221,10 +221,10 @@
     },
     {
       "area": "Service",
-      "detail": "A verdict change that persisted is recorded and emitted. Planned in story:m2-transitions.",
+      "detail": "A verdict change that persisted is recorded and emitted.",
       "href": "/docs/concepts/interfaces#events",
       "label": "Settled transitions as CloudEvents",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Views",

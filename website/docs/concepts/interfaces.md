@@ -10,8 +10,9 @@ source: spec/domains/assertion.yaml, docs/design/thalamus.md § 6, § 11 (D1, D2
 
 :::caution[Planned]
 
-Everything on this page is planned. The assertion is specified (`thalamus.assertion.Assertion`);
-the command, the event stream, the cortex source, the test-run bridge and the views are not built.
+Everything on this page but transition events is planned. The assertion is specified
+(`thalamus.assertion.Assertion`); the command, the evaluation events, the cortex source, the
+test-run bridge and the views are not built.
 See the [status page](/docs/status).
 
 :::
@@ -48,9 +49,13 @@ Every evaluation and every transition is available as a CloudEvents event on the
 | attribute | value |
 |---|---|
 | `type` | `dev.beyond10x.thalamus.evaluation`, `dev.beyond10x.thalamus.transition` |
-| `source` | the instance and the producer |
+| `source` | the instance and the producer, `<instance>/<producer>` |
 | `subject` | the series key |
-| `time` | the evaluation's `ts` |
+| `time` | the evaluation's `ts`; for a transition, the `ts` of the evaluation that settled it |
+
+`thalamus-service run` records each settled verdict change as a transition and writes its event to
+standard output as one JSON line (CloudEvents 1.0, structured mode); its `data` is the transition,
+with the ids of the evaluations that settled it. Evaluation events are not emitted yet.
 
 Stored lines are not wrapped in the envelope: no reader inside the store needs it.
 

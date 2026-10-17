@@ -6,6 +6,11 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+- `thalamus-service run` records each settled verdict change of a series (design § 3.2) as a
+  transition in the store and writes it to standard output as one CloudEvents JSON line of type
+  `dev.beyond10x.thalamus.transition`, with the series key as `subject`; the hysteresis of each
+  series is seeded from the store on start.
+
 ## 0.2.0 — 2026-10-17
 
 - A `rolling_median` baseline over a series of `rolling_n` samples or more with fewer than `rolling_n` `ok` ones is `UNKNOWN` with reason `too few ok samples`, not `baseline predates series`.
