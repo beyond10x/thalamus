@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T03:22:10Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-series-range-read",
+  "kind": "story",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at d7422b9: thalamus-store 1+19+15+3+17 passed (SQLite and PostgreSQL 17.6), thalamus-pipeline 5 passed, thalamus-cli eval_store_history 1 passed; samples_range_read_returns_only_one_series_inside_the_bound red first (E0599); clippy -D warnings exit 0",
+    "reference": "d7422b9"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-17T03:40:13Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-auto-unmute",
+  "kind": "story",
+  "revision": 10,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "corrections a31db91: F1 next wake-up over the effective lifecycle, F2 first-tick fill skips before mute_until, F3 CLI overlay without an unmute event; F4 accepted",
+    "review": "review-result:adversary-m2-auto-unmute-pass-1",
+    "outcome": "fixed"
+  }
+}

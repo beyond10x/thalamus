@@ -2,12 +2,16 @@
 format: aep.planning-md/3
 id: story:m2-rolling-too-few-reason
 kind: story
-status: draft
+status: implemented
 title: A rolling baseline short of ok samples says so, not that it predates its series
 relations:
 - decomposes: epic:history-and-transitions
 - depends_on: story:m2-store-baselines
-revision: 1
+revision: 4
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-17T02:11:19Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-17T02:11:19Z", actor: "human:timo", revision: 3}
+- {from: "active", to: "implemented", at: "2026-10-17T03:47:24Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"test_result":1}}}
 ---
 ## Context
 

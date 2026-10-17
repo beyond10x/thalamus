@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:m2-flap-measurement
 kind: story
-status: draft
+status: implemented
 title: Measure flap rates over stored evaluations before k and m are fixed
 relations:
 - decomposes: epic:history-and-transitions
@@ -13,7 +13,11 @@ scope:
   path: crates/thalamus-cli/src/cmd/flaps.rs
 - confidence: inferred
   path: crates/thalamus-cli/tests/flaps.rs
-revision: 5
+revision: 8
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-17T02:11:18Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-17T02:11:18Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-17T03:47:24Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"review_outcome":4}}}
 ---
 ## Context
 

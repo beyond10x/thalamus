@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T03:22:10Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-scheduler-first-tick-bound",
+  "kind": "story",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates at 1b8cf79: thalamus-service scheduler 10 passed (2 new red first: left 2879 right 288; muted-span slots filled), adv 2 and 3 passed; clippy -D warnings exit 0",
+    "reference": "1b8cf79"
+  }
+}

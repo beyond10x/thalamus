@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-17T03:45:52Z",
+  "actor": "human:timo",
+  "artifact": "story:m2-flap-measurement",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "package gates: thalamus-cli 110 passed 0 failed at 4120be9 before a one-line clippy fix, then flaps 3 and adv_flaps_p2 6 passed (the full gate is still owed); flaps 5 red first on the stub at 68bfdac; clippy -D warnings and fmt exit 0",
+    "reference": "4120be9"
+  }
+}

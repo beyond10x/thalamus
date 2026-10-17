@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-17T03:22:14Z",
+  "actor": "human:timo",
+  "artifact": "story:store-sqlite-id-reserve-locked",
+  "kind": "story",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "corrections def7fb5 and wave merge 9c818c1: F1 case kept, F3 busy-only match, F2 CHANGELOG bound about 35 s",
+    "review": "review-result:adversary-store-sqlite-id-reserve-locked-pass-1",
+    "outcome": "fixed"
+  }
+}
