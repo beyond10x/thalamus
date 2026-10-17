@@ -109,10 +109,10 @@
     },
     {
       "area": "Instances",
-      "detail": "The service samples the definition as Active again and records the unmute. Planned in story:m2-auto-unmute.",
+      "detail": "The service samples the definition as Active again and records the unmute.",
       "href": "/docs/concepts/signals#lifecycle",
       "label": "An expired mute ends by itself",
-      "status": "planned"
+      "status": "shipped"
     },
     {
       "area": "Sources",

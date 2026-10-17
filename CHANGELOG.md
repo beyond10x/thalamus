@@ -6,6 +6,10 @@ user sees adds a line under `## Unreleased` in the same change; a release turns 
 
 ## Unreleased
 
+- `thalamus-service run` samples a muted definition whose `mute_until` has passed as Active,
+  records its `DefinitionUnmuted` once in the store as actor `thalamus.definition.Service`, and
+  warns on every pass naming the definition file, which it never rewrites.
+
 ## 0.1.0 — 2026-10-17
 
 Specification and model

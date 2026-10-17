@@ -202,11 +202,13 @@ pub const CAPABILITIES: &[Capability] = &[
         ),
         "/docs/concepts/samples#storage",
     ),
-    planned(
+    shipped(
         "Instances",
         "An expired mute ends by itself",
         "The service samples the definition as Active again and records the unmute.",
-        "story:m2-auto-unmute",
+        Evidence::Test(
+            "crates/thalamus-service/tests/unmute.rs::unmute_event_is_recorded_once_as_service_actor",
+        ),
         "/docs/concepts/signals#lifecycle",
     ),
     shipped(
