@@ -8,17 +8,20 @@
 //! those of a signal the instance does not define, as `excluded`. Per family it reports:
 //!
 //! - `series`: the series with a kept evaluation in the window;
-//! - `series_days`: observed time, per series its kept evaluations in the window times its
-//!   definition's cadence, over 24 hours, summed: a decimal, to three fractional digits;
+//! - `series_days`: observed time, per series the span of its kept evaluations' sample timestamps
+//!   in the window (last minus first, plus the median spacing between consecutive timestamps; one
+//!   sample is zero), capped at the window's length, over 24 hours, summed: a decimal, to three
+//!   fractional digits;
 //! - `raw_changes`: the kept evaluations in the window `thalamus.evaluation.VerdictChanges` shows
 //!   (`prev` defined and the verdict differs from it), read through the generated query;
 //! - `settled`: one run per persistence, each the changes the hysteresis settles inside the
-//!   window. Each series' replay is seeded with its kept evaluations before the window, so a
-//!   verdict settled before it is the `from` of the first change inside it; a series' first
+//!   window. Each series' replay is seeded with its newest `max(k, k_crit, m)` kept evaluations
+//!   before the window, so a verdict settled before it is the `from` of the first change inside it; a series' first
 //!   settled verdict is a start and not a flap. The replay takes the evaluations in sample `ts`
 //!   order, so history re-graded at the kept revision after newer samples counts too;
 //!
-//! and each count per series-day (absent when there are no series-days, never 0). Without `--k`,
+//! and each count per series-day, taken over the rounded series-days (absent when they round to
+//! 0, never 0). Without `--k`,
 //! `--k-crit` and `--m` each definition's own `persistence` applies; each one given overrides that
 //! value for every definition. `--sweep` runs `k` 1 to 3 and `m` 1 to 4, `k_crit` from `--k-crit`
 //! or each definition.
@@ -41,7 +44,6 @@ use thalamus_model::evaluation::{
 };
 use thalamus_model::observation::SeriesKey;
 use thalamus_model::primitives::Timestamp;
-use thalamus_sources::adapter::window_ending;
 use thalamus_store::eventlog::EventlogStore;
 use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
@@ -169,13 +171,11 @@ impl Given {
     }
 }
 
-/// One kept series: its definition's family, persistence and cadence, and its kept evaluations
-/// before the window and in it, each in sample `ts` order.
+/// One kept series: its definition's family and persistence, and its kept evaluations before the
+/// window and in it, each in sample `ts` order.
 struct Series {
     family: String,
     persistence: Persistence,
-    /// The definition's cadence in seconds; 0 when it is no positive length.
-    cadence: u64,
     before: Vec<SignalEvaluationData>,
     kept: Vec<SignalEvaluationData>,
 }
@@ -184,7 +184,7 @@ struct Series {
 #[derive(Default)]
 struct Family {
     series: u64,
-    /// Observed seconds: kept evaluations in the window times their definition's cadence.
+    /// Observed seconds: each series' span of kept sample timestamps, capped at the window.
     observed: u64,
     raw_changes: u64,
     /// One count per run, in the order of the runs.
@@ -269,7 +269,6 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
                     let held = kept.get_or_insert_with(|| Series {
                         family: data.family.0.clone(),
                         persistence: Persistence::of(data),
-                        cadence: cadence_seconds(data),
                         before: Vec::new(),
                         kept: Vec::new(),
                     });
@@ -282,7 +281,10 @@ pub fn run(global: &Global, args: &Args) -> ExitCode {
                 series.extend(kept.filter(|held| !held.kept.is_empty()));
             }
         }
-        (excluded, measure(series, &runs))
+        (
+            excluded,
+            measure(series, &runs, args.since.seconds.unsigned_abs()),
+        )
     });
     let Ok((excluded, families)) = read else {
         eprintln!("thalamus flaps: store {name} cannot be read");
@@ -313,17 +315,27 @@ fn runs(args: &Args) -> Vec<Given> {
     }]
 }
 
-/// The length of `definition`'s cadence in seconds; 0 when it is no positive length.
-fn cadence_seconds(definition: &thalamus_model::definition::SignalDefinitionData) -> u64 {
-    let end = Timestamp("2000-01-01T00:00:00Z".to_owned());
-    window_ending(&definition.cadence, &end)
-        .ok()
-        .and_then(|window| {
-            let start = Instant::parse(&window.start.0)?.seconds();
-            let end = Instant::parse(&window.end.0)?.seconds();
-            u64::try_from(end - start).ok()
-        })
+/// The observed seconds of a series: its kept evaluations' sample timestamps, last minus first
+/// plus the median spacing between consecutive ones (zero for one), capped at `window`.
+fn observed_seconds(kept: &[SignalEvaluationData], window: u64) -> u64 {
+    let mut seconds: Vec<i64> = kept
+        .iter()
+        .filter_map(|evaluation| Some(Instant::parse(&evaluation.ts.0)?.seconds()))
+        .collect();
+    seconds.sort_unstable();
+    let (Some(first), Some(last)) = (seconds.first(), seconds.last()) else {
+        return 0;
+    };
+    let mut spacings: Vec<i64> = seconds.windows(2).map(|pair| pair[1] - pair[0]).collect();
+    spacings.sort_unstable();
+    let median = match spacings.len() {
+        0 => 0,
+        n if n % 2 == 1 => spacings[n / 2],
+        n => (spacings[n / 2 - 1] + spacings[n / 2]) / 2,
+    };
+    u64::try_from(last - first + median)
         .unwrap_or(0)
+        .min(window)
 }
 
 /// Every series key that has a stored evaluation, in key order.
@@ -336,12 +348,11 @@ fn series_keys(store: &EventlogStore) -> BTreeSet<String> {
 }
 
 /// The figures of each family, by family name.
-fn measure(series: Vec<Series>, runs: &[Given]) -> BTreeMap<String, Family> {
+fn measure(series: Vec<Series>, runs: &[Given], window: u64) -> BTreeMap<String, Family> {
     let mut families: BTreeMap<String, Family> = BTreeMap::new();
     for Series {
         family,
         persistence,
-        cadence,
         before,
         kept,
     } in series
@@ -351,7 +362,7 @@ fn measure(series: Vec<Series>, runs: &[Given]) -> BTreeMap<String, Family> {
             ..Family::default()
         });
         measured.series += 1;
-        measured.observed += kept.len() as u64 * cadence;
+        measured.observed += observed_seconds(&kept, window);
         measured.raw_changes += verdict_changes(&kept);
         for (count, given) in measured.settled.iter_mut().zip(runs) {
             *count += settled_inside(given.over(persistence), &before, &kept);
@@ -360,7 +371,8 @@ fn measure(series: Vec<Series>, runs: &[Given]) -> BTreeMap<String, Family> {
     families
 }
 
-/// The changes `persistence` settles over `inside` after replaying `before` to seed the series'
+/// The changes `persistence` settles over `inside` after replaying the newest `max(k, k_crit, m)`
+/// of `before` to seed the series'
 /// settled verdict, both in sample `ts` order; the series' first settled verdict is not counted.
 fn settled_inside(
     persistence: Persistence,
@@ -368,7 +380,8 @@ fn settled_inside(
     inside: &[SignalEvaluationData],
 ) -> u64 {
     let mut hysteresis = SeriesHysteresis::new(persistence);
-    for evaluation in before {
+    let seed = persistence.k.max(persistence.k_crit).max(persistence.m);
+    for evaluation in &before[before.len().saturating_sub(seed)..] {
         hysteresis.observe(evaluation);
     }
     inside
@@ -393,22 +406,28 @@ fn verdict_changes(kept: &[SignalEvaluationData]) -> u64 {
         .map_or(0, |rows| rows.len() as u64)
 }
 
+/// `observed` seconds as thousandths of a series-day, rounded.
+fn thousandths(observed: u64) -> u128 {
+    (u128::from(observed) * 1000 + u128::from(DAY) / 2) / u128::from(DAY)
+}
+
 /// `observed` seconds as series-days, a decimal to three fractional digits: a whole number when
 /// it is one.
 fn series_days(observed: u64) -> Value {
-    let thousandths = (u128::from(observed) * 1000 + u128::from(DAY) / 2) / u128::from(DAY);
-    if thousandths % 1000 == 0 {
+    let thousandths = thousandths(observed);
+    if thousandths.is_multiple_of(1000) {
         json!(thousandths / 1000)
     } else {
         json!(thousandths as f64 / 1000.0)
     }
 }
 
-/// `changes` per series-day of `observed` seconds, to three fractional digits; `None` without
-/// observed time.
+/// `changes` per series-day of the rounded series-days of `observed` seconds, to three fractional
+/// digits; `None` when they round to 0.
 fn per_day(changes: u64, observed: u64) -> Option<f64> {
-    (observed > 0)
-        .then(|| (changes as f64 * DAY as f64 / observed as f64 * 1000.0).round() / 1000.0)
+    let thousandths = thousandths(observed);
+    (thousandths > 0)
+        .then(|| (changes as f64 * 1000.0 / thousandths as f64 * 1000.0).round() / 1000.0)
 }
 
 fn print(args: &Args, excluded: u64, runs: &[Given], families: &BTreeMap<String, Family>) {
