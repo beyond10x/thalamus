@@ -460,6 +460,9 @@ pub struct EventlogStore {
     records: Vec<Record>,
     pub(crate) samples: Vec<SignalSampleData>,
     pub(crate) sample_index: HashMap<String, usize>,
+    /// The positions in `samples` of each series' samples, by series key, in append order: the
+    /// index a series range read goes through, so it never scans other series.
+    pub(crate) series_index: HashMap<String, Vec<usize>>,
     pub(crate) evaluations: Vec<SignalEvaluationData>,
     pub(crate) evaluation_index: HashMap<String, usize>,
     /// The last number reserved or stored per id prefix (`smp_`, `evl_`).
@@ -515,6 +518,7 @@ impl EventlogStore {
             records: Vec::new(),
             samples: Vec::new(),
             sample_index: HashMap::new(),
+            series_index: HashMap::new(),
             evaluations: Vec::new(),
             evaluation_index: HashMap::new(),
             sequences: BTreeMap::new(),
@@ -816,6 +820,10 @@ impl EventlogStore {
                 self.resume_after(&sample.sample_id.0);
                 self.sample_index
                     .insert(sample.sample_id.0.clone(), self.samples.len());
+                self.series_index
+                    .entry(sample.series.0.clone())
+                    .or_default()
+                    .push(self.samples.len());
                 self.samples.push(sample);
             }
             Row::Evaluation(evaluation) => {

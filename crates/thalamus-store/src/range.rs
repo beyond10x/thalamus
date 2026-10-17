@@ -62,4 +62,37 @@ impl EventlogStore {
             evaluations: in_time_order(evaluations, |evaluation| evaluation.ts.0.as_str()),
         }
     }
+
+    /// The samples of `series` whose `ts` is at or after `from` and before `to`, in the view's
+    /// `ts` order, without the evaluations: the read of store-backed baselines. It goes through
+    /// the series' own index, so it clones no other series' sample and no evaluation, and takes
+    /// in what other writers appended since this handle last moved. The bounds read as in
+    /// [`EventlogStore::series_range`].
+    ///
+    /// # Panics
+    ///
+    /// When the stream cannot be read ([`EventlogStore::tail`]).
+    pub fn series_samples(
+        &self,
+        series: &SeriesKey,
+        from: &Timestamp,
+        to: &Timestamp,
+    ) -> Vec<SignalSampleData> {
+        let (Some(from), Some(to)) = (Instant::parse(&from.0), Instant::parse(&to.0)) else {
+            return Vec::new();
+        };
+        let held = self
+            .series_index
+            .get(&series.0)
+            .into_iter()
+            .flatten()
+            .filter_map(|at| self.samples.get(*at));
+        let appended = self.tail().samples;
+        let samples = held
+            .chain(appended.iter().filter(|sample| sample.series == *series))
+            .filter(|sample| within(&sample.ts, from, to))
+            .cloned()
+            .collect();
+        in_time_order(samples, |sample| sample.ts.0.as_str())
+    }
 }
