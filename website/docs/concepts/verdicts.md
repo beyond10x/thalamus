@@ -121,8 +121,10 @@ they are fixed per family.
 `thalamus flaps --since <duration>` reads every series' evaluations over that span and reports,
 per family, the series, the series-days, the raw verdict changes (the rows of
 `thalamus.evaluation.VerdictChanges`) and the settled changes the hysteresis replays from them,
-each also per series-day. A series-day is observed time: a series' evaluations in the span times
-its definition's cadence, over 24 hours, a decimal; 288 evaluations of a 5-minute cadence are one.
+each also per series-day. A series-day is observed time: per series, the time from its first to its
+last sample in the span plus the median spacing between samples, never more than the span, over
+24 hours, a decimal; 288 samples 5 minutes apart are one. Rates use the rounded series-days and are
+absent when those are 0.
 It keeps the evaluations at each definition's current revision (`--rev <n>` picks another) and
 counts the rest as `excluded`. Raw changes compare each verdict with its stored `prev`, so the
 first evaluation of a new revision counts as a change against the previous revision's verdict.

@@ -278,12 +278,12 @@ fn flaps_raw_changes_match_verdict_changes_view() {
     assert_eq!(number(row, "series_days"), Some(1.25), "{row}");
     assert_eq!(row["raw_changes"], 18, "{row}");
     assert_eq!(number(row, "raw_per_series_day"), Some(14.4), "{row}");
-    // OK>CRIT and CRIT>OK over 5 hourly evaluations: 5/24 = 0.208 series-days, 9.6 a day.
+    // OK>CRIT and CRIT>OK over 5 hourly evaluations: 5/24 = 0.208 series-days, 9.615 a day.
     let row = family(&doc, "platform");
     assert_eq!(row["series"], 1, "{row}");
     assert_eq!(number(row, "series_days"), Some(0.208), "{row}");
     assert_eq!(row["raw_changes"], 2, "{row}");
-    assert_eq!(number(row, "raw_per_series_day"), Some(9.6), "{row}");
+    assert_eq!(number(row, "raw_per_series_day"), Some(9.615), "{row}");
 }
 
 /// `FLAPPY` twice is the runs OK1 W1 OK1 W2 OK1 C1 OK4 W1 OK1 W2 OK1 C1 OK3 (20 hourly
@@ -298,7 +298,7 @@ fn flaps_settled_changes_match_hysteresis_replay() {
 
     // Each definition's own persistence.
     let doc = world.json(&["--since", "7d"]);
-    // Defaults k 2, k_crit 1, m 3: W2 (start), C1, OK4, W2, C1, OK3 settle: 5, 6.0 a day.
+    // Defaults k 2, k_crit 1, m 3: W2 (start), C1, OK4, W2, C1, OK3 settle: 5, 6.002 a day.
     let row = family(&doc, "service");
     let runs = row["settled"].as_array().expect("settled is a list");
     assert_eq!(runs.len(), 1, "{row}");
@@ -307,7 +307,7 @@ fn flaps_settled_changes_match_hysteresis_replay() {
     assert_eq!(runs[0]["settled_changes"], 5, "{row}");
     assert_eq!(
         number(&runs[0], "settled_per_series_day"),
-        Some(6.0),
+        Some(6.002),
         "{row}"
     );
     assert!(runs[0]["k"].is_null(), "{row}");
