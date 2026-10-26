@@ -21,6 +21,15 @@ history, assertions and events. Cortex is its long-term memory; conductor is its
 Crates (design § 5.1): `thalamus-core`, `thalamus-store`, `thalamus-sources`, `thalamus-pipeline`,
 `thalamus-service` and `thalamus-cli` (binary `thalamus`), over the generated `thalamus-model`.
 
+## Serves
+
+The objectives of the collection this repository moves, by id from `atlas/ROADMAP.md`:
+
+- **O2 — decisions as data, with evidence.** Each verdict is an evaluation that names the sample
+  and the rule that decided it; every threshold has one copy, in its definition.
+- **O6 — self-improvement.** An assertion lets a release, a merge request or a test run re-measure
+  what it changed against a baseline; unknown is not a pass.
+
 ## Commands
 
 | command | does |
